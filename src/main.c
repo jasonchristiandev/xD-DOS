@@ -78,18 +78,20 @@ void kernel_main(void) {
 	if (framebuffer_request.response == NULL || framebuffer_request.response->framebuffer_count < 1) hcf();
 
 	struct limine_framebuffer *fb = framebuffer_request.response->framebuffers[0];
-
 	volatile uint32_t *fb_ptr = fb->address;
-	uint32_t offset = 0;
-	for (;;) {
-		for (size_t y = 0; y < fb->height; y++) {
-			for (size_t x = 0; x < fb->width; x++) {
-				uint32_t nX = ((x + offset) % fb->width) * 255 / fb->width;
-				uint32_t nY = (fb->height - y) * 255 / fb->height;
-				fb_ptr[y * (fb->pitch / 4) + x] = (nY << 8) | (nX << 16);
-			}
-		}
-		offset++;
-		offset %= fb->width;
-	}
+
+	// uint32_t offset = 0;
+	// for (;;) {
+	//	for (size_t y = 0; y < fb->height; y++) {
+	//		for (size_t x = 0; x < fb->width; x++) {
+	//			uint32_t nX = ((x + offset) % fb->width) * 255 / fb->width;
+	//			uint32_t nY = (fb->height - y) * 255 / fb->height;
+	//			fb_ptr[y * (fb->pitch / 4) + x] = (nY << 8) | (nX << 16);
+	//		}
+	//	}
+	//	offset++;
+	//	offset %= fb->width;
+	// }
+
+	
 }
