@@ -1,0 +1,17 @@
+{
+	"files.exclude": {
+		"**/.git": true,
+		"**/.svn": true,
+		"**/.hg": true,
+		"**/.DS_Store": true,
+		"**/Thumbs.db": true,
+		"**/LICENSE": true,
+		".clang-format": true,
+		".clangd": true,
+		"limine_bin": true,
+		".gitmodules": true,
+		"iso": true,
+		"build": true,
+		"xD-DOS.iso": true
+	}
+}

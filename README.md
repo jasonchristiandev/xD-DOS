@@ -1,4 +1,4 @@
-# Extended Disk - Drive Operating System (xD-DOS)
+# Extended Drive - Disk Operating System (xD-DOS)
 
 xD-DOS is an operating system inspired by **DOS**. xD-DOS is merely a fun project and **SHOULD NOT** be used for serious terms.
 

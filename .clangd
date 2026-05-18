@@ -1,0 +1,14 @@
+CompileFlags:
+  Add: [
+    "-xc",
+    "-std=c11",
+    "-I../include",
+    "-fno-stack-protector",
+    "-mno-red-zone",
+    "-ffreestanding",
+    "-fno-builtin"
+  ]
+
+Diagnostics:
+  ClangTidy:
+    Remove: [bugprone-unused-*, readability-redundant-*]
