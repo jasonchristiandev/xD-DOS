@@ -1,8 +1,8 @@
 CompileFlags:
+  CompilationDatabase: "."
   Add: [
     "-xc",
     "-std=c11",
-    "-I../include",
     "-fno-stack-protector",
     "-mno-red-zone",
     "-ffreestanding",

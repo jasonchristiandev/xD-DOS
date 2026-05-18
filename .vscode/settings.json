@@ -20,4 +20,7 @@
 		"limine_bin",
 		"limine-protocol"
 	],
+	"clangd.arguments": [
+		"--compile-commands-dir=${workspaceFolder}"
+	]
 }
