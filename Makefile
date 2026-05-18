@@ -96,7 +96,7 @@ $(ISO_IMAGE): $(BUILD_DIR)/$(KERNEL) $(LIMINE_CONF) $(LIMINE_DIR)/limine
 	@echo " [ISO] $(ISO_IMAGE) success."
 
 run: $(ISO_IMAGE)
-	qemu-system-x86_64 -cdrom $(ISO_IMAGE) -m 256M -M q35
+	qemu-system-x86_64 -cdrom $(ISO_IMAGE) -m 256M -M q35 -serial mon:stdio
 
 distclean:
 	rm -rf $(BUILD_DIR) $(ISO_IMAGE) $(ISO_DIR) $(LIMINE_DIR)

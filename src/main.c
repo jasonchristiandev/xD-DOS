@@ -1,7 +1,6 @@
-// Taken from wiki.osdev.org
-
-#include "xD-DOS/font.h"
+//#include "xD-DOS/font.h"
 #include "xD-DOS/memory.h"
+#include "xD-DOS/serial.h"
 #include <limine.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -45,4 +44,9 @@ void kernel_main(void) {
 	//	offset++;
 	//	offset %= fb->width;
 	// }
+
+	serial_init();
+	serial_write_text("Hello world from serial COM1!");
+
+	hcf();
 }
