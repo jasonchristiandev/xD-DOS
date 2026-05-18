@@ -37,7 +37,10 @@ all: $(LIMINE_DIR)/limine $(ISO_IMAGE)
 $(BUILD_DIR):
 	@mkdir -p $(BUILD_DIR)
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(BUILD_DIR)
+$(INCLUDE_DIR)/limine.h: limine-protocol/include/limine.h
+	@cp $< $@
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(BUILD_DIR) $(INCLUDE_DIR)/limine.h
 	@echo " [CC] $<"
 	@$(CC) $(CFLAGS) -c $< -o $@
 
