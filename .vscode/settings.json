@@ -12,6 +12,8 @@
 		".gitmodules": true,
 		"iso": true,
 		"build": true,
-		"xD-DOS.iso": true
+		"xD-DOS.iso": true,
+		"fonts": true,
+		"limine-protocol": true
 	}
 }
