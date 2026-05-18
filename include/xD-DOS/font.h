@@ -1,4 +1,6 @@
-#pragma once
+#ifndef FONT_H
+#define FONT_H
+
 #include <limits.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -32,23 +34,23 @@ uint16_t *unicode;
 
 void psf_init() {
 	uint16_t glyph = 0;
-
+	
 	// Cast the address to PSF header struct
 	PSF_font *font = (PSF_font *) &_binary_font_psf_start;
-
+	
 	// Exit if there is no unicode table
 	if (font->flags == 0) {
 		unicode = NULL;
 		return;
 	}
-
+	
 	char *ptr = (char *) ((unsigned char *) &_binary_font_psf_start +
-						  font->header_size +
-						  font->glyph_count * font->bytes_per_glyph);
-
+	font->header_size +
+	font->glyph_count * font->bytes_per_glyph);
+	
 	// Allocate memory for translation table
 	unicode = calloc(USHRT_MAX, 2);
-
+	
 	while (ptr < (unsigned char *) &_binary_font_psf_end) {
 		uint16_t uc = (uint16_t) ((unsigned char *) ptr[0]);
 		if (uc == 0xFF) {
@@ -67,10 +69,12 @@ void psf_init() {
 				uc = ((((((ptr[0] & 0x7) << 6) + (ptr[1] & 0x3F)) << 6) + (ptr[2] & 0x3F)) << 6) + (ptr[3] & 0x3F);
 				ptr += 3;
 			} else
-				uc = 0;
+			uc = 0;
 		}
-
+		
 		unicode[uc] = glyph;
 		ptr++;
 	}
 }
+
+#endif // !FONT_H
