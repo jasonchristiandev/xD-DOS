@@ -6,7 +6,11 @@ CompileFlags:
     "-fno-stack-protector",
     "-mno-red-zone",
     "-ffreestanding",
-    "-fno-builtin"
+    "-fms-extensions",
+    "-fno-builtin",
+    "-Wno-pointer-to-int-cast",
+    "-Wno-int-to-pointer-cast",
+    "-Wno-compare-distinct-pointer-types"
   ]
 
 Diagnostics:

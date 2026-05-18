@@ -4,34 +4,14 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-
-// Set the base revision to 6, this is recommended as this is the latest
-// base revision described by the Limine boot protocol specification.
-// See specification for further info.
+#include "xD-DOS/font.h"
 
 __attribute__((used, section(".limine_requests"))) static volatile uint64_t limine_base_revision[] = LIMINE_BASE_REVISION(6);
-
-// The Limine requests can be placed anywhere, but it is important that
-// the compiler does not optimise them away, so, usually, they should
-// be made volatile or equivalent, _and_ they should be accessed at least
-// once or marked as used with the "used" attribute as done here.
-
 __attribute__((used, section(".limine_requests"))) static volatile struct limine_framebuffer_request framebuffer_request = {
 	.id = LIMINE_FRAMEBUFFER_REQUEST_ID,
 	.revision = 0};
-
-// Finally, define the start and end markers for the Limine requests.
-// These can also be moved anywhere, to any .c file, as seen fit.
-
 __attribute__((used, section(".limine_requests_start"))) static volatile uint64_t limine_requests_start_marker[] = LIMINE_REQUESTS_START_MARKER;
-
 __attribute__((used, section(".limine_requests_end"))) static volatile uint64_t limine_requests_end_marker[] = LIMINE_REQUESTS_END_MARKER;
-
-// GCC and Clang reserve the right to generate calls to the following
-// 4 functions even if they are not directly called.
-// Implement them as the C specification mandates.
-// DO NOT remove or rename these functions, or stuff will eventually break!
-// They CAN be moved to a different .c file.
 
 void *memcpy(void *restrict dest, const void *restrict src, size_t n) {
 	uint8_t *restrict pdest = dest;
@@ -84,41 +64,32 @@ int memcmp(const void *s1, const void *s2, size_t n) {
 	return 0;
 }
 
-// Halt and catch fire function.
 static void hcf(void) {
 	for (;;) {
 		__asm__("hlt");
 	}
 }
 
-// The following will be our kernel's entry point.
-// If renaming kmain() to something else, make sure to change the
-// linker script accordingly.
-void kmain(void) {
-	// Ensure the bootloader actually understands our base revision (see spec).
+void kernel_main(void) {
 	if (LIMINE_BASE_REVISION_SUPPORTED(limine_base_revision) == false) {
 		hcf();
 	}
 
-	// Ensure we got a framebuffer.
-	if (framebuffer_request.response == NULL || framebuffer_request.response->framebuffer_count < 1) {
-		hcf();
-	}
+	if (framebuffer_request.response == NULL || framebuffer_request.response->framebuffer_count < 1) hcf();
 
-	// Fetch the first framebuffer.
-	struct limine_framebuffer *framebuffer = framebuffer_request.response->framebuffers[0];
+	struct limine_framebuffer *fb = framebuffer_request.response->framebuffers[0];
 
-	// Print a nice pattern to screen as an example.
-	// Note: we assume the framebuffer model is RGB with 32-bit pixels.
-	volatile uint32_t *fb_ptr = framebuffer->address;
-	for (size_t y = 0; y < framebuffer->height; y++) {
-		for (size_t x = 0; x < framebuffer->width; x++) {
-			uint32_t nX = x * 255 / framebuffer->width;
-			uint32_t nY = (framebuffer->height - y) * 255 / framebuffer->height;
-			fb_ptr[y * (framebuffer->pitch / 4) + x] = (nY << 8) | (nX << 16);
+	volatile uint32_t *fb_ptr = fb->address;
+	uint32_t offset = 0;
+	for (;;) {
+		for (size_t y = 0; y < fb->height; y++) {
+			for (size_t x = 0; x < fb->width; x++) {
+				uint32_t nX = ((x + offset) % fb->width) * 255 / fb->width;
+				uint32_t nY = (fb->height - y) * 255 / fb->height;
+				fb_ptr[y * (fb->pitch / 4) + x] = (nY << 8) | (nX << 16);
+			}
 		}
+		offset++;
+		offset %= fb->width;
 	}
-
-	// We're done, just hang...
-	hcf();
 }
