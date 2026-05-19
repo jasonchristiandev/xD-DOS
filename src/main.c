@@ -3,19 +3,11 @@
 #include "xD-DOS/pmm.h"
 #include "xD-DOS/serial.h"
 #include <limine.h>
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
-__attribute__((used, section(".limine_requests"))) static volatile uint64_t limine_base_revision[] = LIMINE_BASE_REVISION(6);
-__attribute__((used, section(".limine_requests"))) static volatile struct limine_framebuffer_request framebuffer_request = {
-	.id = LIMINE_FRAMEBUFFER_REQUEST_ID,
-	.revision = 0};
-__attribute__((used, section(".limine_requests"))) static volatile struct limine_memmap_request memmap_request = {
-	.id = LIMINE_MEMMAP_REQUEST_ID,
-	.revision = 0};
-__attribute__((used, section(".limine_requests_start"))) static volatile uint64_t limine_requests_start_marker[] = LIMINE_REQUESTS_START_MARKER;
-__attribute__((used, section(".limine_requests_end"))) static volatile uint64_t limine_requests_end_marker[] = LIMINE_REQUESTS_END_MARKER;
+extern volatile uint64_t limine_base_revision[];
+extern volatile struct limine_framebuffer_request framebuffer_request;
 
 static void hcf() {
 	for (;;) {
@@ -24,7 +16,7 @@ static void hcf() {
 }
 
 void kernel_main() {
-	if (LIMINE_BASE_REVISION_SUPPORTED(limine_base_revision) == false) {
+	if (LIMINE_BASE_REVISION_SUPPORTED(limine_base_revision) == 0) {
 		hcf();
 	}
 

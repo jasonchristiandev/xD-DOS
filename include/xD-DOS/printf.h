@@ -3,11 +3,10 @@
 
 #include "xD-DOS/serial.h"
 #include <stdarg.h>
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
-static inline void printf_itoa(uint64_t n, char *str, uint8_t base, bool signed_val) {
+static inline void printf_itoa(uint64_t n, char *str, uint8_t base, uint8_t signed_val) {
 	char *p = str;
 	char *pa, *pb;
 	uint64_t decimal = n;
@@ -44,9 +43,9 @@ static inline void printf(const char *format, ...) {
 		if (format[i] == '%' && format[i + 1] != '\0') {
 			i++;
 			
-			bool is64 = false;
+			uint8_t is64 = 0;
 			if (format[i] == 'l' && format[i + 1] == 'l') {
-				is64 = true;
+				is64 = 1;
 				i += 2;
 			}
 			
@@ -58,9 +57,9 @@ static inline void printf(const char *format, ...) {
 				}
 				case 'd': {
 					if (is64) {
-						printf_itoa(va_arg(args, int64_t), buf, 10, true);
+						printf_itoa(va_arg(args, int64_t), buf, 10, 1);
 					} else {
-						printf_itoa(va_arg(args, int), buf, 10, true);
+						printf_itoa(va_arg(args, int), buf, 10, 1);
 					}
 					
 					serial_write_text(buf);
@@ -68,9 +67,9 @@ static inline void printf(const char *format, ...) {
 				}
 				case 'u': {
 					if (is64) {
-						printf_itoa(va_arg(args, uint64_t), buf, 10, false);
+						printf_itoa(va_arg(args, uint64_t), buf, 10, 0);
 					} else {
-						printf_itoa(va_arg(args, uint32_t), buf, 10, false);
+						printf_itoa(va_arg(args, uint32_t), buf, 10, 0);
 					}
 					
 					serial_write_text(buf);
@@ -78,9 +77,9 @@ static inline void printf(const char *format, ...) {
 				}
 				case 'x': {
 					if (is64) {
-						printf_itoa(va_arg(args, uint64_t), buf, 16, false);
+						printf_itoa(va_arg(args, uint64_t), buf, 16, 0);
 					} else {
-						printf_itoa(va_arg(args, uint32_t), buf, 16, false);
+						printf_itoa(va_arg(args, uint32_t), buf, 16, 0);
 					}
 					
 					serial_write_text(buf);

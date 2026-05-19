@@ -1,15 +1,12 @@
 #include "xD-DOS/pmm.h"
+#include "xD-DOS/logging.h"
 #include "xD-DOS/memory.h" // IWYU pragma: keep
 #include <limine.h>
 #include <stddef.h>
 #include <stdint.h>
 
-static volatile struct limine_memmap_request memmap_request = {
-	.id = LIMINE_MEMMAP_REQUEST_ID,
-	.revision = 0};
-static volatile struct limine_hhdm_request hhdm_request = {
-	.id = LIMINE_HHDM_REQUEST_ID,
-	.revision = 0};
+extern volatile struct limine_memmap_request memmap_request;
+extern volatile struct limine_hhdm_request hhdm_request;
 
 static uint8_t *bitmap = NULL;
 static size_t total_pages = 0;
@@ -20,6 +17,7 @@ static uint64_t hhdm_offset = 0;
 // Returns 1 if memory map or HHDM (Higher Half Direct Map) is not ready.
 // Returns 2 if no memory is available for the bitmap.
 uint8_t pmm_init() {
+	DEBUG_INFO("PMM", "Checking responses...");
 	struct limine_memmap_response *memmap = memmap_request.response;
 	struct limine_hhdm_response *hhdm = hhdm_request.response;
 
@@ -31,6 +29,15 @@ uint8_t pmm_init() {
 	struct limine_memmap_entry *best_chunk = NULL;
 
 	// Find the top of usable physical memory so we know how big our bitmap must be
+	DEBUG_INFO("PMM", "Searching usable physical memory...");
+	DEBUG_INFO("PMM", "Memmap Address = %x, Entries Array = %x, Count = %d",
+			 (void *) memmap, (void *) memmap->entries, (int) memmap->entry_count);
+
+	if (memmap->entries == NULL && memmap->entry_count > 0) {
+		DEBUG_ERROR("PMM", "Memmap entries array pointer is NULL despite count > 0!");
+		return 1;
+	}
+
 	for (uint64_t i = 0; i < memmap->entry_count; i++) {
 		struct limine_memmap_entry *entry = memmap->entries[i];
 
@@ -51,9 +58,16 @@ uint8_t pmm_init() {
 	bitmap_size = total_pages / 8;
 	if (total_pages % 8 != 0) bitmap_size++;
 
+	if (best_chunk->length < bitmap_size) {
+		return 2; // Not enough space in the best chunk
+	}
+
+	DEBUG_INFO("PMM", "Allocating...");
+
 	// Place the bitmap at the start of our best usable memory chunk
 	bitmap = (uint8_t *) (best_chunk->base + hhdm_offset);
 
+	DEBUG_INFO("PMM", "Clearing...");
 	memset(bitmap, 0xFF, bitmap_size);
 
 	uint64_t bitmap_pages = (bitmap_size + PAGE_SIZE - 1) / PAGE_SIZE;
@@ -61,6 +75,7 @@ uint8_t pmm_init() {
 	uint64_t bitmap_phys_end = bitmap_phys_start + (bitmap_pages * PAGE_SIZE);
 
 	// Mark only the usable regions from memmap as free
+	DEBUG_INFO("PMM", "Parsing region for bitmap...");
 	for (uint64_t i = 0; i < memmap->entry_count; i++) {
 		struct limine_memmap_entry *entry = memmap->entries[i];
 
@@ -82,8 +97,8 @@ uint8_t pmm_init() {
 	}
 
 	// Protect the memory that the bitmap itself is occupying
+	DEBUG_INFO("PMM", "Protecting bitmap...");
 	uint64_t bitmap_physical_base = best_chunk->base;
-	if (bitmap_size % PAGE_SIZE != 0) bitmap_pages++;
 
 	for (uint64_t i = 0; i < bitmap_pages; i++) {
 		uint64_t page = (bitmap_physical_base / PAGE_SIZE) + i;

@@ -1,0 +1,5 @@
+#define PTE_PRESENT (1ULL << 0)
+#define PTE_WRITABLE (1ULL << 1)
+#define PTE_USER (1ULL << 2)
+#define PTE_FRAME 0x000FFFFFFFFFF000ULL
+

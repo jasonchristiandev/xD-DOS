@@ -20,10 +20,10 @@ SRCS = $(wildcard $(SRC_DIR)/*.c)
 OBJS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRCS)) $(BUILD_DIR)/font.o
 
 CFLAGS = -fno-stack-protector -ffreestanding -mno-red-zone \
-		 -fms-extensions  -fno-builtin-Wall -Wextra -Wpedantic \
+		 -fms-extensions -fno-builtin-Wall -Wextra -Wpedantic \
 		 -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast \
 		 -Wno-compare-distinct-pointer-types -std=c11 -O2 \
-		 -I$(INCLUDE_DIR)
+		 -mno-mmx -mno-sse -mno-sse2 -I$(INCLUDE_DIR)
 
 FONT_NAME = cp850-8x16.psf
 FONT_URL = https://raw.githubusercontent.com/ercanersoy/PSF-Fonts/master/$(FONT)
@@ -57,7 +57,7 @@ $(BUILD_DIR)/font.o: $(FONTS_DIR)/$(FONT) $(BUILD_DIR)
 
 $(BUILD_DIR)/$(KERNEL): $(OBJS) $(LINKER_SCRIPT) $(BUILD_DIR)
 	@echo " [LD] Linking..."
-	echo "$(OBJS)"
+	@echo "     $(OBJS)"
 	@$(LD) -T $(LINKER_SCRIPT) $(OBJS) -o $(BUILD_DIR)/$(KERNEL)
 
 $(FONTS_DIR):

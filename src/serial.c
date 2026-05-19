@@ -1,12 +1,11 @@
 #include "xD-DOS/asm.h"
 #include "xD-DOS/pit.h"
-#include <stdbool.h>
 #include <stddef.h>
 #define PORT 0x3f8
 
-static bool serial_initialized = false;
+static uint8_t serial_initialized = 0;
 
-bool serial_init() {
+uint8_t serial_init() {
 	outb(PORT + 1, 0x00); // Disable all interrupts
 	outb(PORT + 3, 0x80); // Enable DLAB (set baud rate divisor)
 	outb(PORT + 0, 0x03); // Set divisor to 3 (low byte) 38400 baud
@@ -19,16 +18,16 @@ bool serial_init() {
 
 	// Check if serial is faulty
 	if (inb(PORT + 0) != 0xAE) {
-		return false;
+		return 0;
 	}
 
 	// If serial is not faulty set it in normal operation mode
 	outb(PORT + 4, 0x0F);
-	serial_initialized = true;
-	return true;
+	serial_initialized = 1;
+	return 1;
 }
 
-bool serial_received() {
+uint8_t serial_received() {
 	return inb(PORT + 5) & 1;
 }
 
@@ -39,18 +38,18 @@ char serial_read() {
 	return inb(PORT);
 }
 
-bool serial_is_transmit_empty() {
+uint8_t serial_is_transmit_empty() {
 	return inb(PORT + 5) & 0x20;
 }
 
-bool serial_write(char a) {
-	if (!serial_initialized) return false;
+uint8_t serial_write(char a) {
+	if (!serial_initialized) return 0;
 
 	int ms_passed = 0;
 	while (serial_is_transmit_empty() == 0) {
 		if (ms_passed >= 1000) { // 1000 ms = 1 second
-			serial_initialized = false;
-			return false;
+			serial_initialized = 0;
+			return 0;
 		}
 
 		sleep_ms(1);
@@ -58,12 +57,12 @@ bool serial_write(char a) {
 	}
 
 	outb(PORT, a);
-	return true;
+	return 1;
 }
 
-bool serial_write_text(const char *a) {
+uint8_t serial_write_text(const char *a) {
 	while (*a) {
-		if (!serial_write(*a++)) return false;
+		if (!serial_write(*a++)) return 0;
 	}
-	return true;
+	return 1;
 }
