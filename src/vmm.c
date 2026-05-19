@@ -36,9 +36,6 @@ uint8_t vmm_init(void) {
 
 	DEBUG_INFO("VMM", "Zeroing out PML4 manually...");
 	uint64_t *pml4_raw = (uint64_t *) kernel_pml4;
-	for (uint16_t i = 0; i < 512; i++) {
-		pml4_raw[i] = 0;
-	}
 	memset(kernel_pml4, 0, 4096);
 
 	for (uint64_t i = 0; i < 0x100000000ULL; i += 4096) {

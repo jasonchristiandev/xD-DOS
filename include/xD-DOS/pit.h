@@ -8,7 +8,7 @@
 #define PIT_COMMAND 0x43
 #define PIT_PORT_B 0x61
 
-void sleep_ms(uint32_t ms) {
+static void sleep_ms(uint32_t ms) {
 	for (uint32_t i = 0; i < ms; i++) {
 		outb(PIT_COMMAND, 0xB2);
 		
@@ -25,6 +25,10 @@ void sleep_ms(uint32_t ms) {
 		// Stop
 		outb(PIT_PORT_B, inb(PIT_PORT_B) & ~1);
 	}
+}
+
+static void sleep_s(uint32_t s) {
+	sleep_ms(s * 1000);
 }
 
 #endif // !PIT_H
