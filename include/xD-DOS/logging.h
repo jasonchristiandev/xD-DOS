@@ -26,6 +26,7 @@
 		PRINT("\r\n");                  \
 	} while (0)
 
+#ifdef DEBUG
 #define DEBUG_INFO(name, format, ...)   \
 	do {                                \
 		PRINT("$INFO$    <%s> ", name); \
@@ -46,10 +47,25 @@
 		PRINT(format, ##__VA_ARGS__);   \
 		PRINT("\r\n");                  \
 	} while (0)
+#define DELETE_PREV_LINE() \
+	do {                   \
+	} while (0)
+#else
+#define DEBUG_INFO(name, format, ...) \
+	do {                              \
+	} while (0)
 
+#define DEBUG_WARNING(name, format, ...) \
+	do {                                 \
+	} while (0)
+
+#define DEBUG_ERROR(name, format, ...) \
+	do {                               \
+	} while (0)
 #define DELETE_PREV_LINE()     \
 	do {                       \
 		PRINT("\e[1A\e[2K\r"); \
 	} while (0)
+#endif
 
 #endif // !LOGGING_H

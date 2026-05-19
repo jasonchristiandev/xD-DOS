@@ -1,3 +1,5 @@
+DEBUG_MODE = 0
+
 CC = gcc
 LD = ld
 OBJCOPY = objcopy
@@ -42,7 +44,11 @@ $(INCLUDE_DIR)/limine.h: limine-protocol/include/limine.h
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(BUILD_DIR) $(INCLUDE_DIR)/limine.h
 	@echo " [CC] $<"
+ifeq ($(DEBUG_MODE),1)
+	@$(CC) $(CFLAGS) -c $< -o $@ -DDEBUG
+else
 	@$(CC) $(CFLAGS) -c $< -o $@
+endif
 
 FONT_OLD_SYMBOL = $(subst /,_,$(subst .,_,$(FONTS_DIR)/$(FONT)))
 $(BUILD_DIR)/font.o: $(FONTS_DIR)/$(FONT) $(BUILD_DIR)

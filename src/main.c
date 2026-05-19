@@ -19,6 +19,7 @@ static void hcf() {
 
 static void panic(struct limine_framebuffer *fb) {
 	const uint8_t timeout = 5;
+	const uint8_t rows = 4;
 	LOG_ERROR("KERNEL", "Kernel panic! Exiting in %d...", timeout);
 	volatile uint32_t *fb_ptr = fb->address;
 	uint8_t text[16][33] = {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -34,10 +35,10 @@ static void panic(struct limine_framebuffer *fb) {
 							{0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0},
 							{0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0},
 							{0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0},
-							{0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1},
-							{0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1},
+							{0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1},
+							{0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1},
 							{0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0}};
-	for (int i = timeout * 4; i >= 1; i--) {
+	for (int i = timeout * rows; i >= 1; i--) {
 		for (size_t y = 0; y < fb->height; y++) {
 			for (size_t x = 0; x < fb->width; x++) {
 				fb_ptr[y * (fb->pitch / 4) + x] = 0xFF0000;
@@ -50,7 +51,7 @@ static void panic(struct limine_framebuffer *fb) {
 				}
 			}
 		}
-		sleep_ms(250);
+		sleep_ms(1000 / rows);
 	}
 }
 
@@ -65,6 +66,8 @@ void kernel_main() {
 	volatile uint32_t *fb_ptr = fb->address;
 
 	serial_init();
+
+	LOG_INFO("xD-DOS", "Extended Drive - Disk Operating System (xD-DOS) Starting...");
 
 	// PMM init
 	LOG_INFO("PMM", "Physical Memory Manager initializing...");
