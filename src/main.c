@@ -1,6 +1,5 @@
 // #include "xD-DOS/font.h"
 #include "xD-DOS/logging.h"
-#include "xD-DOS/memory.h"
 #include "xD-DOS/pmm.h"
 #include "xD-DOS/serial.h"
 #include <limine.h>
@@ -38,10 +37,22 @@ void kernel_main() {
 
 	// PMM init
 	LOG_INFO("PMM", "Physical Memory Manager initializing...");
-	pmm_init();
+	uint8_t pmm_result = pmm_init();
+	if (pmm_result == 1) {
+		LOG_ERROR("PMM", "Failed to initialize Physical Memory Manager! Error code 0x%x (Memory Map or HHDM Not Ready).", pmm_result);
+		hcf();
+	} else if (pmm_result == 2) {
+		LOG_ERROR("PMM", "Failed to initialize Physical Memory Manager! Error code 0x%x (No Memory Available for Bitmap).", pmm_result);
+		hcf();
+	} else if (pmm_result > 0) {
+		LOG_ERROR("PMM", "Failed to initialize Physical Memory Manager! Error code 0x%x (Unknown).", pmm_result);
+		hcf();
+	}
+	
 	DELETE_PREV_LINE();
 	LOG_INFO("PMM", "Physical Memory Manager initialized.");
 
+	// Halt
 	LOG_INFO("KERNEL", "Nothing to do, halting...");
 	hcf();
 }
