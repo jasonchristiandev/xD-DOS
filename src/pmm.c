@@ -14,7 +14,7 @@ static size_t total_pages = 0;
 static size_t bitmap_size = 0;
 static uint64_t hhdm_offset = 0;
 
-int pmm_init(void) {
+int pmm_init() {
 	struct limine_memmap_response *memmap = memmap_request.response;
 	struct limine_hhdm_response *hhdm = hhdm_request.response;
 
@@ -89,7 +89,7 @@ int pmm_init(void) {
 }
 
 // Allocates a single page
-void *pmm_alloc_page(void) {
+void *pmm_alloc_page() {
 	for (size_t i = 0; i < total_pages; i++) {
 		if ((bitmap[i / 8] & (1 << (i % 8))) == 0) {
 			bitmap[i / 8] |= (1 << (i % 8));
