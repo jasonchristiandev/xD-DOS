@@ -26,19 +26,20 @@ xD-DOS is an operating system inspired by **DOS**. xD-DOS is merely a fun projec
 ### Installation / Compilation
 1. **Clone the repository**:
 ```bash
-git clone https://github.com/jasonchristiandev/xD-DOS.git
+git clone --recursive https://github.com/jasonchristiandev/xD-DOS.git
 ```
 
 2. **Build the OS**:
 ```bash
 cd xD-DOS
-make
+make -j$(proc) # or
+make -j$(proc) DEBUG_MODE=1
 ```
 
 3. **Run the OS using qemu-system-x86_64 (optional)**:
 ```bash
-make clean # optional for clearing cache
-make run
+make -j$(proc) clean # optional for clearing cache
+make -j$(proc) run
 ```
 
 ## License
