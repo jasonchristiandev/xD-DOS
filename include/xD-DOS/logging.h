@@ -26,9 +26,9 @@
 		PRINT("\r\n");                   \
 	} while (0)
 
-#define DELETE_PREV_LINE() \
-	do {                   \
-		PRINT("\e[1A\e[2K\r");\
+#define DELETE_PREV_LINE()     \
+	do {                       \
+		PRINT("\e[1A\e[2K\r"); \
 	} while (0)
 
 #endif // !LOGGING_H

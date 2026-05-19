@@ -1,10 +1,12 @@
 #ifndef SERIAL_H
 #define SERIAL_H
 
-int serial_init();
-int serial_received();
+#include <stdbool.h>
+
+bool serial_init();
+bool serial_received();
 char serial_read();
-int serial_is_transmit_empty();
+bool serial_is_transmit_empty();
 void serial_write(char a);
 void serial_write_text(char *a);
 

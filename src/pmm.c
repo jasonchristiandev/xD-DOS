@@ -1,6 +1,8 @@
 #include "xD-DOS/pmm.h"
 #include "xD-DOS/memory.h" // IWYU pragma: keep
 #include <limine.h>
+#include <stddef.h>
+#include <stdint.h>
 
 static volatile struct limine_memmap_request memmap_request = {
 	.id = LIMINE_MEMMAP_REQUEST_ID,
@@ -14,7 +16,10 @@ static size_t total_pages = 0;
 static size_t bitmap_size = 0;
 static uint64_t hhdm_offset = 0;
 
-int pmm_init() {
+// Initializes the Physical Memory Manager
+// Returns 1 if memory map or HHDM (Higher Half Direct Map) is not ready.
+// Returns 2 if no memory is available for the bitmap.
+uint8_t pmm_init() {
 	struct limine_memmap_response *memmap = memmap_request.response;
 	struct limine_hhdm_response *hhdm = hhdm_request.response;
 
@@ -40,7 +45,7 @@ int pmm_init() {
 		}
 	}
 
-	if (!best_chunk) return 1;
+	if (!best_chunk) return 2;
 
 	total_pages = highest_address / PAGE_SIZE;
 	bitmap_size = total_pages / 8;
@@ -89,6 +94,7 @@ int pmm_init() {
 }
 
 // Allocates a single page
+// Returns NULL if out of physical memory
 void *pmm_alloc_page() {
 	for (size_t i = 0; i < total_pages; i++) {
 		if ((bitmap[i / 8] & (1 << (i % 8))) == 0) {
@@ -101,6 +107,7 @@ void *pmm_alloc_page() {
 	return NULL; // Out of physical memory
 }
 
+// Frees a single page
 void pmm_free_page(void *page) {
 	if (!page) return;
 

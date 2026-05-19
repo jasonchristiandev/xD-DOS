@@ -4,23 +4,25 @@
 #include "xD-DOS/serial.h"
 #include <stdarg.h>
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 
-static inline void printf_itoa(unsigned long long n, char *str, int base, bool signed_val) {
+static inline void printf_itoa(uint64_t n, char *str, uint8_t base, bool signed_val) {
 	char *p = str;
 	char *pa, *pb;
-	unsigned long long decimal = n;
+	uint64_t decimal = n;
 	
-	if (signed_val && base == 10 && (long long) n < 0) {
-		*p++ = L'-';
-		decimal = -(long long) n;
+	if (signed_val && base == 10 && (int64_t) n < 0) {
+		*p++ = '-';
+		decimal = -(int64_t) n;
 	}
 	
 	char *first_digit = p;
 	do {
-		int digit = decimal % base;
-		*p++ = (digit < 10) ? (L'0' + digit) : (L'A' + digit - 10);
+		uint8_t digit = decimal % base;
+		*p++ = (digit < 10) ? ('0' + digit) : ('A' + digit - 10);
 	} while (decimal /= base);
-	*p = L'\0';
+	*p = '\0';
 	
 	pa = first_digit;
 	pb = p - 1;
@@ -38,25 +40,25 @@ static inline void printf(const char *format, ...) {
 	va_start(args, format);
 	
 	char buf[128];
-	for (int i = 0; format[i] != L'\0'; i++) {
-		if (format[i] == L'%' && format[i + 1] != L'\0') {
+	for (size_t i = 0; format[i] != '\0'; i++) {
+		if (format[i] == '%' && format[i + 1] != '\0') {
 			i++;
 			
 			bool is64 = false;
-			if (format[i] == L'l' && format[i + 1] == L'l') {
+			if (format[i] == 'l' && format[i + 1] == 'l') {
 				is64 = true;
 				i += 2;
 			}
 			
 			switch (format[i]) {
-				case L's': {
+				case 's': {
 					char *s = va_arg(args, char *);
 					serial_write_text(s);
 					break;
 				}
-				case L'd': {
+				case 'd': {
 					if (is64) {
-						printf_itoa(va_arg(args, long long), buf, 10, true);
+						printf_itoa(va_arg(args, int64_t), buf, 10, true);
 					} else {
 						printf_itoa(va_arg(args, int), buf, 10, true);
 					}
@@ -64,21 +66,21 @@ static inline void printf(const char *format, ...) {
 					serial_write_text(buf);
 					break;
 				}
-				case L'u': {
+				case 'u': {
 					if (is64) {
-						printf_itoa(va_arg(args, unsigned long long), buf, 10, false);
+						printf_itoa(va_arg(args, uint64_t), buf, 10, false);
 					} else {
-						printf_itoa(va_arg(args, unsigned int), buf, 10, false);
+						printf_itoa(va_arg(args, uint32_t), buf, 10, false);
 					}
 					
 					serial_write_text(buf);
 					break;
 				}
-				case L'x': {
+				case 'x': {
 					if (is64) {
-						printf_itoa(va_arg(args, unsigned long long), buf, 16, false);
+						printf_itoa(va_arg(args, uint64_t), buf, 16, false);
 					} else {
-						printf_itoa(va_arg(args, unsigned int), buf, 16, false);
+						printf_itoa(va_arg(args, uint32_t), buf, 16, false);
 					}
 					
 					serial_write_text(buf);
@@ -86,7 +88,7 @@ static inline void printf(const char *format, ...) {
 				}
 			}
 		} else {
-			char single[2] = {format[i], L'\0'};
+			char single[2] = {format[i], '\0'};
 			serial_write_text(single);
 		}
 	}

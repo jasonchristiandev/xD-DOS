@@ -1,8 +1,10 @@
 #include "xD-DOS/asm.h"
 #include "xD-DOS/string.h" // IWYU pragma: keep
+#include <stdbool.h>
+#include <stddef.h>
 #define PORT 0x3f8
 
-int serial_init() {
+bool serial_init() {
 	outb(PORT + 1, 0x00); // Disable all interrupts
 	outb(PORT + 3, 0x80); // Enable DLAB (set baud rate divisor)
 	outb(PORT + 0, 0x03); // Set divisor to 3 (low byte) 38400 baud
@@ -23,7 +25,7 @@ int serial_init() {
 	return 0;
 }
 
-int serial_received() {
+bool serial_received() {
 	return inb(PORT + 5) & 1;
 }
 
@@ -33,8 +35,8 @@ char serial_read() {
 	return inb(PORT);
 }
 
-int serial_is_transmit_empty() {
-	return inb(PORT + 5) & 0x20;
+bool serial_is_transmit_empty() {
+	return (inb(PORT + 5) & 0x20) >> 5;
 }
 
 void serial_write(char a) {
@@ -44,8 +46,8 @@ void serial_write(char a) {
 }
 
 void serial_write_text(char *a) {
-	int n = strlen(a);
-	for (int i = 0; i < n; i++) {
+	size_t n = strlen(a);
+	for (size_t i = 0; i < n; i++) {
 		serial_write(a[i]);
 	}
 }

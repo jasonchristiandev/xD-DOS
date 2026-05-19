@@ -39,14 +39,16 @@ void *memmove(void *dest, const void *src, size_t n) {
 	return dest;
 }
 
-int memcmp(const void *s1, const void *s2, size_t n) {
-	const uint8_t *p1 = s1;
-	const uint8_t *p2 = s2;
+int memcmp(const void *a, const void *b, size_t n) {
+	const uint8_t *pa = a;
+	const uint8_t *pb = b;
 
-	for (size_t i = 0; i < n; i++) {
-		if (p1[i] != p2[i]) {
-			return p1[i] < p2[i] ? -1 : 1;
+	while (n--) {
+		if (*pa != *pb) {
+			return (int) *pa - (int) *pb;
 		}
+		pa++;
+		pb++;
 	}
 
 	return 0;
