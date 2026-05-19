@@ -7,9 +7,9 @@ xD-DOS is an operating system inspired by **DOS**. xD-DOS is merely a fun projec
 
 ## Checklist
 
-* Configure limine
-* Set up kernel entry point
-* Write to framebuffer
+* ~~Configure limine~~
+* ~~Set up kernel entry point~~
+* ~~Write to framebuffer~~
 * Set up a global descriptor table (GDT)
 * Set up an interrupt descriptor table (IDT)
 * Write assembly interrupt stubs
