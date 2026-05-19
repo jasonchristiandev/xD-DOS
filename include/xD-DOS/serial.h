@@ -7,7 +7,7 @@ bool serial_init();
 bool serial_received();
 char serial_read();
 bool serial_is_transmit_empty();
-void serial_write(char a);
-void serial_write_text(char *a);
+bool serial_write(char a);
+bool serial_write_text(char *a);
 
 #endif // !SERIAL_H

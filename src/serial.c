@@ -1,8 +1,10 @@
 #include "xD-DOS/asm.h"
-#include "xD-DOS/string.h" // IWYU pragma: keep
+#include "xD-DOS/pit.h"
 #include <stdbool.h>
 #include <stddef.h>
 #define PORT 0x3f8
+
+static bool serial_initialized = false;
 
 bool serial_init() {
 	outb(PORT + 1, 0x00); // Disable all interrupts
@@ -17,12 +19,13 @@ bool serial_init() {
 
 	// Check if serial is faulty
 	if (inb(PORT + 0) != 0xAE) {
-		return 1;
+		return false;
 	}
 
 	// If serial is not faulty set it in normal operation mode
 	outb(PORT + 4, 0x0F);
-	return 0;
+	serial_initialized = true;
+	return true;
 }
 
 bool serial_received() {
@@ -30,24 +33,37 @@ bool serial_received() {
 }
 
 char serial_read() {
+	if (!serial_initialized) return 0;
 	while (serial_received() == 0);
 
 	return inb(PORT);
 }
 
 bool serial_is_transmit_empty() {
-	return (inb(PORT + 5) & 0x20) >> 5;
+	return inb(PORT + 5) & 0x20;
 }
 
-void serial_write(char a) {
-	while (serial_is_transmit_empty() == 0);
+bool serial_write(char a) {
+	if (!serial_initialized) return false;
+
+	int ms_passed = 0;
+	while (serial_is_transmit_empty() == 0) {
+		if (ms_passed >= 1000) { // 1000 ms = 1 second
+			serial_initialized = false;
+			return false;
+		}
+
+		sleep_ms(1);
+		ms_passed++;
+	}
 
 	outb(PORT, a);
+	return true;
 }
 
-void serial_write_text(char *a) {
-	size_t n = strlen(a);
-	for (size_t i = 0; i < n; i++) {
-		serial_write(a[i]);
+bool serial_write_text(const char *a) {
+	while (*a) {
+		if (!serial_write(*a++)) return false;
 	}
+	return true;
 }
