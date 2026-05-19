@@ -1,5 +1,7 @@
-//#include "xD-DOS/font.h"
+// #include "xD-DOS/font.h"
+#include "xD-DOS/logging.h"
 #include "xD-DOS/memory.h"
+#include "xD-DOS/pmm.h"
 #include "xD-DOS/serial.h"
 #include <limine.h>
 #include <stdbool.h>
@@ -32,21 +34,14 @@ void kernel_main(void) {
 	struct limine_framebuffer *fb = framebuffer_request.response->framebuffers[0];
 	volatile uint32_t *fb_ptr = fb->address;
 
-	// uint32_t offset = 0;
-	// for (;;) {
-	//	for (size_t y = 0; y < fb->height; y++) {
-	//		for (size_t x = 0; x < fb->width; x++) {
-	//			uint32_t nX = ((x + offset) % fb->width) * 255 / fb->width;
-	//			uint32_t nY = (fb->height - y) * 255 / fb->height;
-	//			fb_ptr[y * (fb->pitch / 4) + x] = (nY << 8) | (nX << 16);
-	//		}
-	//	}
-	//	offset++;
-	//	offset %= fb->width;
-	// }
-
 	serial_init();
-	serial_write_text("Hello world from serial COM1!");
 
+	// PMM init
+	LOG_INFO("PMM", "Physical Memory Manager initializing...");
+	pmm_init();
+	DELETE_PREV_LINE();
+	LOG_INFO("PMM", "Physical Memory Manager initialized.");
+
+	LOG_INFO("KERNEL", "Nothing to do, halting...");
 	hcf();
 }

@@ -14,9 +14,11 @@ static size_t total_pages = 0;
 static size_t bitmap_size = 0;
 static uint64_t hhdm_offset = 0;
 
-void pmm_init(void) {
+int pmm_init(void) {
 	struct limine_memmap_response *memmap = memmap_request.response;
 	struct limine_hhdm_response *hhdm = hhdm_request.response;
+
+	if (!memmap || !hhdm) return 1;
 
 	hhdm_offset = hhdm->offset;
 
@@ -32,14 +34,14 @@ void pmm_init(void) {
 			if (top > highest_address) {
 				highest_address = top;
 			}
-			// Keep track of a good chunk to place our bitmap into
 			if (!best_chunk || entry->length > best_chunk->length) {
 				best_chunk = entry;
 			}
 		}
 	}
 
-	// Calculate how many total pages exist and how many bytes we need for the bitmap
+	if (!best_chunk) return 1;
+
 	total_pages = highest_address / PAGE_SIZE;
 	bitmap_size = total_pages / 8;
 	if (total_pages % 8 != 0) bitmap_size++;
@@ -47,8 +49,11 @@ void pmm_init(void) {
 	// Place the bitmap at the start of our best usable memory chunk
 	bitmap = (uint8_t *) (best_chunk->base + hhdm_offset);
 
-	// Clear the bitmap completely
 	memset(bitmap, 0xFF, bitmap_size);
+
+	uint64_t bitmap_pages = (bitmap_size + PAGE_SIZE - 1) / PAGE_SIZE;
+	uint64_t bitmap_phys_start = best_chunk->base;
+	uint64_t bitmap_phys_end = bitmap_phys_start + (bitmap_pages * PAGE_SIZE);
 
 	// Mark only the usable regions from memmap as free
 	for (uint64_t i = 0; i < memmap->entry_count; i++) {
@@ -60,6 +65,12 @@ void pmm_init(void) {
 
 			for (uint64_t j = 0; j < page_count; j++) {
 				uint64_t page = start_page + j;
+				uint64_t page_phys_addr = page * PAGE_SIZE;
+
+				if (page_phys_addr >= bitmap_phys_start && page_phys_addr < bitmap_phys_end) {
+					continue;
+				}
+
 				bitmap[page / 8] &= ~(1 << (page % 8));
 			}
 		}
@@ -67,13 +78,14 @@ void pmm_init(void) {
 
 	// Protect the memory that the bitmap itself is occupying
 	uint64_t bitmap_physical_base = best_chunk->base;
-	uint64_t bitmap_pages = bitmap_size / PAGE_SIZE;
 	if (bitmap_size % PAGE_SIZE != 0) bitmap_pages++;
 
 	for (uint64_t i = 0; i < bitmap_pages; i++) {
 		uint64_t page = (bitmap_physical_base / PAGE_SIZE) + i;
 		bitmap[page / 8] |= (1 << (page % 8));
 	}
+
+	return 0;
 }
 
 // Allocates a single page
