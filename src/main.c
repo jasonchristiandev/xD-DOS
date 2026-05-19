@@ -2,6 +2,7 @@
 #include "xD-DOS/logging.h"
 #include "xD-DOS/pmm.h"
 #include "xD-DOS/serial.h"
+#include "xD-DOS/vmm.h"
 #include <limine.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -13,6 +14,16 @@ static void hcf() {
 	for (;;) {
 		__asm__("hlt");
 	}
+}
+
+static void panic(struct limine_framebuffer *fb) {
+	volatile uint32_t *fb_ptr = fb->address;
+	for (size_t y = 0; y < fb->height; y++) {
+		for (size_t x = 0; x < fb->width; x++) {
+			fb_ptr[y * (fb->pitch / 4) + x] = 0xFF0000;
+		}
+	}
+	hcf();
 }
 
 void kernel_main() {
@@ -32,19 +43,24 @@ void kernel_main() {
 	uint8_t pmm_result = pmm_init();
 	if (pmm_result == 1) {
 		LOG_ERROR("PMM", "Failed to initialize Physical Memory Manager! Error code 0x%x (Memory Map or HHDM Not Ready).", pmm_result);
-		hcf();
+		panic(fb);
 	} else if (pmm_result == 2) {
 		LOG_ERROR("PMM", "Failed to initialize Physical Memory Manager! Error code 0x%x (No Memory Available for Bitmap).", pmm_result);
-		hcf();
+		panic(fb);
 	} else if (pmm_result > 0) {
 		LOG_ERROR("PMM", "Failed to initialize Physical Memory Manager! Error code 0x%x (Unknown).", pmm_result);
-		hcf();
+		panic(fb);
 	}
-	
 	DELETE_PREV_LINE();
 	LOG_INFO("PMM", "Physical Memory Manager initialized.");
 
+	// VMM init
+	LOG_INFO("VMM", "Virtual Memory Manager initializing...");
+	uint8_t vmm_result = vmm_init();
+	DELETE_PREV_LINE();
+	LOG_INFO("VMM", "Virtual Memory Manager initialized.");
+
 	// Halt
 	LOG_INFO("KERNEL", "Nothing to do, halting...");
-	hcf();
+	panic(fb); // panic testing
 }

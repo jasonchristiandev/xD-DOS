@@ -16,6 +16,7 @@ static uint64_t hhdm_offset = 0;
 // Initializes the Physical Memory Manager
 // Returns 1 if memory map or HHDM (Higher Half Direct Map) is not ready.
 // Returns 2 if no memory is available for the bitmap.
+// Returns 0 otherwise.
 uint8_t pmm_init() {
 	DEBUG_INFO("PMM", "Checking responses...");
 	struct limine_memmap_response *memmap = memmap_request.response;
@@ -116,7 +117,7 @@ void *pmm_alloc_page() {
 			bitmap[i / 8] |= (1 << (i % 8));
 
 			uint64_t phys_addr = i * PAGE_SIZE;
-			return (void *) (phys_addr + hhdm_offset);
+			return (void *) phys_addr;
 		}
 	}
 	return NULL; // Out of physical memory
