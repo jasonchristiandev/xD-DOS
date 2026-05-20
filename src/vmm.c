@@ -7,6 +7,7 @@
 
 extern volatile struct limine_hhdm_request hhdm_request;
 extern volatile struct limine_executable_address_request executable_address_request;
+extern volatile struct limine_executable_file_request executable_file_request;
 
 uint64_t hhdm_offset;
 page_table_t *kernel_pml4 = NULL;
@@ -17,8 +18,10 @@ page_table_t *kernel_pml4 = NULL;
 // Returns 3 if out of memory.
 // Returns 0 otherwise.
 uint8_t vmm_init(void) {
+	DEBUG_INFO("VMM", "Checking responses...");
 	struct limine_hhdm_response *hhdm = hhdm_request.response;
 	struct limine_executable_address_response *exeaddr = executable_address_request.response;
+	struct limine_executable_file_response *exefile = executable_file_request.response;
 
 	if (!hhdm || !exeaddr) return 1;
 
@@ -34,7 +37,7 @@ uint8_t vmm_init(void) {
 	DEBUG_INFO("VMM", "pml4_phys:   %llx", (unsigned long long) pml4_phys);
 	DEBUG_INFO("VMM", "kernel_pml4: %llx", (unsigned long long) kernel_pml4);
 
-	DEBUG_INFO("VMM", "Zeroing out PML4 manually...");
+	DEBUG_INFO("VMM", "Zeroing out PML4...");
 	uint64_t *pml4_raw = (uint64_t *) kernel_pml4;
 	memset(kernel_pml4, 0, 4096);
 
@@ -50,7 +53,8 @@ uint8_t vmm_init(void) {
 	uint64_t kernel_phys = exeaddr->physical_base;
 	uint64_t kernel_virt = exeaddr->virtual_base;
 
-	uint64_t kernel_size = 0x1000000;
+	// uint64_t kernel_size = 0x1000000;
+	uint64_t kernel_size = exefile->executable_file->size;
 
 	for (uint64_t offset = 0; offset < kernel_size; offset += 4096) {
 		vmm_map_table(kernel_pml4, kernel_virt + offset, kernel_phys + offset, PTE_WRITABLE);
@@ -76,7 +80,7 @@ uint8_t vmm_map_table(page_table_t *pml4, uint64_t virt, uint64_t phys, uint64_t
 		page_table_t *new_virt = (page_table_t *) phys_to_virt(new_phys);
 		memset(new_virt, 0, 4096);
 
-		current_table->entries[pml4_i] = new_phys | PTE_PRESENT | PTE_WRITABLE | PTE_USER;
+		current_table->entries[pml4_i] = new_phys | PTE_PRESENT | PTE_WRITABLE;
 	}
 
 	// Move pointer to the next level down

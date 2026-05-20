@@ -32,7 +32,7 @@ uint8_t pmm_init() {
 	// Find the top of usable physical memory so we know how big our bitmap must be
 	DEBUG_INFO("PMM", "Searching usable physical memory...");
 	DEBUG_INFO("PMM", "Memmap Address = %x, Entries Array = %x, Count = %d",
-			 (void *) memmap, (void *) memmap->entries, (int) memmap->entry_count);
+			   (void *) memmap, (void *) memmap->entries, (int) memmap->entry_count);
 
 	if (memmap->entries == NULL && memmap->entry_count > 0) {
 		DEBUG_ERROR("PMM", "Memmap entries array pointer is NULL despite count > 0!");
@@ -112,12 +112,21 @@ uint8_t pmm_init() {
 // Allocates a single page
 // Returns NULL if out of physical memory
 void *pmm_alloc_page() {
-	for (size_t i = 0; i < total_pages; i++) {
-		if ((bitmap[i / 8] & (1 << (i % 8))) == 0) {
-			bitmap[i / 8] |= (1 << (i % 8));
+	size_t bitmap_bytes = total_pages / 8;
 
-			uint64_t phys_addr = i * PAGE_SIZE;
-			return (void *) phys_addr;
+	for (size_t i = 0; i < bitmap_bytes; i++) {
+		if (bitmap[i] == 0xFF) continue;
+
+		// Found a byte with at least one free bit
+		for (int bit = 0; bit < 8; bit++) {
+			if ((bitmap[i] & (1 << bit)) == 0) {
+				size_t page_index = (i * 8) + bit;
+
+				if (page_index >= total_pages) return NULL;
+
+				bitmap[i] |= (1 << bit);
+				return (void *) (page_index * PAGE_SIZE);
+			}
 		}
 	}
 	return NULL; // Out of physical memory
@@ -127,9 +136,12 @@ void *pmm_alloc_page() {
 void pmm_free_page(void *page) {
 	if (!page) return;
 
-	uint64_t virt_addr = (uint64_t) page;
-	uint64_t phys_addr = virt_addr - hhdm_offset;
-	uint64_t page_index = phys_addr / PAGE_SIZE;
+	uint64_t page_index = (uint64_t) page / PAGE_SIZE;
+
+	if (page_index >= total_pages) {
+		DEBUG_ERROR("PMM", "Attempted to free out of bounds page: %x", page);
+		return;
+	}
 
 	bitmap[page_index / 8] &= ~(1 << (page_index % 8));
 }

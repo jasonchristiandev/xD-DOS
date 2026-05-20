@@ -7,21 +7,21 @@
 
 #define LOG_INFO(name, format, ...)     \
 	do {                                \
-		PRINT("[INFO]    <%s> ", name); \
+		PRINT("[INFO]      <%s> ", name); \
 		PRINT(format, ##__VA_ARGS__);   \
 		PRINT("\r\n");                  \
 	} while (0)
 
 #define LOG_WARNING(name, format, ...)  \
 	do {                                \
-		PRINT("[WARNING] <%s> ", name); \
+		PRINT("[WARNING]   <%s> ", name); \
 		PRINT(format, ##__VA_ARGS__);   \
 		PRINT("\r\n");                  \
 	} while (0)
 
 #define LOG_ERROR(name, format, ...)    \
 	do {                                \
-		PRINT("[ERROR]   <%s> ", name); \
+		PRINT("[ERROR]     <%s> ", name); \
 		PRINT(format, ##__VA_ARGS__);   \
 		PRINT("\r\n");                  \
 	} while (0)
@@ -29,21 +29,21 @@
 #ifdef DEBUG
 #define DEBUG_INFO(name, format, ...)   \
 	do {                                \
-		PRINT("$INFO$    <%s> ", name); \
+		PRINT("[D-INFO]    <%s> ", name); \
 		PRINT(format, ##__VA_ARGS__);   \
 		PRINT("\r\n");                  \
 	} while (0)
 
 #define DEBUG_WARNING(name, format, ...) \
 	do {                                 \
-		PRINT("$WARNING$ <%s> ", name);  \
+		PRINT("[D-WARNING] <%s> ", name);  \
 		PRINT(format, ##__VA_ARGS__);    \
 		PRINT("\r\n");                   \
 	} while (0)
 
 #define DEBUG_ERROR(name, format, ...)  \
 	do {                                \
-		PRINT("$ERROR$   <%s> ", name); \
+		PRINT("[D-ERROR]   <%s> ", name); \
 		PRINT(format, ##__VA_ARGS__);   \
 		PRINT("\r\n");                  \
 	} while (0)
