@@ -155,3 +155,19 @@ void free(void *ptr) {
 		get_footer(prev)->size = GET_SIZE(prev);
 	}
 }
+
+void *calloc(size_t n, size_t size) {
+	size_t *new;
+
+	new = malloc(n * size);
+
+	if (new) {
+		size_t s = (((n * size) + 3) & ~3) << 2;
+
+		for (size_t i = 0; i < s; i++) {
+			new[i] = 0;
+		}
+	}
+
+	return new;
+}
