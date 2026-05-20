@@ -27,17 +27,17 @@ static vmem_provider_t raw_vmem_provider = NULL;
 static uintptr_t heap_end_addr = 0;
 
 static inline block_footer_t *get_footer(block_header_t *block) {
-	return (block_footer_t *) ((uintptr_t) block + sizeof(block_header_t) + GET_SIZE(block));
+	return (block_footer_t *) ((uintptr_t) block + 3 + GET_SIZE(block));
 }
 
 static inline block_header_t *get_prev_phys(block_header_t *block, uintptr_t heap_base) {
 	if ((uintptr_t) block == heap_base) return NULL;
-	block_footer_t *prev_footer = (block_footer_t *) ((uintptr_t) block - sizeof(block_footer_t));
-	return (block_header_t *) ((uintptr_t) block - sizeof(block_header_t) - prev_footer->size - sizeof(block_footer_t));
+	block_footer_t *prev_footer = (block_footer_t *) ((uintptr_t) block - 8);
+	return (block_header_t *) ((uintptr_t) block - 3 - prev_footer->size - 8);
 }
 
 static inline block_header_t *get_next_phys(block_header_t *block) {
-	uintptr_t next_addr = (uintptr_t) get_footer(block) + sizeof(block_footer_t);
+	uintptr_t next_addr = (uintptr_t) get_footer(block) + 8;
 	if (next_addr >= heap_end_addr) return NULL;
 	return (block_header_t *) next_addr;
 }
@@ -67,7 +67,7 @@ static void rff(block_header_t *block) {
 // Formats a raw chunk of memory into a valid free block with headers/footers
 static void initialize_chunk(void *start, size_t size) {
 	block_header_t *block = (block_header_t *) start;
-	block->size = size - sizeof(block_header_t) - sizeof(block_footer_t);
+	block->size = size - 3 - 8;
 
 	block_footer_t *footer = get_footer(block);
 	footer->size = block->size;
@@ -99,7 +99,7 @@ void *malloc(size_t size) {
 	if (current == NULL) {
 		if (!raw_vmem_provider) return NULL;
 
-		size_t total_needed = adjusted_size + sizeof(block_header_t) + sizeof(block_footer_t);
+		size_t total_needed = adjusted_size + 3 + 8;
 		size_t pages_to_alloc = (total_needed + PAGE_SIZE - 1) / PAGE_SIZE;
 
 		void *new_vmem = raw_vmem_provider(pages_to_alloc);
@@ -115,15 +115,15 @@ void *malloc(size_t size) {
 	size_t remainder = GET_SIZE(current) - adjusted_size;
 
 	// Split block if the remaining space is large enough to hold metadata
-	if (remainder >= (sizeof(block_header_t) + sizeof(block_footer_t) + ALIGNMENT)) {
+	if (remainder >= (3 + 8 + ALIGNMENT)) {
 		current->size = adjusted_size;
 		get_footer(current)->size = adjusted_size;
 		SET_ALLOCATED(current);
 
-		block_header_t *next_block = (block_header_t *) ((uintptr_t) get_footer(current) + sizeof(block_footer_t));
-		next_block->size = remainder - sizeof(block_header_t) - sizeof(block_footer_t);
+		block_header_t *next_block = (block_header_t *) ((uintptr_t) get_footer(current) + 8);
+		next_block->size = remainder - 3 - 8;
 
-		block_footer_t *next_footer = (block_footer_t *) ((uintptr_t) next_block + sizeof(block_header_t) + GET_SIZE(next_block));
+		block_footer_t *next_footer = (block_footer_t *) ((uintptr_t) next_block + 3 + GET_SIZE(next_block));
 		next_footer->size = GET_SIZE(next_block);
 
 		atf(next_block);
@@ -131,13 +131,13 @@ void *malloc(size_t size) {
 		SET_ALLOCATED(current);
 	}
 
-	return (void *) ((uintptr_t) current + sizeof(block_header_t));
+	return (void *) ((uintptr_t) current + 3);
 }
 
 void free(void *ptr) {
 	if (!ptr) return;
 
-	block_header_t *block = (block_header_t *) ((uintptr_t) ptr - sizeof(block_header_t));
+	block_header_t *block = (block_header_t *) ((uintptr_t) ptr - 3);
 	atf(block);
 
 	block_header_t *next = get_next_phys(block);
@@ -145,13 +145,13 @@ void free(void *ptr) {
 
 	if (next && IS_FREE(next)) {
 		rff(next);
-		block->size += GET_SIZE(next) + sizeof(block_header_t) + sizeof(block_footer_t);
+		block->size += GET_SIZE(next) + 3 + 8;
 		get_footer(block)->size = GET_SIZE(block);
 	}
 
 	if (prev && IS_FREE(prev)) {
 		rff(block);
-		prev->size += GET_SIZE(block) + sizeof(block_header_t) + sizeof(block_footer_t);
+		prev->size += GET_SIZE(block) + 3 + 8;
 		get_footer(prev)->size = GET_SIZE(prev);
 	}
 }

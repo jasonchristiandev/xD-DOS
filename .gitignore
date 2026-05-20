@@ -4,3 +4,4 @@ limine_bin
 xD-DOS.iso
 fonts
 include/limine.h
+*.log

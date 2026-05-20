@@ -10,19 +10,19 @@ static inline void printf_itoa(uint64_t n, char *str, uint8_t base, uint8_t sign
 	char *p = str;
 	char *pa, *pb;
 	uint64_t decimal = n;
-	
+
 	if (signed_val && base == 10 && (int64_t) n < 0) {
 		*p++ = '-';
 		decimal = -(int64_t) n;
 	}
-	
+
 	char *first_digit = p;
 	do {
 		uint8_t digit = decimal % base;
 		*p++ = (digit < 10) ? ('0' + digit) : ('A' + digit - 10);
 	} while (decimal /= base);
 	*p = '\0';
-	
+
 	pa = first_digit;
 	pb = p - 1;
 	while (pa < pb) {
@@ -37,18 +37,21 @@ static inline void printf_itoa(uint64_t n, char *str, uint8_t base, uint8_t sign
 static inline void printf(const char *format, ...) {
 	va_list args;
 	va_start(args, format);
-	
+
 	char buf[128];
 	for (size_t i = 0; format[i] != '\0'; i++) {
 		if (format[i] == '%' && format[i + 1] != '\0') {
 			i++;
-			
+
 			uint8_t is64 = 0;
 			if (format[i] == 'l' && format[i + 1] == 'l') {
 				is64 = 1;
 				i += 2;
+			} else if (format[i] == 'l' && format[i + 1] != 'l') {
+				is64 = 1;
+				i++;
 			}
-			
+
 			switch (format[i]) {
 				case 's': {
 					char *s = va_arg(args, char *);
@@ -61,7 +64,7 @@ static inline void printf(const char *format, ...) {
 					} else {
 						printf_itoa(va_arg(args, int), buf, 10, 1);
 					}
-					
+
 					serial_write_text(buf);
 					break;
 				}
@@ -71,7 +74,7 @@ static inline void printf(const char *format, ...) {
 					} else {
 						printf_itoa(va_arg(args, uint32_t), buf, 10, 0);
 					}
-					
+
 					serial_write_text(buf);
 					break;
 				}
@@ -81,7 +84,7 @@ static inline void printf(const char *format, ...) {
 					} else {
 						printf_itoa(va_arg(args, uint32_t), buf, 16, 0);
 					}
-					
+
 					serial_write_text(buf);
 					break;
 				}

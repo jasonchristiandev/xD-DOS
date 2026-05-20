@@ -39,7 +39,6 @@ SECTIONS
 
 	.rodata : {
 		*(.rodata .rodata.*)
-		*(.font_data)
 	} :rodata
 
 	/* Add a .note.gnu.build-id output section in case a build ID flag is added to the */

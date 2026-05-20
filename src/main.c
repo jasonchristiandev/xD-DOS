@@ -1,7 +1,6 @@
 #include "xD-DOS/font.h"
 #include "xD-DOS/logging.h"
 #include "xD-DOS/memalloc.h"
-#include "xD-DOS/pit.h"
 #include "xD-DOS/pmm.h"
 #include "xD-DOS/requests.h"
 #include "xD-DOS/termgraphics.h" // IWYU pragma: keep
@@ -23,6 +22,7 @@ static void hcf() {
 
 static void panic(xD_DOS_framebuffer *fb) {
 	LOG_ERROR("KERNEL", "Kernel panic! Something went wrong.");
+	hcf();
 }
 
 void kernel_main() {

@@ -53,8 +53,8 @@ endif
 
 $(BUILD_DIR)/font_data.o: $(FONTS_DIR)/$(FONT) $(BUILD_DIR)
 	@echo " [OBJCOPY] $<"
-	@objcopy -I binary -O elf64-x86-64 -B i386 \
-		--rename-section .data=.font_data,alloc,load,readonly,data \
+	objcopy -I binary -O elf64-x86-64 -B i386 \
+		--rename-section .data=.font_data,alloc,load,readonly,data,contents \
 		$< $@
 	@objcopy $@ $@ \
 		--redefine-sym _binary_fonts_font_psf_start=_binary_font_psf_start \
@@ -102,7 +102,7 @@ $(ISO_IMAGE): $(BUILD_DIR)/$(KERNEL) $(LIMINE_CONF) $(LIMINE_DIR)/limine
 	@echo " [ISO] $(ISO_IMAGE) success."
 
 run: $(ISO_IMAGE)
-	$(QEMU) -cdrom $(ISO_IMAGE) -m 256M -M q35 -serial mon:stdio
+	$(QEMU) -cdrom $(ISO_IMAGE) -m 256M -M q35 -serial mon:stdio | tee qemu.log
 
 distclean:
 	rm -rf $(BUILD_DIR) $(ISO_IMAGE) $(ISO_DIR) $(LIMINE_DIR) $(FONTS_DIR)

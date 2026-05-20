@@ -10,10 +10,41 @@ static size_t total_pages = 0;
 static size_t bitmap_size = 0;
 static uint64_t hhdm_offset = 0;
 
+static inline void bitmap_set(uint64_t bit) {
+	bitmap[bit / 8] |= (1 << (bit % 8));
+}
+
+static inline void bitmap_clear(uint64_t bit) {
+	bitmap[bit / 8] &= ~(1 << (bit % 8));
+}
+
+static inline uint8_t bitmap_test(uint64_t bit) {
+	return (bitmap[bit / 8] & (1 << (bit % 8))) != 0;
+}
+
+void pmm_free_region(uint64_t base_address, uint64_t length) {
+	uint64_t start_page = (base_address + PAGE_SIZE - 1) / PAGE_SIZE;
+	uint64_t end_page = (base_address + length) / PAGE_SIZE;
+
+	for (uint64_t i = start_page; i < end_page; i++) {
+		if (i < total_pages) {
+			bitmap_clear(i);
+		}
+	}
+}
+
+void pmm_lock_region(uint64_t base_address, uint64_t length) {
+	uint64_t start_page = base_address / PAGE_SIZE;
+	uint64_t end_page = (base_address + length + PAGE_SIZE - 1) / PAGE_SIZE;
+
+	for (uint64_t i = start_page; i < end_page; i++) {
+		if (i < total_pages) {
+			bitmap_set(i);
+		}
+	}
+}
+
 // Initializes the Physical Memory Manager
-// Returns 1 if memory map or HHDM (Higher Half Direct Map) is not ready.
-// Returns 2 if no memory is available for the bitmap.
-// Returns 0 otherwise.
 uint8_t pmm_init() {
 	DEBUG_INFO("PMM", "Checking responses...");
 	xD_DOS_memmap *memmap = request_memmap();
@@ -26,15 +57,7 @@ uint8_t pmm_init() {
 	uint64_t highest_address = 0;
 	xD_DOS_memmap_entry *best_chunk = NULL;
 
-	// Find the top of usable physical memory so we know how big our bitmap must be
 	DEBUG_INFO("PMM", "Searching usable physical memory...");
-	DEBUG_INFO("PMM", "Memmap Address = %x, Entries Array = %x, Count = %d",
-			   (void *) memmap, (void *) memmap->entries, (int) memmap->count);
-
-	if (memmap->entries == NULL && memmap->count > 0) {
-		DEBUG_ERROR("PMM", "Memmap entries array pointer is NULL despite count > 0!");
-		return 1;
-	}
 
 	for (uint64_t i = 0; i < memmap->count; i++) {
 		xD_DOS_memmap_entry *entry = memmap->entries[i];
@@ -62,52 +85,32 @@ uint8_t pmm_init() {
 
 	DEBUG_INFO("PMM", "Allocating...");
 
-	// Place the bitmap at the start of our best usable memory chunk
+	// Virtual pointer so the CPU can write to the bitmap safely
 	bitmap = (uint8_t *) (best_chunk->base + hhdm_offset);
 
-	DEBUG_INFO("PMM", "Clearing...");
+	DEBUG_INFO("PMM", "Clearing... (Setting ALL memory to LOCKED)");
+	// Lock every physical page by default.
 	memset(bitmap, 0xFF, bitmap_size);
 
-	uint64_t bitmap_pages = (bitmap_size + PAGE_SIZE - 1) / PAGE_SIZE;
-	uint64_t bitmap_phys_start = best_chunk->base;
-	uint64_t bitmap_phys_end = bitmap_phys_start + (bitmap_pages * PAGE_SIZE);
-
-	// Mark only the usable regions from memmap as free
 	DEBUG_INFO("PMM", "Parsing region for bitmap...");
+
+	// Free only usable memory
 	for (uint64_t i = 0; i < memmap->count; i++) {
-		xD_DOS_memmap_entry *entry = memmap->entries[i];
-
-		if (entry->type == XD_DOS_MEMMAP_USABLE) {
-			uint64_t start_page = entry->base / PAGE_SIZE;
-			uint64_t page_count = entry->length / PAGE_SIZE;
-
-			for (uint64_t j = 0; j < page_count; j++) {
-				uint64_t page = start_page + j;
-				uint64_t page_phys_addr = page * PAGE_SIZE;
-
-				if (page_phys_addr >= bitmap_phys_start && page_phys_addr < bitmap_phys_end) {
-					continue;
-				}
-
-				bitmap[page / 8] &= ~(1 << (page % 8));
-			}
+		if (memmap->entries[i]->type == XD_DOS_MEMMAP_USABLE) {
+			pmm_free_region(memmap->entries[i]->base, memmap->entries[i]->length);
 		}
 	}
 
-	// Protect the memory that the bitmap itself is occupying
 	DEBUG_INFO("PMM", "Protecting bitmap...");
-	uint64_t bitmap_physical_base = best_chunk->base;
+	// Lock the memory that the bitmap itself is occupying.
+	pmm_lock_region(best_chunk->base, bitmap_size);
 
-	for (uint64_t i = 0; i < bitmap_pages; i++) {
-		uint64_t page = (bitmap_physical_base / PAGE_SIZE) + i;
-		bitmap[page / 8] |= (1 << (page % 8));
-	}
+	pmm_lock_region(0, PAGE_SIZE);
 
 	return 0;
 }
 
 // Allocates a single page
-// Returns NULL if out of physical memory
 void *pmm_alloc_page() {
 	size_t bitmap_bytes = total_pages / 8;
 
@@ -121,7 +124,10 @@ void *pmm_alloc_page() {
 
 				if (page_index >= total_pages) return NULL;
 
+				// Lock it
 				bitmap[i] |= (1 << bit);
+
+				// Return the raw PHYSICAL address
 				return (void *) (page_index * PAGE_SIZE);
 			}
 		}

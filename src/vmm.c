@@ -52,6 +52,8 @@ uint8_t vmm_init(void) {
 	// uint64_t kernel_size = 0x1000000;
 	uint64_t kernel_size = exefile->size;
 
+	DEBUG_INFO("VMM", "Kernel size: %lld bytes.", kernel_size);
+
 	for (uint64_t offset = 0; offset < kernel_size; offset += 4096) {
 		vmm_map_table(kernel_pml4, kernel_virt + offset, kernel_phys + offset, PTE_WRITABLE);
 	}
