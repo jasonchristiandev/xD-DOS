@@ -2,14 +2,11 @@
 #include "xD-DOS/logging.h"
 #include "xD-DOS/pit.h"
 #include "xD-DOS/pmm.h"
+#include "xD-DOS/requests.h"
 #include "xD-DOS/serial.h"
 #include "xD-DOS/vmm.h"
-#include <limine.h>
 #include <stddef.h>
 #include <stdint.h>
-
-extern volatile uint64_t limine_base_revision[];
-extern volatile struct limine_framebuffer_request framebuffer_request;
 
 static void hcf() {
 	for (;;) {
@@ -17,20 +14,21 @@ static void hcf() {
 	}
 }
 
-static void panic(struct limine_framebuffer *fb) {
+static void panic(xD_DOS_framebuffer *fb) {
 	const uint8_t timeout = 5;
 	LOG_ERROR("KERNEL", "Kernel panic! Exiting in %d...", timeout);
 	sleep_s(timeout);
 }
 
 void kernel_main() {
-	if (LIMINE_BASE_REVISION_SUPPORTED(limine_base_revision) == 0) {
+	if (request_base_revision_supported() == 0) {
 		hcf();
 	}
 
-	if (framebuffer_request.response == NULL || framebuffer_request.response->framebuffer_count < 1) hcf();
+	xD_DOS_framebuffers *fbs = request_framebuffers();
+	if (fbs == NULL || fbs->count < 1) hcf();
 
-	struct limine_framebuffer *fb = framebuffer_request.response->framebuffers[0];
+	xD_DOS_framebuffer *fb = fbs->framebuffers[0];
 	volatile uint32_t *fb_ptr = fb->address;
 
 	serial_init();

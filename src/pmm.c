@@ -1,12 +1,9 @@
 #include "xD-DOS/pmm.h"
 #include "xD-DOS/logging.h"
 #include "xD-DOS/memory.h" // IWYU pragma: keep
-#include <limine.h>
+#include "xD-DOS/requests.h"
 #include <stddef.h>
 #include <stdint.h>
-
-extern volatile struct limine_memmap_request memmap_request;
-extern volatile struct limine_hhdm_request hhdm_request;
 
 static uint8_t *bitmap = NULL;
 static size_t total_pages = 0;
@@ -19,30 +16,30 @@ static uint64_t hhdm_offset = 0;
 // Returns 0 otherwise.
 uint8_t pmm_init() {
 	DEBUG_INFO("PMM", "Checking responses...");
-	struct limine_memmap_response *memmap = memmap_request.response;
-	struct limine_hhdm_response *hhdm = hhdm_request.response;
+	xD_DOS_memmap *memmap = request_memmap();
+	xD_DOS_hhdm *hhdm = request_hhdm();
 
-	if (!memmap || !hhdm) return 1;
+	if (memmap == NULL || hhdm == NULL) return 1;
 
 	hhdm_offset = hhdm->offset;
 
 	uint64_t highest_address = 0;
-	struct limine_memmap_entry *best_chunk = NULL;
+	xD_DOS_memmap_entry *best_chunk = NULL;
 
 	// Find the top of usable physical memory so we know how big our bitmap must be
 	DEBUG_INFO("PMM", "Searching usable physical memory...");
 	DEBUG_INFO("PMM", "Memmap Address = %x, Entries Array = %x, Count = %d",
-			   (void *) memmap, (void *) memmap->entries, (int) memmap->entry_count);
+			   (void *) memmap, (void *) memmap->entries, (int) memmap->count);
 
-	if (memmap->entries == NULL && memmap->entry_count > 0) {
+	if (memmap->entries == NULL && memmap->count > 0) {
 		DEBUG_ERROR("PMM", "Memmap entries array pointer is NULL despite count > 0!");
 		return 1;
 	}
 
-	for (uint64_t i = 0; i < memmap->entry_count; i++) {
-		struct limine_memmap_entry *entry = memmap->entries[i];
+	for (uint64_t i = 0; i < memmap->count; i++) {
+		xD_DOS_memmap_entry *entry = memmap->entries[i];
 
-		if (entry->type == LIMINE_MEMMAP_USABLE) {
+		if (entry->type == XD_DOS_MEMMAP_USABLE) {
 			uint64_t top = entry->base + entry->length;
 			if (top > highest_address) {
 				highest_address = top;
@@ -77,10 +74,10 @@ uint8_t pmm_init() {
 
 	// Mark only the usable regions from memmap as free
 	DEBUG_INFO("PMM", "Parsing region for bitmap...");
-	for (uint64_t i = 0; i < memmap->entry_count; i++) {
-		struct limine_memmap_entry *entry = memmap->entries[i];
+	for (uint64_t i = 0; i < memmap->count; i++) {
+		xD_DOS_memmap_entry *entry = memmap->entries[i];
 
-		if (entry->type == LIMINE_MEMMAP_USABLE) {
+		if (entry->type == XD_DOS_MEMMAP_USABLE) {
 			uint64_t start_page = entry->base / PAGE_SIZE;
 			uint64_t page_count = entry->length / PAGE_SIZE;
 

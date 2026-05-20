@@ -2,12 +2,8 @@
 #include "xD-DOS/logging.h"
 #include "xD-DOS/memory.h" // IWYU pragma: keep
 #include "xD-DOS/pmm.h"
-#include <limine.h>
+#include "xD-DOS/requests.h"
 #include <stdint.h>
-
-extern volatile struct limine_hhdm_request hhdm_request;
-extern volatile struct limine_executable_address_request executable_address_request;
-extern volatile struct limine_executable_file_request executable_file_request;
 
 uint64_t hhdm_offset;
 page_table_t *kernel_pml4 = NULL;
@@ -19,9 +15,9 @@ page_table_t *kernel_pml4 = NULL;
 // Returns 0 otherwise.
 uint8_t vmm_init(void) {
 	DEBUG_INFO("VMM", "Checking responses...");
-	struct limine_hhdm_response *hhdm = hhdm_request.response;
-	struct limine_executable_address_response *exeaddr = executable_address_request.response;
-	struct limine_executable_file_response *exefile = executable_file_request.response;
+	xD_DOS_hhdm *hhdm = request_hhdm();
+	xD_DOS_executable_address *exeaddr = request_executable_address();
+	xD_DOS_executable_file *exefile = request_executable_file();
 
 	if (!hhdm || !exeaddr) return 1;
 
@@ -50,11 +46,11 @@ uint8_t vmm_init(void) {
 
 	// Map the kernel code/data space
 	DEBUG_INFO("VMM", "Mapping kernel code/data space...");
-	uint64_t kernel_phys = exeaddr->physical_base;
-	uint64_t kernel_virt = exeaddr->virtual_base;
+	uint64_t kernel_phys = exeaddr->phys;
+	uint64_t kernel_virt = exeaddr->virt;
 
 	// uint64_t kernel_size = 0x1000000;
-	uint64_t kernel_size = exefile->executable_file->size;
+	uint64_t kernel_size = exefile->size;
 
 	for (uint64_t offset = 0; offset < kernel_size; offset += 4096) {
 		vmm_map_table(kernel_pml4, kernel_virt + offset, kernel_phys + offset, PTE_WRITABLE);
