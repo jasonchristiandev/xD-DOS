@@ -20,7 +20,7 @@ KERNEL = kernel.elf
 ISO_IMAGE = xD-DOS.iso
 
 SRCS = $(wildcard $(SRC_DIR)/*.c)
-OBJS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRCS)) $(BUILD_DIR)/font.o
+OBJS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRCS)) $(BUILD_DIR)/font_data.o
 
 CFLAGS = -fno-stack-protector -ffreestanding -mno-red-zone \
 		 -fms-extensions -fno-builtin-Wall -Wextra -Wpedantic \
@@ -29,7 +29,7 @@ CFLAGS = -fno-stack-protector -ffreestanding -mno-red-zone \
 		 -mno-mmx -mno-sse -mno-sse2 -I$(INCLUDE_DIR)
 
 FONT_NAME = cp850-8x16.psf
-FONT_URL = https://raw.githubusercontent.com/ercanersoy/PSF-Fonts/master/$(FONT)
+FONT_URL = https://raw.githubusercontent.com/ercanersoy/PSF-Fonts/master/$(FONT_NAME)
 LIMINE_VERSION = v11.x-binary
 LIMINE_URL = https://github.com/limine-bootloader/limine.git
 
@@ -51,16 +51,15 @@ else
 	@$(CC) $(CFLAGS) -c $< -o $@
 endif
 
-FONT_OLD_SYMBOL = $(subst /,_,$(subst .,_,$(FONTS_DIR)/$(FONT)))
-$(BUILD_DIR)/font.o: $(FONTS_DIR)/$(FONT) $(BUILD_DIR)
+$(BUILD_DIR)/font_data.o: $(FONTS_DIR)/$(FONT) $(BUILD_DIR)
 	@echo " [OBJCOPY] $<"
 	@objcopy -I binary -O elf64-x86-64 -B i386 \
 		--rename-section .data=.font_data,alloc,load,readonly,data \
 		$< $@
 	@objcopy $@ $@ \
-		--redefine-sym _binary_$(FONT_OLD_SYMBOL)_start=_binary_font_psf_start \
-		--redefine-sym _binary_$(FONT_OLD_SYMBOL)_end=_binary_font_psf_end \
-		--redefine-sym _binary_$(FONT_OLD_SYMBOL)_size=_binary_font_psf_size
+		--redefine-sym _binary_fonts_font_psf_start=_binary_font_psf_start \
+		--redefine-sym _binary_fonts_font_psf_end=_binary_font_psf_end \
+		--redefine-sym _binary_fonts_font_psf_size=_binary_font_psf_size
 
 $(BUILD_DIR)/$(KERNEL): $(OBJS) $(LINKER_SCRIPT) $(BUILD_DIR)
 	@echo " [LD] Linking..."
@@ -106,7 +105,7 @@ run: $(ISO_IMAGE)
 	$(QEMU) -cdrom $(ISO_IMAGE) -m 256M -M q35 -serial mon:stdio
 
 distclean:
-	rm -rf $(BUILD_DIR) $(ISO_IMAGE) $(ISO_DIR) $(LIMINE_DIR)
+	rm -rf $(BUILD_DIR) $(ISO_IMAGE) $(ISO_DIR) $(LIMINE_DIR) $(FONTS_DIR)
 
 clean:
 	rm -rf $(BUILD_DIR) $(ISO_IMAGE) $(ISO_DIR)

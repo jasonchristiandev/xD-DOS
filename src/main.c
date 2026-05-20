@@ -1,9 +1,10 @@
-// #include "xD-DOS/font.h"
+#include "xD-DOS/font.h"
 #include "xD-DOS/logging.h"
 #include "xD-DOS/memalloc.h"
 #include "xD-DOS/pit.h"
 #include "xD-DOS/pmm.h"
 #include "xD-DOS/requests.h"
+#include "xD-DOS/termgraphics.h" // IWYU pragma: keep
 #include "xD-DOS/serial.h"
 #include "xD-DOS/vma.h"
 #include "xD-DOS/vmm.h"
@@ -21,9 +22,7 @@ static void hcf() {
 }
 
 static void panic(xD_DOS_framebuffer *fb) {
-	const uint8_t timeout = 5;
-	LOG_ERROR("KERNEL", "Kernel panic! Exiting in %d...", timeout);
-	sleep_s(timeout);
+	LOG_ERROR("KERNEL", "Kernel panic! Something went wrong.");
 }
 
 void kernel_main() {
@@ -83,6 +82,14 @@ void kernel_main() {
 	malloc_init(vma_alloc_pages, initial_heap_block, initial_heap_bytes);
 	DELETE_PREV_LINE();
 	LOG_INFO("KERNEL", "Initial heap allocated.");
+
+	// Init font
+	LOG_INFO("KERNEL", "Font initializing...");
+	psf_init();
+	DELETE_PREV_LINE();
+	LOG_INFO("KERNEL", "Font initialized.");
+
+	putchar(fb, 'c', 1, 1, 0xFFFFFF, 0xFFFFFF);
 
 	// Halt
 	LOG_INFO("KERNEL", "Nothing to do, halting...");
