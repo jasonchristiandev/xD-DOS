@@ -86,10 +86,8 @@ void kernel_main() {
 	psf_init();
 	LOG_INFO("KERNEL", "Font initialized.");
 
-	const char *msg = "xD-DOS (Extended Drive - Disk Operating System)";
-	for (int i = 0; i < strlen(msg); i++) {
-		putchar(fb, msg[i], i * 8, 0, 0xFFFFFF, 0x000000);
-	}
+	const char *msg = "xD-DOS (Extended Drive - Disk Operating System)\r\nMaintained by Jason Christian\r\n\r\n";
+	put_text(fb, msg, 0xFFFFFF, 0x000000);
 
 	// Halt
 	LOG_INFO("KERNEL", "Nothing to do, halting...");
