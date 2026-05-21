@@ -18,16 +18,15 @@ void vma_init(uint64_t heap_base) {
 void *vma_alloc_pages(size_t pages) {
 	if (pages == 0) return NULL;
 
-	uint64_t alloc_virt_start = heap_current_break;
+	uint64_t virt_start = heap_current_break;
 
 	// Allocate physical frames and map each page individually
 	for (size_t i = 0; i < pages; i++) {
-		uint64_t virt_addr = alloc_virt_start + (i * PAGE_SIZE);
+		uint64_t virt_addr = virt_start + (i * PAGE_SIZE);
 		void *phys_frame = pmm_alloc_page();
 
 		if (phys_frame == NULL) {
 			LOG_ERROR("VMA", "Out of physical memory during virtual allocation!");
-			// Realistically, you'd want an unmap loop here to clean up partial allocations.
 			return NULL;
 		}
 
@@ -38,5 +37,5 @@ void *vma_alloc_pages(size_t pages) {
 	// Advance the break pointer
 	heap_current_break += (pages * PAGE_SIZE);
 
-	return (void *) alloc_virt_start;
+	return (void *) virt_start;
 }

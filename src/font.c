@@ -18,11 +18,11 @@ void psf1_init(uint8_t *virt_start, uint8_t *virt_end) {
 	psf1_header *font = (psf1_header *) virt_start;
 
 	if (font->magic != PSF1_FONT_MAGIC) {
-		LOG_ERROR("FONT", "Invalid font magic: got 0x%x, expected 0x%x/0x%x. Giving up...", font->magic, PSF1_FONT_MAGIC, PSF_FONT_MAGIC);
+		LOG_ERROR("FONT", "Invalid font magic: got 0x%llx, expected 0x%llx/0x%llx. Giving up...", font->magic, PSF1_FONT_MAGIC, PSF_FONT_MAGIC);
 		return;
 	}
 
-	LOG_INFO("FONT", "PSF font valid, got PSF1: 0x%x. (height: %d)", PSF1_FONT_MAGIC, font->char_size);
+	LOG_DEBUG("FONT", "PSF font valid, got PSF1: magic 0x%llx. (height: %d)", PSF1_FONT_MAGIC, font->char_size);
 
 	psf1_hdr = (psf1_header *) virt_start;
 	font_data_ptr = virt_start + 4;
@@ -35,7 +35,10 @@ void psf1_init(uint8_t *virt_start, uint8_t *virt_end) {
 	}
 
 	unicode = calloc(USHRT_MAX, 2);
-	if (unicode == NULL) return;
+	if (unicode == NULL) {
+		LOG_ERROR("FONT", "Failed to allocate memory for unicode table!");
+		return;
+	}
 
 	uint32_t glyph_count = (font->font_mode & 1) ? 512 : 256;
 
@@ -79,7 +82,7 @@ void psf1_init(uint8_t *virt_start, uint8_t *virt_end) {
 }
 
 void psf2_init(psf_font *font, uint8_t *virt_end) {
-	LOG_INFO("FONT", "PSF font valid, got PSF2: 0x%x. (width: %d, height: %d)", PSF_FONT_MAGIC, font->width, font->width);
+	LOG_DEBUG("FONT", "PSF font valid, got PSF2: 0x%llx. (width: %d, height: %d)", PSF_FONT_MAGIC, font->width, font->width);
 
 	uint16_t glyph = 0;
 

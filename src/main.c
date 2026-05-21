@@ -4,11 +4,13 @@
 #include "xD-DOS/pmm.h"
 #include "xD-DOS/requests.h"
 #include "xD-DOS/serial.h"
+#include "xD-DOS/string.h"		 // IWYU pragma: keep
 #include "xD-DOS/termgraphics.h" // IWYU pragma: keep
 #include "xD-DOS/vma.h"
 #include "xD-DOS/vmm.h"
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 #define PANIC() \
 	panic(fb);  \
@@ -44,28 +46,25 @@ void kernel_main() {
 	LOG_INFO("KERNEL", "Physical Memory Manager initializing...");
 	uint8_t pmm_result = pmm_init();
 	if (pmm_result == 1) {
-		LOG_ERROR("KERNEL", "Failed to initialize Physical Memory Manager! Error code 0x%x (Memory Map or HHDM Not Ready).", pmm_result);
+		LOG_ERROR("KERNEL", "Failed to initialize Physical Memory Manager! Error code 0x%llx (Memory Map or HHDM Not Ready).", pmm_result);
 		PANIC();
 	} else if (pmm_result == 2) {
-		LOG_ERROR("KERNEL", "Failed to initialize Physical Memory Manager! Error code 0x%x (No Memory Available for Bitmap).", pmm_result);
+		LOG_ERROR("KERNEL", "Failed to initialize Physical Memory Manager! Error code 0x%llx (No Memory Available for Bitmap).", pmm_result);
 		PANIC();
 	} else if (pmm_result > 0) {
-		LOG_ERROR("KERNEL", "Failed to initialize Physical Memory Manager! Error code 0x%x (Unknown).", pmm_result);
+		LOG_ERROR("KERNEL", "Failed to initialize Physical Memory Manager! Error code 0x%llx (Unknown).", pmm_result);
 		PANIC();
 	}
-	DELETE_PREV_LINE();
 	LOG_INFO("KERNEL", "Physical Memory Manager initialized.");
 
 	// VMM init
 	LOG_INFO("KERNEL", "Virtual Memory Manager initializing...");
 	uint8_t vmm_result = vmm_init();
-	DELETE_PREV_LINE();
 	LOG_INFO("KERNEL", "Virtual Memory Manager initialized.");
 
 	// VMA init
 	LOG_INFO("KERNEL", "Virtual Memory Allocator initializing...");
 	vma_init(0xFFFFFFFF90000000ULL);
-	DELETE_PREV_LINE();
 	LOG_INFO("KERNEL", "Virtual Memory Allocator initialized.");
 
 	// Allocate initial heap
@@ -80,17 +79,15 @@ void kernel_main() {
 	}
 
 	malloc_init(vma_alloc_pages, initial_heap_block, initial_heap_bytes);
-	DELETE_PREV_LINE();
 	LOG_INFO("KERNEL", "Initial heap allocated.");
 
 	// Init font
 	LOG_INFO("KERNEL", "Font initializing...");
 	psf_init();
-	DELETE_PREV_LINE();
 	LOG_INFO("KERNEL", "Font initialized.");
 
-	char *msg = "putchar";
-	for (int i = 0; i < 7; i++) {
+	const char *msg = "xD-DOS (Extended Drive - Disk Operating System)";
+	for (int i = 0; i < strlen(msg); i++) {
 		putchar(fb, msg[i], i * 8, 0, 0xFFFFFF, 0x000000);
 	}
 

@@ -9,7 +9,7 @@ uint64_t hhdm_offset;
 page_table_t *kernel_pml4 = NULL;
 
 // Initializes VMM.
-// Returns 1 if HHDM or executable address is unavailable.
+// Returns 1 if HHDM or executable address or executable file is unavailable.
 // Returns 2 if HHDM offset is 0.
 // Returns 3 if out of memory.
 // Returns 0 otherwise.
@@ -19,10 +19,16 @@ uint8_t vmm_init(void) {
 	xD_DOS_executable_address *exeaddr = request_executable_address();
 	xD_DOS_executable_file *exefile = request_executable_file();
 
-	if (!hhdm || !exeaddr) return 1;
+	if (!hhdm || !exeaddr || !exefile) {
+		LOG_ERROR("VMM", "HHDM or executable address or executable file is NULL!");
+		return 1;
+	}
 
 	hhdm_offset = hhdm->offset;
-	if (hhdm_offset == 0) return 2;
+	if (hhdm_offset == 0) {
+		LOG_ERROR("VMM", "HHDM offset is 0!");
+		return 2;
+	}
 
 	// Allocate physical page frame
 	LOG_DEBUG("VMM", "Allocating physical page frame...");
@@ -32,6 +38,7 @@ uint8_t vmm_init(void) {
 	LOG_DEBUG("VMM", "  hhdm_offset: 0x%llx", (unsigned long long) hhdm_offset);
 	LOG_DEBUG("VMM", "  pml4_phys:   0x%llx", (unsigned long long) pml4_phys);
 	LOG_DEBUG("VMM", "  kernel_pml4: 0x%llx", (unsigned long long) kernel_pml4);
+	LOG_DEBUG("VMM", "Allocated physical page frame.");
 
 	LOG_DEBUG("VMM", "Zeroing out PML4...");
 	uint64_t *pml4_raw = (uint64_t *) kernel_pml4;
@@ -61,6 +68,7 @@ uint8_t vmm_init(void) {
 	// Load new page tables directly into the CPU control register
 	LOG_DEBUG("VMM", "Loading new page tables...");
 	__asm__ volatile("mov %0, %%cr3" ::"r"(pml4_phys) : "memory");
+	LOG_DEBUG("VMM", "Escaped bootloader memory.");
 
 	return 0;
 }

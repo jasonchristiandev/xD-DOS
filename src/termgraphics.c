@@ -1,6 +1,5 @@
 #include "xD-DOS/font.h"
 #include "xD-DOS/logging.h"
-#include "xD-DOS/pit.h"
 #include "xD-DOS/requests.h"
 #include <stddef.h>
 #include <stdint.h>
@@ -26,8 +25,7 @@ void putchar(xD_DOS_framebuffer *fb, uint16_t c, int cx, int cy, uint32_t fg, ui
 	if (font_version == 0) {
 		LOG_ERROR("TERMGRAPHICS", "Font version equals 0!");
 		return;
-	}
-	if (font_version == 1) {
+	} else if (font_version == 1) {
 		height = psf1_hdr->char_size;
 		width = 8; // PSF1 is always 8 pixels wide
 		glyph_width = height;
