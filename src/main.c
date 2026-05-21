@@ -3,8 +3,8 @@
 #include "xD-DOS/memalloc.h"
 #include "xD-DOS/pmm.h"
 #include "xD-DOS/requests.h"
-#include "xD-DOS/termgraphics.h" // IWYU pragma: keep
 #include "xD-DOS/serial.h"
+#include "xD-DOS/termgraphics.h" // IWYU pragma: keep
 #include "xD-DOS/vma.h"
 #include "xD-DOS/vmm.h"
 #include <stddef.h>
@@ -89,9 +89,12 @@ void kernel_main() {
 	DELETE_PREV_LINE();
 	LOG_INFO("KERNEL", "Font initialized.");
 
-	putchar(fb, 'c', 1, 1, 0xFFFFFF, 0xFFFFFF);
+	char *msg = "putchar";
+	for (int i = 0; i < 7; i++) {
+		putchar(fb, msg[i], i * 8, 0, 0xFFFFFF, 0x000000);
+	}
 
 	// Halt
 	LOG_INFO("KERNEL", "Nothing to do, halting...");
-	PANIC(); // panic testing
+	hcf();
 }

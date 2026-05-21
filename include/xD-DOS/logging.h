@@ -27,23 +27,9 @@
 	} while (0)
 
 #ifdef DEBUG
-#define DEBUG_INFO(name, format, ...)     \
+#define LOG_DEBUG(name, format, ...)      \
 	do {                                  \
-		PRINT("[D-INFO]    <%s> ", name); \
-		PRINT(format, ##__VA_ARGS__);     \
-		PRINT("\r\n");                    \
-	} while (0)
-
-#define DEBUG_WARNING(name, format, ...)  \
-	do {                                  \
-		PRINT("[D-WARNING] <%s> ", name); \
-		PRINT(format, ##__VA_ARGS__);     \
-		PRINT("\r\n");                    \
-	} while (0)
-
-#define DEBUG_ERROR(name, format, ...)    \
-	do {                                  \
-		PRINT("[D-ERROR]   <%s> ", name); \
+		PRINT("[DEBUG]     <%s> ", name); \
 		PRINT(format, ##__VA_ARGS__);     \
 		PRINT("\r\n");                    \
 	} while (0)
@@ -52,16 +38,8 @@
 		PRINT(" <--\r\n"); \
 	} while (0)
 #else
-#define DEBUG_INFO(name, format, ...) \
-	do {                              \
-	} while (0)
-
-#define DEBUG_WARNING(name, format, ...) \
-	do {                                 \
-	} while (0)
-
-#define DEBUG_ERROR(name, format, ...) \
-	do {                               \
+#define LOG_DEBUG(name, format, ...) \
+	do {                             \
 	} while (0)
 #define DELETE_PREV_LINE()     \
 	do {                       \

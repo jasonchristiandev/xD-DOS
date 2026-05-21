@@ -45,19 +45,26 @@ void pmm_lock_region(uint64_t base_address, uint64_t length) {
 }
 
 // Initializes the Physical Memory Manager
+// Returns 1 if memmap or HHDM is NULL
+// Returns 2 if no memory is usable
 uint8_t pmm_init() {
-	DEBUG_INFO("PMM", "Checking responses...");
+	LOG_DEBUG("PMM", "Checking responses...");
 	xD_DOS_memmap *memmap = request_memmap();
 	xD_DOS_hhdm *hhdm = request_hhdm();
 
-	if (memmap == NULL || hhdm == NULL) return 1;
+	if (memmap == NULL || hhdm == NULL) {
+		LOG_ERROR("PMM", "Memmap or HHDM is NULL!");
+		return 1;
+	}
+
+	LOG_DEBUG("PMM", "Memmap and HHDM not NULL.");
 
 	hhdm_offset = hhdm->offset;
 
 	uint64_t highest_address = 0;
 	xD_DOS_memmap_entry *best_chunk = NULL;
 
-	DEBUG_INFO("PMM", "Searching usable physical memory...");
+	LOG_DEBUG("PMM", "Searching usable physical memory...");
 
 	for (uint64_t i = 0; i < memmap->count; i++) {
 		xD_DOS_memmap_entry *entry = memmap->entries[i];
@@ -73,26 +80,29 @@ uint8_t pmm_init() {
 		}
 	}
 
-	if (!best_chunk) return 2;
+	if (!best_chunk) {
+		LOG_ERROR("PMM", "No usable memory to use for bitmap!");
+		return 2;
+	}
+
+	LOG_DEBUG("PMM", "Found memory chunk to put bitmap (0x%llx)", best_chunk);
 
 	total_pages = highest_address / PAGE_SIZE;
 	bitmap_size = total_pages / 8;
 	if (total_pages % 8 != 0) bitmap_size++;
 
 	if (best_chunk->length < bitmap_size) {
-		return 2; // Not enough space in the best chunk
+		LOG_ERROR("PMM", "Not enough space to fit bitmap! (0x%llx)", best_chunk);
+		return 2;
 	}
 
-	DEBUG_INFO("PMM", "Allocating...");
-
-	// Virtual pointer so the CPU can write to the bitmap safely
 	bitmap = (uint8_t *) (best_chunk->base + hhdm_offset);
 
-	DEBUG_INFO("PMM", "Clearing... (Setting ALL memory to LOCKED)");
-	// Lock every physical page by default.
+	LOG_DEBUG("PMM", "Clearing bitmap... (addr: 0x%llx, size: %d)", bitmap, bitmap_size);
 	memset(bitmap, 0xFF, bitmap_size);
+	LOG_DEBUG("PMM", "Cleared bitmap.");
 
-	DEBUG_INFO("PMM", "Parsing region for bitmap...");
+	LOG_DEBUG("PMM", "Parsing region for bitmap...");
 
 	// Free only usable memory
 	for (uint64_t i = 0; i < memmap->count; i++) {
@@ -101,11 +111,14 @@ uint8_t pmm_init() {
 		}
 	}
 
-	DEBUG_INFO("PMM", "Protecting bitmap...");
-	// Lock the memory that the bitmap itself is occupying.
-	pmm_lock_region(best_chunk->base, bitmap_size);
+	LOG_DEBUG("PMM", "Parsed region.");
 
+	LOG_DEBUG("PMM", "Protecting bitmap... [(addr: 0x%llx, size: %d), (addr: 0x%llx, size: %d)]", best_chunk->base, bitmap_size, 0, PAGE_SIZE);
+
+	pmm_lock_region(best_chunk->base, bitmap_size); // bitmap
 	pmm_lock_region(0, PAGE_SIZE);
+
+	LOG_DEBUG("PMM", "Done init.");
 
 	return 0;
 }
@@ -121,17 +134,14 @@ void *pmm_alloc_page() {
 		for (int bit = 0; bit < 8; bit++) {
 			if ((bitmap[i] & (1 << bit)) == 0) {
 				size_t page_index = (i * 8) + bit;
-
 				if (page_index >= total_pages) return NULL;
-
-				// Lock it
 				bitmap[i] |= (1 << bit);
 
-				// Return the raw PHYSICAL address
 				return (void *) (page_index * PAGE_SIZE);
 			}
 		}
 	}
+	LOG_ERROR("PMM", "Out of physical memory!");
 	return NULL; // Out of physical memory
 }
 
@@ -142,7 +152,7 @@ void pmm_free_page(void *page) {
 	uint64_t page_index = (uint64_t) page / PAGE_SIZE;
 
 	if (page_index >= total_pages) {
-		DEBUG_ERROR("PMM", "Attempted to free out of bounds page: %x", page);
+		LOG_ERROR("PMM", "Attempted to free out of bounds page: 0x%llx", page);
 		return;
 	}
 

@@ -14,7 +14,7 @@ page_table_t *kernel_pml4 = NULL;
 // Returns 3 if out of memory.
 // Returns 0 otherwise.
 uint8_t vmm_init(void) {
-	DEBUG_INFO("VMM", "Checking responses...");
+	LOG_DEBUG("VMM", "Checking responses...");
 	xD_DOS_hhdm *hhdm = request_hhdm();
 	xD_DOS_executable_address *exeaddr = request_executable_address();
 	xD_DOS_executable_file *exefile = request_executable_file();
@@ -25,15 +25,15 @@ uint8_t vmm_init(void) {
 	if (hhdm_offset == 0) return 2;
 
 	// Allocate physical page frame
-	DEBUG_INFO("VMM", "Allocating physical page frame...");
+	LOG_DEBUG("VMM", "Allocating physical page frame...");
 	uint64_t pml4_phys = (uint64_t) pmm_alloc_page();
 	if (pml4_phys == 0) return 3;
 	kernel_pml4 = (page_table_t *) phys_to_virt(pml4_phys);
-	DEBUG_INFO("VMM", "hhdm_offset: %llx", (unsigned long long) hhdm_offset);
-	DEBUG_INFO("VMM", "pml4_phys:   %llx", (unsigned long long) pml4_phys);
-	DEBUG_INFO("VMM", "kernel_pml4: %llx", (unsigned long long) kernel_pml4);
+	LOG_DEBUG("VMM", "  hhdm_offset: 0x%llx", (unsigned long long) hhdm_offset);
+	LOG_DEBUG("VMM", "  pml4_phys:   0x%llx", (unsigned long long) pml4_phys);
+	LOG_DEBUG("VMM", "  kernel_pml4: 0x%llx", (unsigned long long) kernel_pml4);
 
-	DEBUG_INFO("VMM", "Zeroing out PML4...");
+	LOG_DEBUG("VMM", "Zeroing out PML4...");
 	uint64_t *pml4_raw = (uint64_t *) kernel_pml4;
 	memset(kernel_pml4, 0, 4096);
 
@@ -45,21 +45,21 @@ uint8_t vmm_init(void) {
 	// }
 
 	// Map the kernel code/data space
-	DEBUG_INFO("VMM", "Mapping kernel code/data space...");
+	LOG_DEBUG("VMM", "Mapping kernel code/data space...");
 	uint64_t kernel_phys = exeaddr->phys;
 	uint64_t kernel_virt = exeaddr->virt;
 
 	// uint64_t kernel_size = 0x1000000;
 	uint64_t kernel_size = exefile->size;
 
-	DEBUG_INFO("VMM", "Kernel size: %lld bytes.", kernel_size);
+	LOG_DEBUG("VMM", "Kernel size: %lld bytes.", kernel_size);
 
 	for (uint64_t offset = 0; offset < kernel_size; offset += 4096) {
 		vmm_map_table(kernel_pml4, kernel_virt + offset, kernel_phys + offset, PTE_WRITABLE);
 	}
 
 	// Load new page tables directly into the CPU control register
-	DEBUG_INFO("VMM", "Loading new page tables...");
+	LOG_DEBUG("VMM", "Loading new page tables...");
 	__asm__ volatile("mov %0, %%cr3" ::"r"(pml4_phys) : "memory");
 
 	return 0;

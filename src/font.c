@@ -6,19 +6,30 @@
 #include <stddef.h>
 #include <stdint.h>
 
+uint16_t *unicode;
+psf1_header *psf1_hdr = NULL;
+psf_font *psf2_hdr = NULL;
+uint8_t *font_data_ptr = NULL;
+int font_version = 0;
+
 extern uint64_t hhdm_offset;
 
 void psf1_init(uint8_t *virt_start, uint8_t *virt_end) {
 	psf1_header *font = (psf1_header *) virt_start;
 
 	if (font->magic != PSF1_FONT_MAGIC) {
-		LOG_ERROR("FONT", "Invalid font magic: got 0x%x, expected 0x%x. Giving up...", font->magic, PSF1_FONT_MAGIC);
+		LOG_ERROR("FONT", "Invalid font magic: got 0x%x, expected 0x%x/0x%x. Giving up...", font->magic, PSF1_FONT_MAGIC, PSF_FONT_MAGIC);
 		return;
 	}
 
-	LOG_INFO("FONT", "Font valid. (height: %d)", font->char_size);
+	LOG_INFO("FONT", "PSF font valid, got PSF1: 0x%x. (height: %d)", PSF1_FONT_MAGIC, font->char_size);
+
+	psf1_hdr = (psf1_header *) virt_start;
+	font_data_ptr = virt_start + 4;
+	font_version = 1;
 
 	if ((font->font_mode & 2) == 0 && (font->font_mode & 4) == 0) {
+		LOG_ERROR("FONT", "Font has no unicode table!");
 		unicode = NULL;
 		return;
 	}
@@ -68,6 +79,8 @@ void psf1_init(uint8_t *virt_start, uint8_t *virt_end) {
 }
 
 void psf2_init(psf_font *font, uint8_t *virt_end) {
+	LOG_INFO("FONT", "PSF font valid, got PSF2: 0x%x. (width: %d, height: %d)", PSF_FONT_MAGIC, font->width, font->width);
+
 	uint16_t glyph = 0;
 
 	if (font->flags == 0) {
@@ -75,10 +88,17 @@ void psf2_init(psf_font *font, uint8_t *virt_end) {
 		return;
 	}
 
-	uint8_t *ptr = (uint8_t *) font + font->header_size + font->glyph_count * font->glyph_width;
+	psf2_hdr = font;
+	font_data_ptr = (uint8_t *) font + font->header_size;
+	font_version = 2;
+
+	uint8_t *ptr = (uint8_t *) font + font->header_size + font->length * font->bytes_per_glyph;
 
 	unicode = calloc(USHRT_MAX, 2);
-	if (unicode == NULL) return;
+	if (unicode == NULL) {
+		LOG_ERROR("FONT", "Failed to allocate memory for unicode table!");
+		return;
+	}
 
 	while (ptr < virt_end) {
 		uint8_t uc = ptr[0];
@@ -133,10 +153,8 @@ void psf_init() {
 	psf_font *font = (psf_font *) virt_start;
 
 	if (font->magic != PSF_FONT_MAGIC) {
-		LOG_INFO("FONT", "Invalid font magic: got 0x%x, expected 0x%x. Trying PSF1...", font->magic, PSF_FONT_MAGIC);
 		psf1_init(virt_start, virt_end);
 	} else {
-		DEBUG_INFO("FONT", "Font valid. (width: %d, height: %d)", font->width, font->height);
 		psf2_init(font, virt_end);
 	}
 }

@@ -11,7 +11,7 @@ static uint64_t heap_start = 0;
 void vma_init(uint64_t heap_base) {
 	heap_start = heap_base;
 	heap_current_break = heap_base;
-	DEBUG_INFO("VMA", "Virtual Heap initialized at: %llx", (unsigned long long) heap_start);
+	LOG_DEBUG("VMA", "Virtual Heap initialized at: %llx", (unsigned long long) heap_start);
 }
 
 // Allocates contiguous virtual pages and maps them to physical frames
@@ -26,7 +26,7 @@ void *vma_alloc_pages(size_t pages) {
 		void *phys_frame = pmm_alloc_page();
 
 		if (phys_frame == NULL) {
-			DEBUG_ERROR("VMA", "Out of physical memory during virtual allocation!");
+			LOG_ERROR("VMA", "Out of physical memory during virtual allocation!");
 			// Realistically, you'd want an unmap loop here to clean up partial allocations.
 			return NULL;
 		}

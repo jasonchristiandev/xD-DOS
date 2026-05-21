@@ -1,49 +1,62 @@
 #include "xD-DOS/font.h"
+#include "xD-DOS/logging.h"
+#include "xD-DOS/pit.h"
 #include "xD-DOS/requests.h"
 #include <stddef.h>
 #include <stdint.h>
 
-extern uint16_t *unicode;
-extern uint8_t _binary_font_psf_start[];
-extern uint8_t _binary_font_psf_end[];
+extern psf1_header *psf1_hdr;
+extern psf_font *psf2_hdr;
+extern uint8_t *font_data_ptr;
+extern int font_version;
 
 void putchar(xD_DOS_framebuffer *fb, uint16_t c, int cx, int cy, uint32_t fg, uint32_t bg) {
-	uint32_t scanline = fb->pitch;
-
-	psf_font *font = (psf_font *) _binary_font_psf_start;
-
-	if (unicode != NULL) {
-		c = unicode[c];
+	if (!fb || !fb->address) {
+		LOG_ERROR("TERMGRAPHICS", "Framebuffer is NULL!");
+		return;
 	}
 
-	if (c >= font->glyph_count) {
-		c = 0;
+	if (unicode && c < USHRT_MAX) c = unicode[c];
+
+	uint32_t height;
+	uint32_t width;
+	uint32_t glyph_width;
+	uint8_t *glyph_bitmap;
+
+	if (font_version == 0) {
+		LOG_ERROR("TERMGRAPHICS", "Font version equals 0!");
+		return;
+	}
+	if (font_version == 1) {
+		height = psf1_hdr->char_size;
+		width = 8; // PSF1 is always 8 pixels wide
+		glyph_width = height;
+		glyph_bitmap = font_data_ptr + (c * glyph_width);
+	} else {
+		height = psf2_hdr->height;
+		width = psf2_hdr->bytes_per_glyph;
+		glyph_width = psf2_hdr->width;
+		glyph_bitmap = font_data_ptr + (c * glyph_width);
 	}
 
-	uint32_t glyphline_width = (font->width + 7) / 8;
-	uint32_t glyph_bytes = font->height * glyphline_width;
+	uint32_t *fb_ptr = (uint32_t *) fb->address;
+	fb_ptr[0] = 0xFFFFFFFF;
 
-	uint8_t *glyph = _binary_font_psf_start + font->header_size + (c * glyph_bytes);
+	if (cy >= fb->height || cx >= fb->width) return;
 
-	uint32_t offs = (cy * font->height * scanline) + (cx * font->width * 4);
+	for (uint32_t y = 0; y < height; y++) {
+		uint32_t row_offset = (cy + y) * (fb->pitch / 4);
+		uint8_t line = glyph_bitmap[y];
 
-	uint8_t *fb_base = (uint8_t *) fb->address;
+		for (uint32_t x = 0; x < width; x++) {
+			if ((cy + y) >= fb->height || (cx + x) >= (fb->pitch / 4)) continue;
 
-	for (uint32_t y = 0; y < font->height; y++) {
-		uint32_t *line_ptr = (uint32_t *) (fb_base + offs);
-		uint8_t *cur = glyph + (glyphline_width * y);
-		uint8_t mask = 1 << 7;
-
-		for (uint32_t x = 0; x < font->width; x++) {
-			line_ptr[x] = (*cur & mask) ? fg : bg;
-
-			mask >>= 1;
-			if (mask == 0) {
-				mask = 1 << 7;
-				cur++;
+			// Check if the bit is set in the current line
+			if (line & (1 << (width - 1 - x))) {
+				fb_ptr[row_offset + cx + x] = fg;
+			} else {
+				fb_ptr[row_offset + cx + x] = bg;
 			}
 		}
-
-		offs += scanline;
 	}
 }

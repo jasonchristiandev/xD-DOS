@@ -54,7 +54,7 @@ endif
 $(BUILD_DIR)/font_data.o: $(FONTS_DIR)/$(FONT) $(BUILD_DIR)
 	@echo " [OBJCOPY] $<"
 	objcopy -I binary -O elf64-x86-64 -B i386 \
-		--rename-section .data=.font_data,alloc,load,readonly,data,contents \
+		--rename-section .data=.data,alloc,load,readonly,data,contents \
 		$< $@
 	@objcopy $@ $@ \
 		--redefine-sym _binary_fonts_font_psf_start=_binary_font_psf_start \
