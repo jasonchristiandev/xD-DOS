@@ -29,7 +29,7 @@ void psf1_init(uint8_t *virt_start, uint8_t *virt_end) {
 	font_version = 1;
 
 	if ((font->font_mode & 2) == 0 && (font->font_mode & 4) == 0) {
-		LOG_ERROR("FONT", "Font has no unicode table!");
+		LOG_DEBUG("FONT", "Font has no unicode table! Giving up...");
 		unicode = NULL;
 		return;
 	}

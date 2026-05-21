@@ -1,11 +1,12 @@
 #include "xD-DOS/font.h"
 #include "xD-DOS/logging.h"
 #include "xD-DOS/memalloc.h"
+#include "xD-DOS/pit.h"
 #include "xD-DOS/pmm.h"
 #include "xD-DOS/requests.h"
 #include "xD-DOS/serial.h"
 #include "xD-DOS/string.h"		 // IWYU pragma: keep
-#include "xD-DOS/termgraphics.h" // IWYU pragma: keep
+#include "xD-DOS/graphics.h"
 #include "xD-DOS/vma.h"
 #include "xD-DOS/vmm.h"
 #include <stddef.h>
@@ -86,8 +87,10 @@ void kernel_main() {
 	psf_init();
 	LOG_INFO("KERNEL", "Font initialized.");
 
+	graphics_clear(fb, 0);
 	const char *msg = "xD-DOS (Extended Drive - Disk Operating System)\r\nMaintained by Jason Christian\r\n\r\n";
-	put_text(fb, msg, 0xFFFFFF, 0x000000);
+	graphics_put_text(fb, msg, 4, 4, 0xFFFFFF, 0x000000);
+	sleep_s(2);
 
 	// Halt
 	LOG_INFO("KERNEL", "Nothing to do, halting...");
