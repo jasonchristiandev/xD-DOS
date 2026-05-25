@@ -23,7 +23,7 @@ SRCS = $(wildcard $(SRC_DIR)/*.c)
 OBJS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRCS)) $(BUILD_DIR)/font_data.o
 
 CFLAGS = -fno-stack-protector -ffreestanding -mno-red-zone \
-		 -fms-extensions -fno-builtin-Wall -Wextra -Wpedantic \
+		 -fms-extensions -fno-builtin-Wall -Wextra -Wno-variadic-macros \
 		 -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast \
 		 -Wno-compare-distinct-pointer-types -std=c11 -O2 \
 		 -mno-mmx -mno-sse -mno-sse2 -I$(INCLUDE_DIR)

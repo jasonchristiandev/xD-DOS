@@ -7,12 +7,12 @@
 #include <stdint.h>
 #include <string.h>
 
-extern psf1_header *psf1_hdr;
-extern psf_font *psf2_hdr;
+extern font_psf1_header_t *psf1_hdr;
+extern font_psf2_data_t *psf2_hdr;
 extern uint8_t *font_data_ptr;
 extern int font_version;
 
-void __put_char(xD_DOS_framebuffer *fb, uint32_t width, uint32_t height, uint32_t bytes_per_glyph, uint8_t *glyph_bitmap, uint32_t cx, uint32_t cy, uint32_t fg, uint32_t bg) {
+void __put_char(xD_DOS_framebuffer_t *fb, uint32_t width, uint32_t height, uint32_t bytes_per_glyph, uint8_t *glyph_bitmap, uint32_t cx, uint32_t cy, uint32_t fg, uint32_t bg) {
 	if (cy >= fb->height || cx >= fb->width) return;
 
 	uint32_t *fb_ptr = (uint32_t *) fb->address;
@@ -37,7 +37,7 @@ void __put_char(xD_DOS_framebuffer *fb, uint32_t width, uint32_t height, uint32_
 	}
 }
 
-void graphics_put_char(xD_DOS_framebuffer *fb, char ch, uint32_t x, uint32_t y, uint32_t fg, uint32_t bg) {
+void graphics_put_char(xD_DOS_framebuffer_t *fb, char ch, uint32_t x, uint32_t y, uint32_t fg, uint32_t bg) {
 	if (!fb || !fb->address) {
 		LOG_ERROR("TERMGRAPHICS", "Framebuffer is NULL!");
 		return;
@@ -67,7 +67,7 @@ void graphics_put_char(xD_DOS_framebuffer *fb, char ch, uint32_t x, uint32_t y, 
 	__put_char(fb, width, height, bytes_per_glyph, glyph_bitmap, x, y, fg, bg);
 }
 
-void graphics_put_text(xD_DOS_framebuffer *fb, const char *str, uint32_t x, uint32_t y, uint32_t fg, uint32_t bg) {
+void graphics_put_text(xD_DOS_framebuffer_t *fb, const char *str, uint32_t x, uint32_t y, uint32_t fg, uint32_t bg) {
 	if (!fb || !fb->address) {
 		LOG_ERROR("TERMGRAPHICS", "Framebuffer is NULL!");
 		return;
@@ -115,7 +115,7 @@ void graphics_put_text(xD_DOS_framebuffer *fb, const char *str, uint32_t x, uint
 	}
 }
 
-void graphics_clear(xD_DOS_framebuffer *fb, uint32_t col) {
+void graphics_clear(xD_DOS_framebuffer_t *fb, uint32_t col) {
 	uint32_t *fb_ptr = (uint32_t *) fb->address;
 	uint32_t pixels = (fb->height * fb->pitch) / sizeof(uint32_t);
 	for (int i = 0; i < pixels; i++) {

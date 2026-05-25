@@ -7,15 +7,15 @@
 #include <stdint.h>
 
 uint16_t *unicode;
-psf1_header *psf1_hdr = NULL;
-psf_font *psf2_hdr = NULL;
+font_psf1_header_t *psf1_hdr = NULL;
+font_psf2_data_t *psf2_hdr = NULL;
 uint8_t *font_data_ptr = NULL;
 int font_version = 0;
 
 extern uint64_t hhdm_offset;
 
 void psf1_init(uint8_t *virt_start, uint8_t *virt_end) {
-	psf1_header *font = (psf1_header *) virt_start;
+	font_psf1_header_t *font = (font_psf1_header_t *) virt_start;
 
 	if (font->magic != PSF1_FONT_MAGIC) {
 		LOG_ERROR("FONT", "Invalid font magic: got 0x%llx, expected 0x%llx/0x%llx. Giving up...", font->magic, PSF1_FONT_MAGIC, PSF_FONT_MAGIC);
@@ -24,7 +24,7 @@ void psf1_init(uint8_t *virt_start, uint8_t *virt_end) {
 
 	LOG_DEBUG("FONT", "PSF font valid, got PSF1: magic 0x%llx. (height: %d)", PSF1_FONT_MAGIC, font->char_size);
 
-	psf1_hdr = (psf1_header *) virt_start;
+	psf1_hdr = (font_psf1_header_t *) virt_start;
 	font_data_ptr = virt_start + 4;
 	font_version = 1;
 
@@ -81,7 +81,7 @@ void psf1_init(uint8_t *virt_start, uint8_t *virt_end) {
 	}
 }
 
-void psf2_init(psf_font *font, uint8_t *virt_end) {
+void psf2_init(font_psf2_data_t *font, uint8_t *virt_end) {
 	LOG_DEBUG("FONT", "PSF font valid, got PSF2: 0x%llx. (width: %d, height: %d)", PSF_FONT_MAGIC, font->width, font->width);
 
 	uint16_t glyph = 0;
@@ -139,7 +139,7 @@ void psf2_init(psf_font *font, uint8_t *virt_end) {
 }
 
 void psf_init() {
-	xD_DOS_executable_address *exeaddr = request_executable_address();
+	xD_DOS_executable_address_t *exeaddr = request_executable_address();
 	if (!exeaddr) {
 		LOG_ERROR("FONT", "Executable address is NULL!");
 		return;
@@ -153,7 +153,7 @@ void psf_init() {
 	uint8_t *virt_start = (uint8_t *) (font_phys_addr + hhdm_offset);
 	uint8_t *virt_end = virt_start + ((uint64_t) &_binary_font_psf_end - (uint64_t) &_binary_font_psf_start);
 
-	psf_font *font = (psf_font *) virt_start;
+	font_psf2_data_t *font = (font_psf2_data_t *) virt_start;
 
 	if (font->magic != PSF_FONT_MAGIC) {
 		psf1_init(virt_start, virt_end);

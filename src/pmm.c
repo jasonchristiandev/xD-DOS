@@ -49,8 +49,8 @@ void pmm_lock_region(uint64_t base_address, uint64_t length) {
 // Returns 2 if no memory is usable
 uint8_t pmm_init() {
 	LOG_DEBUG("PMM", "Checking responses...");
-	xD_DOS_memmap *memmap = request_memmap();
-	xD_DOS_hhdm *hhdm = request_hhdm();
+	xD_DOS_memmap_t *memmap = request_memmap();
+	xD_DOS_hhdm_t *hhdm = request_hhdm();
 
 	if (memmap == NULL || hhdm == NULL) {
 		LOG_ERROR("PMM", "Memmap or HHDM is NULL!");
@@ -62,12 +62,12 @@ uint8_t pmm_init() {
 	hhdm_offset = hhdm->offset;
 
 	uint64_t highest_address = 0;
-	xD_DOS_memmap_entry *best_chunk = NULL;
+	xD_DOS_memmap_entry_t *best_chunk = NULL;
 
 	LOG_DEBUG("PMM", "Searching usable physical memory...");
 
 	for (uint64_t i = 0; i < memmap->count; i++) {
-		xD_DOS_memmap_entry *entry = memmap->entries[i];
+		xD_DOS_memmap_entry_t *entry = memmap->entries[i];
 
 		if (entry->type == XD_DOS_MEMMAP_USABLE) {
 			uint64_t top = entry->base + entry->length;

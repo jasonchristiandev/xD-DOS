@@ -1,12 +1,12 @@
 #include "xD-DOS/font.h"
+#include "xD-DOS/graphics.h"
 #include "xD-DOS/logging.h"
 #include "xD-DOS/memalloc.h"
 #include "xD-DOS/pit.h"
 #include "xD-DOS/pmm.h"
 #include "xD-DOS/requests.h"
 #include "xD-DOS/serial.h"
-#include "xD-DOS/string.h"		 // IWYU pragma: keep
-#include "xD-DOS/graphics.h"
+#include "xD-DOS/string.h" // IWYU pragma: keep
 #include "xD-DOS/vma.h"
 #include "xD-DOS/vmm.h"
 #include <stddef.h>
@@ -23,7 +23,7 @@ static void hcf() {
 	}
 }
 
-static void panic(xD_DOS_framebuffer *fb) {
+static void panic(xD_DOS_framebuffer_t *fb) {
 	LOG_ERROR("KERNEL", "Kernel panic! Something went wrong.");
 	hcf();
 }
@@ -33,10 +33,10 @@ void kernel_main() {
 		hcf();
 	}
 
-	xD_DOS_framebuffers *fbs = request_framebuffers();
+	xD_DOS_framebuffers_t *fbs = request_framebuffers();
 	if (fbs == NULL || fbs->count < 1) hcf();
 
-	xD_DOS_framebuffer *fb = fbs->framebuffers[0];
+	xD_DOS_framebuffer_t *fb = fbs->framebuffers[0];
 	volatile uint32_t *fb_ptr = fb->address;
 
 	serial_init();
@@ -79,7 +79,7 @@ void kernel_main() {
 		PANIC();
 	}
 
-	malloc_init(vma_alloc_pages, initial_heap_block, initial_heap_bytes);
+	memalloc_init(vma_alloc_pages, initial_heap_block, initial_heap_bytes);
 	LOG_INFO("KERNEL", "Initial heap allocated.");
 
 	// Init font
@@ -90,7 +90,7 @@ void kernel_main() {
 	graphics_clear(fb, 0);
 	const char *msg = "xD-DOS (Extended Drive - Disk Operating System)\r\nMaintained by Jason Christian\r\n\r\n";
 	graphics_put_text(fb, msg, 4, 4, 0xFFFFFF, 0x000000);
-	sleep_s(2);
+	SLEEP(2000);
 
 	// Halt
 	LOG_INFO("KERNEL", "Nothing to do, halting...");

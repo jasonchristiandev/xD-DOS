@@ -3,7 +3,7 @@
 #include "xD-DOS/pmm.h"
 #include "xD-DOS/vmm.h"
 
-extern page_table_t *kernel_pml4;
+extern vmm_page_table_t *kernel_pml4;
 
 static uint64_t heap_current_break = 0;
 static uint64_t heap_start = 0;
@@ -31,7 +31,7 @@ void *vma_alloc_pages(size_t pages) {
 		}
 
 		// Map physical frame
-		vmm_map_table(kernel_pml4, virt_addr, (uint64_t) phys_frame, PTE_WRITABLE);
+		vmm_map_table(kernel_pml4, virt_addr, (uint64_t) phys_frame, MEMORY_PTE_WRITABLE);
 	}
 
 	// Advance the break pointer
