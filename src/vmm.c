@@ -52,7 +52,6 @@ uint8_t vmm_init(void) {
 	uint64_t kernel_phys = exeaddr->phys;
 	uint64_t kernel_virt = exeaddr->virt;
 
-	// uint64_t kernel_size = 0x1000000;
 	uint64_t kernel_size = exefile->size;
 
 	LOG_DEBUG("VMM", "Kernel size: %lld bytes.", kernel_size);
