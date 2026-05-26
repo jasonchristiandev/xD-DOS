@@ -7,12 +7,7 @@
 #include <stdint.h>
 #include <string.h>
 
-extern font_psf1_header_t *psf1_hdr;
-extern font_psf2_data_t *psf2_hdr;
-extern uint8_t *font_data_ptr;
-extern int font_version;
-
-void __put_char(xD_DOS_framebuffer_t *fb, uint32_t width, uint32_t height, uint32_t bytes_per_glyph, uint8_t *glyph_bitmap, uint32_t cx, uint32_t cy, uint32_t fg, uint32_t bg) {
+void __put_char(xD_DOS_framebuffer_t *fb, font_data_t *font, uint32_t width, uint32_t height, uint32_t bytes_per_glyph, uint8_t *glyph_bitmap, uint32_t cx, uint32_t cy, uint32_t fg, uint32_t bg) {
 	if (cy >= fb->height || cx >= fb->width) return;
 
 	uint32_t *fb_ptr = (uint32_t *) fb->address;
@@ -37,37 +32,37 @@ void __put_char(xD_DOS_framebuffer_t *fb, uint32_t width, uint32_t height, uint3
 	}
 }
 
-void graphics_put_char(xD_DOS_framebuffer_t *fb, char ch, uint32_t x, uint32_t y, uint32_t fg, uint32_t bg) {
+void graphics_put_char(xD_DOS_framebuffer_t *fb, font_data_t *font, char ch, uint32_t x, uint32_t y, uint32_t fg, uint32_t bg) {
 	if (!fb || !fb->address) {
 		LOG_ERROR("TERMGRAPHICS", "Framebuffer is NULL!");
 		return;
 	}
 
-	if (unicode) ch = unicode[ch];
+	if (font->unicode) ch = font->unicode[ch];
 
 	uint32_t height;
 	uint32_t width;
 	uint32_t bytes_per_glyph;
 	uint8_t *glyph_bitmap;
 
-	if (font_version == 0) {
+	if (font->version == 0) {
 		LOG_ERROR("TERMGRAPHICS", "Font version equals 0!");
 		return;
-	} else if (font_version == 1) {
-		height = psf1_hdr->char_size;
+	} else if (font->version == 1) {
+		height = font->psf1_header->char_size;
 		width = 8; // PSF1 is always 8 pixels wide
 		bytes_per_glyph = height;
 	} else {
-		height = psf2_hdr->height;
-		width = psf2_hdr->width;
-		bytes_per_glyph = psf2_hdr->bytes_per_glyph;
+		height = font->psf2_header->height;
+		width = font->psf2_header->width;
+		bytes_per_glyph = font->psf2_header->bytes_per_glyph;
 	}
-	glyph_bitmap = font_data_ptr + (ch * bytes_per_glyph);
+	glyph_bitmap = font->data + (ch * bytes_per_glyph);
 
-	__put_char(fb, width, height, bytes_per_glyph, glyph_bitmap, x, y, fg, bg);
+	__put_char(fb, font, width, height, bytes_per_glyph, glyph_bitmap, x, y, fg, bg);
 }
 
-void graphics_put_text(xD_DOS_framebuffer_t *fb, const char *str, uint32_t x, uint32_t y, uint32_t fg, uint32_t bg) {
+void graphics_put_text(xD_DOS_framebuffer_t *fb, font_data_t *font, const char *str, uint32_t x, uint32_t y, uint32_t fg, uint32_t bg) {
 	if (!fb || !fb->address) {
 		LOG_ERROR("TERMGRAPHICS", "Framebuffer is NULL!");
 		return;
@@ -77,39 +72,39 @@ void graphics_put_text(xD_DOS_framebuffer_t *fb, const char *str, uint32_t x, ui
 	uint32_t width;
 	uint32_t bytes_per_glyph;
 
-	if (font_version == 0) {
+	if (font->version == 0) {
 		LOG_ERROR("TERMGRAPHICS", "Font version equals 0!");
 		return;
-	} else if (font_version == 1) {
-		height = psf1_hdr->char_size;
+	} else if (font->version == 1) {
+		height = font->psf1_header->char_size;
 		width = 8; // PSF1 is always 8 pixels wide
 		bytes_per_glyph = height;
 	} else {
-		height = psf2_hdr->height;
-		width = psf2_hdr->width;
-		bytes_per_glyph = psf2_hdr->bytes_per_glyph;
+		height = font->psf2_header->height;
+		width = font->psf2_header->width;
+		bytes_per_glyph = font->psf2_header->bytes_per_glyph;
 	}
 
-	int term_x = x;
-	int term_y = y;
-	for (int i = 0; i < strlen(str); i++) {
-		char ch = str[i];
-		if (unicode) ch = unicode[ch];
-		uint8_t *glyph_bitmap = font_data_ptr + (ch * bytes_per_glyph);
+	uint32_t term_x = x;
+	uint32_t term_y = y;
+	for (size_t i = 0; i < strlen(str); i++) {
+		unsigned char ch = str[i];
+		if (font->unicode) ch = font->unicode[ch];
+		uint8_t *glyph_bitmap = font->data + (ch * bytes_per_glyph);
 		if (ch == '\r') {
 			term_x = x;
 		} else if (ch == '\n') {
 			term_y += height;
 		} else if (ch == '\t') {
 			ch = ' ';
-			if (unicode) ch = unicode[' '];
-			uint8_t *glyph_bitmap = font_data_ptr + (ch * bytes_per_glyph);
+			if (font->unicode) ch = font->unicode[' '];
+			uint8_t *glyph_bitmap = font->data + (ch * bytes_per_glyph);
 			for (int j = 0; j < 8; j++) {
-				__put_char(fb, width, height, bytes_per_glyph, glyph_bitmap, term_x, term_y, fg, bg);
+				__put_char(fb, font, width, height, bytes_per_glyph, glyph_bitmap, term_x, term_y, fg, bg);
 				term_x += width;
 			}
 		} else {
-			__put_char(fb, width, height, bytes_per_glyph, glyph_bitmap, term_x, term_y, fg, bg);
+			__put_char(fb, font, width, height, bytes_per_glyph, glyph_bitmap, term_x, term_y, fg, bg);
 			term_x += width;
 		}
 	}
@@ -118,7 +113,7 @@ void graphics_put_text(xD_DOS_framebuffer_t *fb, const char *str, uint32_t x, ui
 void graphics_clear(xD_DOS_framebuffer_t *fb, uint32_t col) {
 	uint32_t *fb_ptr = (uint32_t *) fb->address;
 	uint32_t pixels = (fb->height * fb->pitch) / sizeof(uint32_t);
-	for (int i = 0; i < pixels; i++) {
+	for (uint32_t i = 0; i < pixels; i++) {
 		fb_ptr[i] = col;
 	}
 }

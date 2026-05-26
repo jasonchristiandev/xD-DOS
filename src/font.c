@@ -1,55 +1,30 @@
 #include "xD-DOS/font.h"
-#include "xD-DOS/logging.h"
-#include "xD-DOS/memalloc.h"
+#include "xD-DOS/logging.h" // IWYU pragma: keep
+#include "xD-DOS/memalloc.h" // IWYU pragma: keep
 #include "xD-DOS/requests.h"
 #include <limits.h>
-#include <stddef.h>
-#include <stdint.h>
-
-uint16_t *unicode;
-font_psf1_header_t *psf1_hdr = NULL;
-font_psf2_data_t *psf2_hdr = NULL;
-uint8_t *font_data_ptr = NULL;
-int font_version = 0;
+#include <string.h>
 
 extern uint64_t hhdm_offset;
 
-void psf1_init(uint8_t *virt_start, uint8_t *virt_end) {
-	font_psf1_header_t *font = (font_psf1_header_t *) virt_start;
+static void psf1_init(font_data_t *data, uint8_t *virt_start, uint8_t *virt_end) {
+	font_psf1_header_t *header = (font_psf1_header_t *) virt_start;
+	data->psf1_header = header;
+	data->version = 1;
+	data->data = virt_start + sizeof(font_psf1_header_t);
 
-	if (font->magic != PSF1_FONT_MAGIC) {
-		LOG_ERROR("FONT", "Invalid font magic: got 0x%llx, expected 0x%llx/0x%llx. Giving up...", font->magic, PSF1_FONT_MAGIC, PSF_FONT_MAGIC);
+	if ((header->font_mode & 2) == 0 && (header->font_mode & 4) == 0) {
+		data->unicode = NULL;
 		return;
 	}
 
-	LOG_DEBUG("FONT", "PSF font valid, got PSF1: magic 0x%llx. (height: %d)", PSF1_FONT_MAGIC, font->char_size);
-
-	psf1_hdr = (font_psf1_header_t *) virt_start;
-	font_data_ptr = virt_start + 4;
-	font_version = 1;
-
-	if ((font->font_mode & 2) == 0 && (font->font_mode & 4) == 0) {
-		LOG_DEBUG("FONT", "Font has no unicode table! Giving up...");
-		unicode = NULL;
-		return;
-	}
-
-	unicode = calloc(USHRT_MAX, 2);
-	if (unicode == NULL) {
-		LOG_ERROR("FONT", "Failed to allocate memory for unicode table!");
-		return;
-	}
-
-	uint32_t glyph_count = (font->font_mode & 1) ? 512 : 256;
-
-	uint8_t *ptr = virt_start + 4 + (glyph_count * font->char_size);
-	uint8_t *end = virt_end;
+	data->unicode = calloc(USHRT_MAX, sizeof(uint16_t));
+	uint32_t glyph_count = (header->font_mode & 1) ? 512 : 256;
+	uint8_t *ptr = data->data + (glyph_count * header->char_size);
 
 	uint16_t cur = 0;
-
-	while (ptr < end && cur < glyph_count) {
+	while (ptr < virt_end && cur < glyph_count) {
 		uint8_t uc = ptr[0];
-
 		if (uc == 0xFF) {
 			cur++;
 			ptr++;
@@ -75,34 +50,24 @@ void psf1_init(uint8_t *virt_start, uint8_t *virt_end) {
 			continue;
 		}
 
-		if (val < USHRT_MAX && val > 0) {
-			unicode[val] = cur;
-		}
+		if (val < USHRT_MAX && val > 0) data->unicode[val] = cur;
 	}
 }
 
-void psf2_init(font_psf2_data_t *font, uint8_t *virt_end) {
-	LOG_DEBUG("FONT", "PSF font valid, got PSF2: 0x%llx. (width: %d, height: %d)", PSF_FONT_MAGIC, font->width, font->width);
+static void psf2_init(font_data_t *data, font_psf2_header_t *header, uint8_t *virt_end) {
+	data->psf2_header = header;
+	data->version = 2;
+	data->data = ((uint8_t *) header) + header->header_size;
+
+	if (header->flags == 0) {
+		data->unicode = NULL;
+		return;
+	}
+
+	data->unicode = calloc(USHRT_MAX, sizeof(uint16_t));
+	uint8_t *ptr = ((uint8_t *) header) + header->header_size + (header->length * header->bytes_per_glyph);
 
 	uint16_t glyph = 0;
-
-	if (font->flags == 0) {
-		unicode = NULL;
-		return;
-	}
-
-	psf2_hdr = font;
-	font_data_ptr = (uint8_t *) font + font->header_size;
-	font_version = 2;
-
-	uint8_t *ptr = (uint8_t *) font + font->header_size + font->length * font->bytes_per_glyph;
-
-	unicode = calloc(USHRT_MAX, 2);
-	if (unicode == NULL) {
-		LOG_ERROR("FONT", "Failed to allocate memory for unicode table!");
-		return;
-	}
-
 	while (ptr < virt_end) {
 		uint8_t uc = ptr[0];
 		if (uc == 0xFF) {
@@ -113,7 +78,9 @@ void psf2_init(font_psf2_data_t *font, uint8_t *virt_end) {
 		if (uc == 0xFE) {
 			ptr++;
 			continue;
-		} else if (uc & 128) {
+		}
+
+		if (uc & 128) {
 			if ((uc & 32) == 0) {
 				uc = ((ptr[0] & 0x1F) << 6) + (ptr[1] & 0x3F);
 				ptr += 2;
@@ -132,32 +99,28 @@ void psf2_init(font_psf2_data_t *font, uint8_t *virt_end) {
 			ptr += 1;
 		}
 
-		if (uc > 0) {
-			unicode[uc] = glyph;
-		}
+		if (uc > 0) data->unicode[uc] = glyph;
 	}
 }
 
-void psf_init() {
+font_data_t *psf_init() {
+	static font_data_t data;
+	memset(&data, 0, sizeof(font_data_t));
+
 	xD_DOS_executable_address_t *exeaddr = request_executable_address();
-	if (!exeaddr) {
-		LOG_ERROR("FONT", "Executable address is NULL!");
-		return;
-	}
+	if (!exeaddr) return NULL;
 
 	uint64_t font_virt = (uint64_t) &_binary_font_psf_start;
-
-	uint64_t kernel_offset = font_virt - exeaddr->virt;
-	uint64_t font_phys_addr = exeaddr->phys + kernel_offset;
-
+	uint64_t font_phys_addr = exeaddr->phys + (font_virt - exeaddr->virt);
 	uint8_t *virt_start = (uint8_t *) (font_phys_addr + hhdm_offset);
 	uint8_t *virt_end = virt_start + ((uint64_t) &_binary_font_psf_end - (uint64_t) &_binary_font_psf_start);
 
-	font_psf2_data_t *font = (font_psf2_data_t *) virt_start;
-
-	if (font->magic != PSF_FONT_MAGIC) {
-		psf1_init(virt_start, virt_end);
-	} else {
-		psf2_init(font, virt_end);
+	uint32_t magic = *(uint32_t *) virt_start;
+	if ((magic & 0xFFFF) == PSF1_MAGIC) {
+		psf1_init(&data, virt_start, virt_end);
+	} else if (magic == PSF2_MAGIC) {
+		psf2_init(&data, (font_psf2_header_t *) virt_start, virt_end);
 	}
+
+	return &data;
 }

@@ -84,12 +84,12 @@ void kernel_main() {
 
 	// Init font
 	LOG_INFO("KERNEL", "Font initializing...");
-	psf_init();
+	font_data_t *font = psf_init();
 	LOG_INFO("KERNEL", "Font initialized.");
 
 	graphics_clear(fb, 0);
 	const char *msg = "xD-DOS (Extended Drive - Disk Operating System)\r\nMaintained by Jason Christian\r\n\r\n";
-	graphics_put_text(fb, msg, 4, 4, 0xFFFFFF, 0x000000);
+	graphics_put_text(fb, font, msg, 4, 4, 0xFFFFFF, 0x000000);
 	SLEEP(2000);
 
 	// Halt

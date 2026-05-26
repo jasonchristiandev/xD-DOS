@@ -1,4 +1,4 @@
-DEBUG_MODE = 0
+DEBUG = 0
 
 CC = gcc
 LD = ld
@@ -45,7 +45,7 @@ $(INCLUDE_DIR)/limine.h: limine-protocol/include/limine.h
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(BUILD_DIR) $(INCLUDE_DIR)/limine.h
 	@echo " [CC] $<"
-ifeq ($(DEBUG_MODE),1)
+ifeq ($(DEBUG),1)
 	@$(CC) $(CFLAGS) -c $< -o $@ -DDEBUG
 else
 	@$(CC) $(CFLAGS) -c $< -o $@
