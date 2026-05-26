@@ -2,45 +2,45 @@
 #include "xddos/pit.h"
 #include <stddef.h>
 #include <stdint.h>
-#define PORT 0x3f8
+#define SERIAL_PORT 0x3f8
 
 static uint8_t serial_initialized = 0;
 
 uint8_t serial_init() {
-	outb(PORT + 1, 0x00); // Disable all interrupts
-	outb(PORT + 3, 0x80); // Enable DLAB (set baud rate divisor)
-	outb(PORT + 0, 0x03); // Set divisor to 3 (low byte) 38400 baud
-	outb(PORT + 1, 0x00); //                  (high byte)
-	outb(PORT + 3, 0x03); // 8 bits, no parity, one stop bit
-	outb(PORT + 2, 0xC7); // Enable FIFO, clear them, with 14-byte threshold
-	outb(PORT + 4, 0x0B); // IRQs enabled, RTS/DSR set
-	outb(PORT + 4, 0x1E); // Set in loopback mode, test the serial chip
-	outb(PORT + 0, 0xAE); // Test serial chip (send byte 0xAE and check if serial returns same byte)
+	outb(SERIAL_PORT + 1, 0x00); // Disable all interrupts
+	outb(SERIAL_PORT + 3, 0x80); // Enable DLAB (set baud rate divisor)
+	outb(SERIAL_PORT + 0, 0x03); // Set divisor to 3 (low byte) 38400 baud
+	outb(SERIAL_PORT + 1, 0x00); //                  (high byte)
+	outb(SERIAL_PORT + 3, 0x03); // 8 bits, no parity, one stop bit
+	outb(SERIAL_PORT + 2, 0xC7); // Enable FIFO, clear them, with 14-byte threshold
+	outb(SERIAL_PORT + 4, 0x0B); // IRQs enabled, RTS/DSR set
+	outb(SERIAL_PORT + 4, 0x1E); // Set in loopback mode, test the serial chip
+	outb(SERIAL_PORT + 0, 0xAE); // Test serial chip (send byte 0xAE and check if serial returns same byte)
 
 	// Check if serial is faulty
-	if (inb(PORT + 0) != 0xAE) {
+	if (inb(SERIAL_PORT + 0) != 0xAE) {
 		return 0;
 	}
 
 	// If serial is not faulty set it in normal operation mode
-	outb(PORT + 4, 0x0F);
+	outb(SERIAL_PORT + 4, 0x0F);
 	serial_initialized = 1;
 	return 1;
 }
 
 uint8_t serial_received() {
-	return inb(PORT + 5) & 1;
+	return inb(SERIAL_PORT + 5) & 1;
 }
 
 char serial_read() {
 	if (!serial_initialized) return 0;
 	while (serial_received() == 0);
 
-	return inb(PORT);
+	return inb(SERIAL_PORT);
 }
 
 uint8_t serial_is_transmit_empty() {
-	return inb(PORT + 5) & 0x20;
+	return inb(SERIAL_PORT + 5) & 0x20;
 }
 
 uint8_t serial_write(char a) {
@@ -57,7 +57,7 @@ uint8_t serial_write(char a) {
 		ms_passed++;
 	}
 
-	outb(PORT, a);
+	outb(SERIAL_PORT, a);
 	return 1;
 }
 

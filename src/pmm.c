@@ -113,9 +113,9 @@ uint8_t pmm_init() {
 
 	LOG_DEBUG("PMM", "Parsed region.");
 
-	LOG_DEBUG("PMM", "Protecting bitmap... [(addr: 0x%llx, size: %d), (addr: 0x%llx, size: %d)]", best_chunk->base, bitmap_size, 0, PAGE_SIZE);
-
+	LOG_DEBUG("PMM", "Protecting bitmap... (addr: 0x%llx, size: %d)", best_chunk->base, bitmap_size);
 	pmm_lock_region(best_chunk->base, bitmap_size); // bitmap
+	LOG_DEBUG("PMM", "Protecting bitmap... (addr: 0x%llx, size: %d)", 0, PAGE_SIZE);
 	pmm_lock_region(0, PAGE_SIZE);
 
 	LOG_DEBUG("PMM", "Done init.");

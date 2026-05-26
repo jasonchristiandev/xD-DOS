@@ -41,15 +41,11 @@ uint8_t vmm_init(void) {
 	LOG_DEBUG("VMM", "Allocated physical page frame.");
 
 	LOG_DEBUG("VMM", "Zeroing out PML4...");
-	uint64_t *pml4_raw = (uint64_t *) kernel_pml4;
 	memset(kernel_pml4, 0, 4096);
 
 	for (uint64_t i = 0; i < 0x100000000ULL; i += 4096) {
 		vmm_map_table(kernel_pml4, (uint64_t) MEMORY_PHYS_TO_VIRT(i), i, MEMORY_PTE_WRITABLE);
 	}
-	// for (uint64_t i = 0; i < 0x2000000ULL; i += 4096) {
-	//	vmm_map_table(kernel_pml4, (uint64_t) MEMORY_PHYS_TO_VIRT(i), i, MEMORY_PTE_WRITABLE);
-	// }
 
 	// Map the kernel code/data space
 	LOG_DEBUG("VMM", "Mapping kernel code/data space...");
@@ -98,7 +94,7 @@ uint8_t vmm_map_table(vmm_page_table_t *pml4, uint64_t virt, uint64_t phys, uint
 		vmm_page_table_t *new_virt = (vmm_page_table_t *) MEMORY_PHYS_TO_VIRT(new_phys);
 		memset(new_virt, 0, 4096);
 
-		current_table->entries[pdpt_i] = new_phys | MEMORY_PTE_PRESENT | MEMORY_PTE_WRITABLE | MEMORY_PTE_USER;
+		current_table->entries[pdpt_i] = new_phys | MEMORY_PTE_PRESENT | MEMORY_PTE_WRITABLE;
 	}
 
 	current_table = (vmm_page_table_t *) MEMORY_PHYS_TO_VIRT(current_table->entries[pdpt_i] & MEMORY_PTE_FRAME);
@@ -109,7 +105,7 @@ uint8_t vmm_map_table(vmm_page_table_t *pml4, uint64_t virt, uint64_t phys, uint
 		vmm_page_table_t *new_virt = (vmm_page_table_t *) MEMORY_PHYS_TO_VIRT(new_phys);
 		memset(new_virt, 0, 4096);
 
-		current_table->entries[pd_i] = new_phys | MEMORY_PTE_PRESENT | MEMORY_PTE_WRITABLE | MEMORY_PTE_USER;
+		current_table->entries[pd_i] = new_phys | MEMORY_PTE_PRESENT | MEMORY_PTE_WRITABLE;
 	}
 	current_table = (vmm_page_table_t *) MEMORY_PHYS_TO_VIRT(current_table->entries[pd_i] & MEMORY_PTE_FRAME);
 

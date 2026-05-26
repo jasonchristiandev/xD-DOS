@@ -1,11 +1,11 @@
-#include "xddos/psf.h"
 #include "xddos/graphics.h"
 #include "xddos/logging.h"
-#include "xddos/stdlib.h" // IWYU pragma: keep
 #include "xddos/pit.h"
 #include "xddos/pmm.h"
+#include "xddos/psf.h"
 #include "xddos/requests.h"
 #include "xddos/serial.h"
+#include "xddos/stdlib.h" // IWYU pragma: keep
 #include "xddos/string.h" // IWYU pragma: keep
 #include "xddos/vma.h"
 #include "xddos/vmm.h"
@@ -20,6 +20,7 @@ static void hcf() {
 }
 
 static void panic(xddos_framebuffer_t *fb) {
+	(void)fb;
 	LOG_ERROR("KERNEL", "Kernel panic! Something went wrong.");
 	hcf();
 }
@@ -33,7 +34,6 @@ void kernel_main() {
 	if (fbs == NULL || fbs->count < 1) hcf();
 
 	xddos_framebuffer_t *fb = fbs->framebuffers[0];
-	volatile uint32_t *fb_ptr = fb->address;
 
 	serial_init();
 
@@ -43,15 +43,15 @@ void kernel_main() {
 	LOG_INFO("KERNEL", "Physical Memory Manager initializing...");
 	uint8_t pmm_result = pmm_init();
 	if (pmm_result == 1) {
-		LOG_ERROR("KERNEL", "Failed to initialize Physical Memory Manager! Error code 0x%llx (Memory Map or HHDM Not Ready).", pmm_result);
+		LOG_ERROR("KERNEL", "Failed to initialize Physical Memory Manager! Error code 0x%x (Memory Map or HHDM Not Ready).", pmm_result);
 		panic(fb);
 		return;
 	} else if (pmm_result == 2) {
-		LOG_ERROR("KERNEL", "Failed to initialize Physical Memory Manager! Error code 0x%llx (No Memory Available for Bitmap).", pmm_result);
+		LOG_ERROR("KERNEL", "Failed to initialize Physical Memory Manager! Error code 0x%x (No Memory Available for Bitmap).", pmm_result);
 		panic(fb);
 		return;
 	} else if (pmm_result > 0) {
-		LOG_ERROR("KERNEL", "Failed to initialize Physical Memory Manager! Error code 0x%llx (Unknown).", pmm_result);
+		LOG_ERROR("KERNEL", "Failed to initialize Physical Memory Manager! Error code 0x%x (Unknown).", pmm_result);
 		panic(fb);
 		return;
 	}
@@ -60,6 +60,23 @@ void kernel_main() {
 	// VMM init
 	LOG_INFO("KERNEL", "Virtual Memory Manager initializing...");
 	uint8_t vmm_result = vmm_init();
+	if (vmm_result == 1) {
+		LOG_ERROR("KERNEL", "Failed to initialize Virtual Memory Manager! Error code 0x%x (HHDM or Executable Address or Executable File Not Ready).", pmm_result);
+		panic(fb);
+		return;
+	} else if (vmm_result == 2) {
+		LOG_ERROR("KERNEL", "Failed to initialize Virtual Memory Manager! Error code 0x%x (HHDM Offset is 0).", pmm_result);
+		panic(fb);
+		return;
+	} else if (vmm_result == 3) {
+		LOG_ERROR("KERNEL", "Failed to initialize Virtual Memory Manager! Error code 0x%x (Out of Memory).", pmm_result);
+		panic(fb);
+		return;
+	} else if (vmm_result > 0) {
+		LOG_ERROR("KERNEL", "Failed to initialize Virtual Memory Manager! Error code 0x%x (Unknown).", pmm_result);
+		panic(fb);
+		return;
+	}
 	LOG_INFO("KERNEL", "Virtual Memory Manager initialized.");
 
 	// VMA init

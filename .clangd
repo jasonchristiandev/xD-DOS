@@ -1,17 +1,23 @@
 CompileFlags:
-  CompilationDatabase: "."
-  Add: [
-    "-xc",
-    "-std=c11",
-    "-fno-stack-protector",
-    "-mno-red-zone",
-    "-ffreestanding",
-    "-fms-extensions",
-    "-fno-builtin",
-    "-Wno-pointer-to-int-cast",
-    "-Wno-int-to-pointer-cast",
-    "-Wno-compare-distinct-pointer-types"
-  ]
+  CompilationDatabase: .
+  Add:
+    - -fno-stack-protector
+    - -ffreestanding
+    - -mno-red-zone
+    - -fms-extensions
+    - -nostdlib
+    - -Wall
+    - -Wextra
+    - -Wno-variadic-macros
+    - -Wno-pointer-to-int-cast
+    - -Wno-int-to-pointer-cast
+    - -Wno-compare-distinct-pointer-types
+    - -std=c11
+    - -O2
+    - -mno-mmx
+    - -mno-sse
+    - -mno-sse2
+    - -Iinclude
 
 Diagnostics:
   ClangTidy:

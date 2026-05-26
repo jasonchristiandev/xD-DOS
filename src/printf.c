@@ -1,12 +1,9 @@
-#ifndef PRINT_C
-#define PRINT_C
-
 #include "xddos/serial.h"
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
 
-static void printf_itoa(uint64_t n, char *str, uint8_t base, uint8_t signed_val) {
+static void itoa(uint64_t n, char *str, uint8_t base, uint8_t signed_val) {
 	char *p = str;
 	char *pa, *pb;
 	uint64_t decimal = n;
@@ -60,9 +57,9 @@ void printf(const char *format, ...) {
 				}
 				case 'd': {
 					if (is64) {
-						printf_itoa(va_arg(args, int64_t), buf, 10, 1);
+						itoa(va_arg(args, int64_t), buf, 10, 1);
 					} else {
-						printf_itoa(va_arg(args, int), buf, 10, 1);
+						itoa(va_arg(args, int), buf, 10, 1);
 					}
 
 					serial_write_text(buf);
@@ -70,9 +67,9 @@ void printf(const char *format, ...) {
 				}
 				case 'u': {
 					if (is64) {
-						printf_itoa(va_arg(args, uint64_t), buf, 10, 0);
+						itoa(va_arg(args, uint64_t), buf, 10, 0);
 					} else {
-						printf_itoa(va_arg(args, uint32_t), buf, 10, 0);
+						itoa(va_arg(args, uint32_t), buf, 10, 0);
 					}
 
 					serial_write_text(buf);
@@ -80,9 +77,9 @@ void printf(const char *format, ...) {
 				}
 				case 'x': {
 					if (is64) {
-						printf_itoa(va_arg(args, uint64_t), buf, 16, 0);
+						itoa(va_arg(args, uint64_t), buf, 16, 0);
 					} else {
-						printf_itoa(va_arg(args, uint32_t), buf, 16, 0);
+						itoa(va_arg(args, uint32_t), buf, 16, 0);
 					}
 
 					serial_write_text(buf);
@@ -96,5 +93,3 @@ void printf(const char *format, ...) {
 	}
 	va_end(args);
 }
-
-#endif // !PRINT_C

@@ -1,13 +1,13 @@
 #include "xddos/graphics.h"
-#include "xddos/psf.h"
 #include "xddos/logging.h"
-#include "xddos/stdlib.h" // IWYU pragma: keep
+#include "xddos/psf.h"
 #include "xddos/requests.h"
+#include "xddos/stdlib.h" // IWYU pragma: keep
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
-void _put_char(xddos_framebuffer_t *fb, xddos_psf_data_t *font, uint32_t width, uint32_t height, uint32_t bytes_per_glyph, uint8_t *glyph_bitmap, uint32_t cx, uint32_t cy, uint32_t fg, uint32_t bg) {
+static void put_char(xddos_framebuffer_t *fb, uint32_t width, uint32_t height, uint8_t *glyph_bitmap, uint32_t cx, uint32_t cy, uint32_t fg, uint32_t bg) {
 	if (cy >= fb->height || cx >= fb->width) return;
 
 	uint32_t *fb_ptr = (uint32_t *) fb->address;
@@ -34,11 +34,11 @@ void _put_char(xddos_framebuffer_t *fb, xddos_psf_data_t *font, uint32_t width, 
 
 void xddos_graphics_put_char(xddos_framebuffer_t *fb, xddos_psf_data_t *font, char ch, uint32_t x, uint32_t y, uint32_t fg, uint32_t bg) {
 	if (!fb || !fb->address) {
-		LOG_ERROR("TERMGRAPHICS", "Framebuffer is NULL!");
+		LOG_ERROR("GRAPHICS", "Framebuffer is NULL!");
 		return;
 	}
 
-	if (font->unicode) ch = font->unicode[ch];
+	if (font->unicode) ch = font->unicode[(uint8_t) ch];
 
 	uint32_t height;
 	uint32_t width;
@@ -46,7 +46,7 @@ void xddos_graphics_put_char(xddos_framebuffer_t *fb, xddos_psf_data_t *font, ch
 	uint8_t *glyph_bitmap;
 
 	if (font->version == 0) {
-		LOG_ERROR("TERMGRAPHICS", "Font version equals 0!");
+		LOG_ERROR("GRAPHICS", "Font version equals 0!");
 		return;
 	} else if (font->version == 1) {
 		height = font->psf1_header->char_size;
@@ -59,12 +59,12 @@ void xddos_graphics_put_char(xddos_framebuffer_t *fb, xddos_psf_data_t *font, ch
 	}
 	glyph_bitmap = font->data + (ch * bytes_per_glyph);
 
-	_put_char(fb, font, width, height, bytes_per_glyph, glyph_bitmap, x, y, fg, bg);
+	put_char(fb, width, height, glyph_bitmap, x, y, fg, bg);
 }
 
 void xddos_graphics_put_text(xddos_framebuffer_t *fb, xddos_psf_data_t *font, const char *str, uint32_t x, uint32_t y, uint32_t fg, uint32_t bg) {
 	if (!fb || !fb->address) {
-		LOG_ERROR("TERMGRAPHICS", "Framebuffer is NULL!");
+		LOG_ERROR("GRAPHICS", "Framebuffer is NULL!");
 		return;
 	}
 
@@ -73,7 +73,7 @@ void xddos_graphics_put_text(xddos_framebuffer_t *fb, xddos_psf_data_t *font, co
 	uint32_t bytes_per_glyph;
 
 	if (font->version == 0) {
-		LOG_ERROR("TERMGRAPHICS", "Font version equals 0!");
+		LOG_ERROR("GRAPHICS", "Font version equals 0!");
 		return;
 	} else if (font->version == 1) {
 		height = font->psf1_header->char_size;
@@ -100,11 +100,11 @@ void xddos_graphics_put_text(xddos_framebuffer_t *fb, xddos_psf_data_t *font, co
 			if (font->unicode) ch = font->unicode[' '];
 			uint8_t *glyph_bitmap = font->data + (ch * bytes_per_glyph);
 			for (uint8_t j = 0; j < 8; j++) {
-				_put_char(fb, font, width, height, bytes_per_glyph, glyph_bitmap, term_x, term_y, fg, bg);
+				put_char(fb, width, height, glyph_bitmap, term_x, term_y, fg, bg);
 				term_x += width;
 			}
 		} else {
-			_put_char(fb, font, width, height, bytes_per_glyph, glyph_bitmap, term_x, term_y, fg, bg);
+			put_char(fb, width, height, glyph_bitmap, term_x, term_y, fg, bg);
 			term_x += width;
 		}
 	}

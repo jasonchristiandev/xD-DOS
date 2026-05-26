@@ -33,7 +33,7 @@ git clone --recursive https://github.com/jasonchristiandev/xD-DOS.git
 ```bash
 cd xD-DOS
 make -j$(proc) # or
-make -j$(proc) DEBUG_MODE=1
+make -j$(proc) DEBUG=1
 ```
 
 3. **Run the OS using qemu-system-x86_64 (optional)**:
