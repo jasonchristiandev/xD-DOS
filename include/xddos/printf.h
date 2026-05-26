@@ -1,6 +1,6 @@
 #ifndef PRINTF_H
 #define PRINTF_H
 
-void printf(const char *format, ...);
+void xddos_printf(const char *format, ...);
 
 #endif // !PRINTF_H

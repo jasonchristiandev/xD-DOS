@@ -36,11 +36,11 @@ typedef struct xddos_framebuffers {
 	xddos_framebuffer_t **framebuffers;
 } xddos_framebuffers_t;
 
-uint8_t request_base_revision_supported();
-xddos_executable_address_t *request_executable_address();
-xddos_executable_file_t *request_executable_file();
-xddos_memmap_t *request_memmap();
-xddos_hhdm_t *request_hhdm();
-xddos_framebuffers_t *request_framebuffers();
+uint8_t xddos_request_base_revision_supported();
+xddos_executable_address_t *xddos_request_executable_address();
+xddos_executable_file_t *xddos_request_executable_file();
+xddos_memmap_t *xddos_request_memmap();
+xddos_hhdm_t *xddos_request_hhdm();
+xddos_framebuffers_t *xddos_request_framebuffers();
 
 #endif // !REQUESTS_H

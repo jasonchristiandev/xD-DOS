@@ -6,6 +6,8 @@ CompileFlags:
     - -mno-red-zone
     - -fms-extensions
     - -nostdlib
+    - -nostdinc
+    - -nobuiltininc
     - -Wall
     - -Wextra
     - -Wno-variadic-macros

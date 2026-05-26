@@ -1,12 +1,11 @@
 #include "xddos/asm.h"
 #include "xddos/pit.h"
-#include <stddef.h>
 #include <stdint.h>
 #define SERIAL_PORT 0x3f8
 
-static uint8_t serial_initialized = 0;
+static uint8_t xddos_serial_initialized = 0;
 
-uint8_t serial_init() {
+uint8_t xddos_serial_init() {
 	outb(SERIAL_PORT + 1, 0x00); // Disable all interrupts
 	outb(SERIAL_PORT + 3, 0x80); // Enable DLAB (set baud rate divisor)
 	outb(SERIAL_PORT + 0, 0x03); // Set divisor to 3 (low byte) 38400 baud
@@ -24,32 +23,32 @@ uint8_t serial_init() {
 
 	// If serial is not faulty set it in normal operation mode
 	outb(SERIAL_PORT + 4, 0x0F);
-	serial_initialized = 1;
+	xddos_serial_initialized = 1;
 	return 1;
 }
 
-uint8_t serial_received() {
+uint8_t xddos_serial_received() {
 	return inb(SERIAL_PORT + 5) & 1;
 }
 
-char serial_read() {
-	if (!serial_initialized) return 0;
-	while (serial_received() == 0);
+char xddos_serial_read() {
+	if (!xddos_serial_initialized) return 0;
+	while (xddos_serial_received() == 0);
 
 	return inb(SERIAL_PORT);
 }
 
-uint8_t serial_is_transmit_empty() {
+uint8_t xddos_serial_is_transmit_empty() {
 	return inb(SERIAL_PORT + 5) & 0x20;
 }
 
-uint8_t serial_write(char a) {
-	if (!serial_initialized) return 0;
+uint8_t xddos_serial_write(char a) {
+	if (!xddos_serial_initialized) return 0;
 
 	uint16_t ms_passed = 0;
-	while (serial_is_transmit_empty() == 0) {
+	while (xddos_serial_is_transmit_empty() == 0) {
 		if (ms_passed >= 1000) { // 1000 ms = 1 second
-			serial_initialized = 0;
+			xddos_serial_initialized = 0;
 			return 0;
 		}
 
@@ -61,9 +60,9 @@ uint8_t serial_write(char a) {
 	return 1;
 }
 
-uint8_t serial_write_text(const char *a) {
+uint8_t xddos_serial_write_text(const char *a) {
 	while (*a) {
-		if (!serial_write(*a++)) return 0;
+		if (!xddos_serial_write(*a++)) return 0;
 	}
 	return 1;
 }

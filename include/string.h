@@ -1,7 +1,17 @@
-#include "xddos/memory.h"
+#ifndef STRING_H
+#define STRING_H
+
+#include <stddef.h>
 #include <stdint.h>
 
-void *memory_copy(void *restrict dest, const void *restrict src, size_t n) {
+static inline size_t strlen(const char *str) {
+	const char *s;
+	
+	for (s = str; *s; ++s);
+	return (s - str);
+}
+
+static inline void *memcopy(void *restrict dest, const void *restrict src, size_t n) {
 	uint8_t *restrict pdest = dest;
 	const uint8_t *restrict psrc = src;
 
@@ -12,7 +22,7 @@ void *memory_copy(void *restrict dest, const void *restrict src, size_t n) {
 	return dest;
 }
 
-void *memory_set(void *s, int c, size_t n) {
+static inline void *memset(void *s, int c, size_t n) {
 	uint8_t *p = s;
 
 	for (size_t i = 0; i < n; i++) {
@@ -22,7 +32,7 @@ void *memory_set(void *s, int c, size_t n) {
 	return s;
 }
 
-void *memory_move(void *dest, const void *src, size_t n) {
+static inline void *memmove(void *dest, const void *src, size_t n) {
 	uint8_t *pdest = dest;
 	const uint8_t *psrc = src;
 
@@ -39,7 +49,7 @@ void *memory_move(void *dest, const void *src, size_t n) {
 	return dest;
 }
 
-int memory_cmp(const void *a, const void *b, size_t n) {
+static inline int memcmp(const void *a, const void *b, size_t n) {
 	const uint8_t *pa = a;
 	const uint8_t *pb = b;
 
@@ -53,3 +63,5 @@ int memory_cmp(const void *a, const void *b, size_t n) {
 
 	return 0;
 }
+
+#endif // !STRING_H

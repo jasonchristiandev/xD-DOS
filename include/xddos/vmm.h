@@ -11,11 +11,11 @@
 #define MEMORY_PHYS_TO_VIRT(phys) ((uint64_t)(phys) + (uint64_t)(hhdm_offset))
 #define MEMORY_VIRT_TO_PHYS(virt) ((uint64_t)((uintptr_t)(virt)) - (uint64_t)(hhdm_offset))
 
-typedef struct vmm_page_table {
+typedef struct xddos_vmm_page_table {
 	uint64_t entries[512];
-} vmm_page_table_t;
+} xddos_vmm_page_table_t;
 
-uint8_t vmm_init();
-uint8_t vmm_map_table(vmm_page_table_t *pml4, uint64_t virt, uint64_t phys, uint64_t flags);
+uint8_t xddos_vmm_init();
+uint8_t xddos_vmm_map_table(xddos_vmm_page_table_t *pml4, uint64_t virt, uint64_t phys, uint64_t flags);
 
 #endif // !VMM_H

@@ -22,11 +22,11 @@ __attribute__((used, section(".limine_requests"))) static volatile struct limine
 	.id = LIMINE_FRAMEBUFFER_REQUEST_ID,
 	.revision = 0};
 
-uint8_t request_base_revision_supported() {
+uint8_t xddos_request_base_revision_supported() {
 	return LIMINE_BASE_REVISION_SUPPORTED(limine_base_revision);
 }
 
-xddos_executable_address_t *request_executable_address() {
+xddos_executable_address_t *xddos_request_executable_address() {
 	struct limine_executable_address_response *response = executable_address_request.response;
 	if (response == NULL) return NULL;
 	static xddos_executable_address_t res;
@@ -35,7 +35,7 @@ xddos_executable_address_t *request_executable_address() {
 	return &res;
 }
 
-xddos_executable_file_t *request_executable_file() {
+xddos_executable_file_t *xddos_request_executable_file() {
 	struct limine_executable_file_response *response = executable_file_request.response;
 	if (response == NULL) return NULL;
 	static xddos_executable_file_t res;
@@ -44,7 +44,7 @@ xddos_executable_file_t *request_executable_file() {
 	return &res;
 }
 
-xddos_memmap_t *request_memmap() {
+xddos_memmap_t *xddos_request_memmap() {
 	struct limine_memmap_response *response = memmap_request.response;
 	if (response == NULL) return NULL;
 	static xddos_memmap_t res;
@@ -53,7 +53,7 @@ xddos_memmap_t *request_memmap() {
 	return &res;
 }
 
-xddos_hhdm_t *request_hhdm() {
+xddos_hhdm_t *xddos_request_hhdm() {
 	struct limine_hhdm_response *response = hhdm_request.response;
 	if (response == NULL) return NULL;
 	static xddos_hhdm_t res;
@@ -61,7 +61,7 @@ xddos_hhdm_t *request_hhdm() {
 	return &res;
 }
 
-xddos_framebuffers_t *request_framebuffers() {
+xddos_framebuffers_t *xddos_request_framebuffers() {
 	struct limine_framebuffer_response *response = framebuffer_request.response;
 	if (response == NULL) return NULL;
 	static xddos_framebuffers_t res;

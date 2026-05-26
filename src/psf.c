@@ -1,8 +1,7 @@
 #include "xddos/psf.h"
-#include "xddos/logging.h" // IWYU pragma: keep
-#include "xddos/stdlib.h" // IWYU pragma: keep
 #include "xddos/requests.h"
 #include <limits.h>
+#include <stdlib.h>
 #include <string.h>
 
 extern uint64_t hhdm_offset;
@@ -103,11 +102,11 @@ static void psf2_init(xddos_psf_data_t *data, xddos_psf2_header_t *header, uint8
 	}
 }
 
-xddos_psf_data_t *psf_init() {
+xddos_psf_data_t *xddos_psf_init() {
 	static xddos_psf_data_t data;
 	memset(&data, 0, sizeof(xddos_psf_data_t));
 
-	xddos_executable_address_t *exeaddr = request_executable_address();
+	xddos_executable_address_t *exeaddr = xddos_request_executable_address();
 	if (!exeaddr) return NULL;
 
 	uint64_t font_virt = (uint64_t) &_binary_font_psf_start;

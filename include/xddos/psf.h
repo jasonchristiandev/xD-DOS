@@ -1,7 +1,6 @@
 #ifndef FONT_H
 #define FONT_H
 
-#include <limits.h>
 #include <stdint.h>
 
 #define PSF1_MAGIC 0x0436
@@ -37,6 +36,6 @@ typedef struct xddos_psf_data {
 	uint8_t *data;
 } xddos_psf_data_t;
 
-xddos_psf_data_t *psf_init();
+xddos_psf_data_t *xddos_psf_init();
 
 #endif // !FONT_H

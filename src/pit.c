@@ -1,6 +1,7 @@
 #include "xddos/pit.h"
+#include "xddos/asm.h"
 
-void pit_sleep_ms(uint32_t ms) {
+void xddos_pit_sleep_ms(uint32_t ms) {
 	for (uint32_t i = 0; i < ms; i++) {
 		outb(PIT_COMMAND, 0xB2);
 		

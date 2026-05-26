@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-void vma_init(uint64_t heap_base);
-void *vma_alloc_pages(size_t pages);
+void xddos_vma_init(uint64_t heap_base);
+void *xddos_vma_alloc_pages(size_t pages);
 
 #endif

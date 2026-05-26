@@ -23,10 +23,11 @@ SRCS = $(wildcard $(SRC_DIR)/*.c)
 OBJS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRCS)) $(BUILD_DIR)/font_data.o
 
 CFLAGS = -fno-stack-protector -ffreestanding -mno-red-zone \
-		 -fms-extensions -nostdlib -Wall -Wextra -Wno-variadic-macros \
+		 -fms-extensions -nostdlib -nostdinc -Wall -Wextra \
 		 -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast \
-		 -Wno-compare-distinct-pointer-types -std=c11 -O2 \
-		 -mno-mmx -mno-sse -mno-sse2 -I$(INCLUDE_DIR)
+		 -Wno-compare-distinct-pointer-types \
+		 -Wno-variadic-macros -std=c11 -O2 -mno-mmx -mno-sse \
+		 -mno-sse2 -I$(INCLUDE_DIR)
 
 FONT_NAME = cp850-8x16.psf
 FONT_URL = https://raw.githubusercontent.com/ercanersoy/PSF-Fonts/master/$(FONT_NAME)
@@ -102,7 +103,13 @@ $(ISO_IMAGE): $(BUILD_DIR)/$(KERNEL) $(LIMINE_CONF) $(LIMINE_DIR)/limine
 	@echo " [ISO] $(ISO_IMAGE) success."
 
 run: $(ISO_IMAGE)
-	$(QEMU) -cdrom $(ISO_IMAGE) -m 256M -M q35 -serial mon:stdio | tee qemu.log
+	$(QEMU) -cdrom $(ISO_IMAGE) \
+		-m 256M \
+		-M q35 \
+		-serial mon:stdio \
+		-vga none \
+		-device VGA,xres=640,yres=480 \
+	| tee qemu.log
 
 distclean:
 	rm -rf $(BUILD_DIR) $(ISO_IMAGE) $(ISO_DIR) $(LIMINE_DIR) $(FONTS_DIR)

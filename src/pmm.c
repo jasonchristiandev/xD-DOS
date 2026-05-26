@@ -1,9 +1,9 @@
 #include "xddos/pmm.h"
 #include "xddos/logging.h"
-#include "xddos/stdlib.h" // IWYU pragma: keep
 #include "xddos/requests.h"
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 static uint8_t *bitmap = NULL;
 static size_t total_pages = 0;
@@ -18,11 +18,7 @@ static inline void bitmap_clear(uint64_t bit) {
 	bitmap[bit / 8] &= ~(1 << (bit % 8));
 }
 
-static inline uint8_t bitmap_test(uint64_t bit) {
-	return (bitmap[bit / 8] & (1 << (bit % 8))) != 0;
-}
-
-void pmm_free_region(uint64_t base_address, uint64_t length) {
+void xddos_pmm_free_region(uint64_t base_address, uint64_t length) {
 	uint64_t start_page = (base_address + PAGE_SIZE - 1) / PAGE_SIZE;
 	uint64_t end_page = (base_address + length) / PAGE_SIZE;
 
@@ -33,7 +29,7 @@ void pmm_free_region(uint64_t base_address, uint64_t length) {
 	}
 }
 
-void pmm_lock_region(uint64_t base_address, uint64_t length) {
+void xddos_pmm_lock_region(uint64_t base_address, uint64_t length) {
 	uint64_t start_page = base_address / PAGE_SIZE;
 	uint64_t end_page = (base_address + length + PAGE_SIZE - 1) / PAGE_SIZE;
 
@@ -47,10 +43,10 @@ void pmm_lock_region(uint64_t base_address, uint64_t length) {
 // Initializes the Physical Memory Manager
 // Returns 1 if memmap or HHDM is NULL
 // Returns 2 if no memory is usable
-uint8_t pmm_init() {
+uint8_t xddos_pmm_init() {
 	LOG_DEBUG("PMM", "Checking responses...");
-	xddos_memmap_t *memmap = request_memmap();
-	xddos_hhdm_t *hhdm = request_hhdm();
+	xddos_memmap_t *memmap = xddos_request_memmap();
+	xddos_hhdm_t *hhdm = xddos_request_hhdm();
 
 	if (memmap == NULL || hhdm == NULL) {
 		LOG_ERROR("PMM", "Memmap or HHDM is NULL!");
@@ -107,16 +103,16 @@ uint8_t pmm_init() {
 	// Free only usable memory
 	for (uint64_t i = 0; i < memmap->count; i++) {
 		if (memmap->entries[i]->type == XD_DOS_MEMMAP_USABLE) {
-			pmm_free_region(memmap->entries[i]->base, memmap->entries[i]->length);
+			xddos_pmm_free_region(memmap->entries[i]->base, memmap->entries[i]->length);
 		}
 	}
 
 	LOG_DEBUG("PMM", "Parsed region.");
 
 	LOG_DEBUG("PMM", "Protecting bitmap... (addr: 0x%llx, size: %d)", best_chunk->base, bitmap_size);
-	pmm_lock_region(best_chunk->base, bitmap_size); // bitmap
+	xddos_pmm_lock_region(best_chunk->base, bitmap_size); // bitmap
 	LOG_DEBUG("PMM", "Protecting bitmap... (addr: 0x%llx, size: %d)", 0, PAGE_SIZE);
-	pmm_lock_region(0, PAGE_SIZE);
+	xddos_pmm_lock_region(0, PAGE_SIZE);
 
 	LOG_DEBUG("PMM", "Done init.");
 
@@ -124,7 +120,7 @@ uint8_t pmm_init() {
 }
 
 // Allocates a single page
-void *pmm_alloc_page() {
+void *xddos_pmm_alloc_page() {
 	size_t bitmap_bytes = total_pages / 8;
 
 	for (size_t i = 0; i < bitmap_bytes; i++) {
@@ -146,7 +142,7 @@ void *pmm_alloc_page() {
 }
 
 // Frees a single page
-void pmm_free_page(void *page) {
+void xddos_pmm_free_page(void *page) {
 	if (!page) return;
 
 	uint64_t page_index = (uint64_t) page / PAGE_SIZE;

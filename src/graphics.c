@@ -2,19 +2,18 @@
 #include "xddos/logging.h"
 #include "xddos/psf.h"
 #include "xddos/requests.h"
-#include "xddos/stdlib.h" // IWYU pragma: keep
+#include <string.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <string.h>
 
-static void put_char(xddos_framebuffer_t *fb, uint32_t width, uint32_t height, uint8_t *glyph_bitmap, uint32_t cx, uint32_t cy, uint32_t fg, uint32_t bg) {
+static void put_char(xddos_framebuffer_t *fb, uint32_t width, uint32_t height, uint8_t *bitmap, uint32_t cx, uint32_t cy, uint32_t fg, uint32_t bg) {
 	if (cy >= fb->height || cx >= fb->width) return;
 
 	uint32_t *fb_ptr = (uint32_t *) fb->address;
 	uint32_t bytes_per_row = (width + 7) / 8;
 
 	for (uint32_t y = 0; y < height; y++) {
-		uint8_t *row_data = &glyph_bitmap[y * bytes_per_row];
+		uint8_t *row_data = &bitmap[y * bytes_per_row];
 		uint32_t row_offset = (y + cy) * (fb->pitch / 4);
 
 		for (uint32_t x = 0; x < width; x++) {

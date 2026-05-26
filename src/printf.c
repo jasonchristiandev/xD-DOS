@@ -31,7 +31,7 @@ static void itoa(uint64_t n, char *str, uint8_t base, uint8_t signed_val) {
 	}
 }
 
-void printf(const char *format, ...) {
+void xddos_printf(const char *format, ...) {
 	va_list args;
 	va_start(args, format);
 
@@ -52,7 +52,7 @@ void printf(const char *format, ...) {
 			switch (format[i]) {
 				case 's': {
 					char *s = va_arg(args, char *);
-					serial_write_text(s);
+					xddos_serial_write_text(s);
 					break;
 				}
 				case 'd': {
@@ -62,7 +62,7 @@ void printf(const char *format, ...) {
 						itoa(va_arg(args, int), buf, 10, 1);
 					}
 
-					serial_write_text(buf);
+					xddos_serial_write_text(buf);
 					break;
 				}
 				case 'u': {
@@ -72,7 +72,7 @@ void printf(const char *format, ...) {
 						itoa(va_arg(args, uint32_t), buf, 10, 0);
 					}
 
-					serial_write_text(buf);
+					xddos_serial_write_text(buf);
 					break;
 				}
 				case 'x': {
@@ -82,13 +82,13 @@ void printf(const char *format, ...) {
 						itoa(va_arg(args, uint32_t), buf, 16, 0);
 					}
 
-					serial_write_text(buf);
+					xddos_serial_write_text(buf);
 					break;
 				}
 			}
 		} else {
 			char single[2] = {format[i], '\0'};
-			serial_write_text(single);
+			xddos_serial_write_text(single);
 		}
 	}
 	va_end(args);
