@@ -1,7 +1,6 @@
 #ifndef FONT_H
 #define FONT_H
 
-#include "xddos/memalloc.h" // IWYU pragma: keep
 #include <limits.h>
 #include <stdint.h>
 
@@ -10,13 +9,13 @@
 
 // PSF1 glyph always have a width of 8 bits
 // and height of char_size
-typedef struct font_psf1_header {
+typedef struct xddos_psf1_header {
 	uint16_t magic;	   // Magic bytes
 	uint8_t font_mode; // Font mode
 	uint8_t char_size; // Character size
-} font_psf1_header_t;
+} xddos_psf1_header_t;
 
-typedef struct font_psf2_header {
+typedef struct xddos_psf2_header {
 	uint32_t magic;			  // Magic bytes to identify PSF
 	uint32_t version;		  //
 	uint32_t header_size;	  // Offset of bitmaps in file
@@ -25,19 +24,19 @@ typedef struct font_psf2_header {
 	uint32_t bytes_per_glyph; // Size of each glyph
 	uint32_t height;		  //
 	uint32_t width;			  //
-} font_psf2_header_t;
+} xddos_psf2_header_t;
 
 extern uint8_t _binary_font_psf_start[];
 extern uint8_t _binary_font_psf_end[];
 
-typedef struct font_data {
-	int version;
-	font_psf1_header_t *psf1_header;
-	font_psf2_header_t *psf2_header;
+typedef struct xddos_psf_data {
+	uint32_t version;
+	xddos_psf1_header_t *psf1_header;
+	xddos_psf2_header_t *psf2_header;
 	uint16_t *unicode;
 	uint8_t *data;
-} font_data_t;
+} xddos_psf_data_t;
 
-font_data_t *psf_init();
+xddos_psf_data_t *psf_init();
 
 #endif // !FONT_H

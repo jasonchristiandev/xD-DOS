@@ -1,6 +1,6 @@
 #include "xddos/pmm.h"
 #include "xddos/logging.h"
-#include "xddos/memory.h" // IWYU pragma: keep
+#include "xddos/stdlib.h" // IWYU pragma: keep
 #include "xddos/requests.h"
 #include <stddef.h>
 #include <stdint.h>
@@ -69,7 +69,7 @@ uint8_t pmm_init() {
 	for (uint64_t i = 0; i < memmap->count; i++) {
 		xddos_memmap_entry_t *entry = memmap->entries[i];
 
-		if (entry->type == xddos_MEMMAP_USABLE) {
+		if (entry->type == XD_DOS_MEMMAP_USABLE) {
 			uint64_t top = entry->base + entry->length;
 			if (top > highest_address) {
 				highest_address = top;
@@ -106,7 +106,7 @@ uint8_t pmm_init() {
 
 	// Free only usable memory
 	for (uint64_t i = 0; i < memmap->count; i++) {
-		if (memmap->entries[i]->type == xddos_MEMMAP_USABLE) {
+		if (memmap->entries[i]->type == XD_DOS_MEMMAP_USABLE) {
 			pmm_free_region(memmap->entries[i]->base, memmap->entries[i]->length);
 		}
 	}
@@ -131,7 +131,7 @@ void *pmm_alloc_page() {
 		if (bitmap[i] == 0xFF) continue;
 
 		// Found a byte with at least one free bit
-		for (int bit = 0; bit < 8; bit++) {
+		for (uint8_t bit = 0; bit < 8; bit++) {
 			if ((bitmap[i] & (1 << bit)) == 0) {
 				size_t page_index = (i * 8) + bit;
 				if (page_index >= total_pages) return NULL;

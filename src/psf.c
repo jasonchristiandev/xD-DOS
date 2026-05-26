@@ -1,17 +1,17 @@
-#include "xddos/font.h"
+#include "xddos/psf.h"
 #include "xddos/logging.h" // IWYU pragma: keep
-#include "xddos/memalloc.h" // IWYU pragma: keep
+#include "xddos/stdlib.h" // IWYU pragma: keep
 #include "xddos/requests.h"
 #include <limits.h>
 #include <string.h>
 
 extern uint64_t hhdm_offset;
 
-static void psf1_init(font_data_t *data, uint8_t *virt_start, uint8_t *virt_end) {
-	font_psf1_header_t *header = (font_psf1_header_t *) virt_start;
+static void psf1_init(xddos_psf_data_t *data, uint8_t *virt_start, uint8_t *virt_end) {
+	xddos_psf1_header_t *header = (xddos_psf1_header_t *) virt_start;
 	data->psf1_header = header;
 	data->version = 1;
-	data->data = virt_start + sizeof(font_psf1_header_t);
+	data->data = virt_start + sizeof(xddos_psf1_header_t);
 
 	if ((header->font_mode & 2) == 0 && (header->font_mode & 4) == 0) {
 		data->unicode = NULL;
@@ -54,7 +54,7 @@ static void psf1_init(font_data_t *data, uint8_t *virt_start, uint8_t *virt_end)
 	}
 }
 
-static void psf2_init(font_data_t *data, font_psf2_header_t *header, uint8_t *virt_end) {
+static void psf2_init(xddos_psf_data_t *data, xddos_psf2_header_t *header, uint8_t *virt_end) {
 	data->psf2_header = header;
 	data->version = 2;
 	data->data = ((uint8_t *) header) + header->header_size;
@@ -103,9 +103,9 @@ static void psf2_init(font_data_t *data, font_psf2_header_t *header, uint8_t *vi
 	}
 }
 
-font_data_t *psf_init() {
-	static font_data_t data;
-	memset(&data, 0, sizeof(font_data_t));
+xddos_psf_data_t *psf_init() {
+	static xddos_psf_data_t data;
+	memset(&data, 0, sizeof(xddos_psf_data_t));
 
 	xddos_executable_address_t *exeaddr = request_executable_address();
 	if (!exeaddr) return NULL;
@@ -119,7 +119,7 @@ font_data_t *psf_init() {
 	if ((magic & 0xFFFF) == PSF1_MAGIC) {
 		psf1_init(&data, virt_start, virt_end);
 	} else if (magic == PSF2_MAGIC) {
-		psf2_init(&data, (font_psf2_header_t *) virt_start, virt_end);
+		psf2_init(&data, (xddos_psf2_header_t *) virt_start, virt_end);
 	}
 
 	return &data;

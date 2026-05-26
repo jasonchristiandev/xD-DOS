@@ -1,7 +1,7 @@
-#include "xddos/font.h"
+#include "xddos/psf.h"
 #include "xddos/graphics.h"
 #include "xddos/logging.h"
-#include "xddos/memalloc.h"
+#include "xddos/stdlib.h" // IWYU pragma: keep
 #include "xddos/pit.h"
 #include "xddos/pmm.h"
 #include "xddos/requests.h"
@@ -12,10 +12,6 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
-
-#define PANIC() \
-	panic(fb);  \
-	return;
 
 static void hcf() {
 	for (;;) {
@@ -41,20 +37,23 @@ void kernel_main() {
 
 	serial_init();
 
-	LOG_INFO("xddos", "Extended Drive - Disk Operating System (xddos) Starting...");
+	LOG_INFO("xD-DOS", "Extended Drive - Disk Operating System (xddos) Starting...");
 
 	// PMM init
 	LOG_INFO("KERNEL", "Physical Memory Manager initializing...");
 	uint8_t pmm_result = pmm_init();
 	if (pmm_result == 1) {
 		LOG_ERROR("KERNEL", "Failed to initialize Physical Memory Manager! Error code 0x%llx (Memory Map or HHDM Not Ready).", pmm_result);
-		PANIC();
+		panic(fb);
+		return;
 	} else if (pmm_result == 2) {
 		LOG_ERROR("KERNEL", "Failed to initialize Physical Memory Manager! Error code 0x%llx (No Memory Available for Bitmap).", pmm_result);
-		PANIC();
+		panic(fb);
+		return;
 	} else if (pmm_result > 0) {
 		LOG_ERROR("KERNEL", "Failed to initialize Physical Memory Manager! Error code 0x%llx (Unknown).", pmm_result);
-		PANIC();
+		panic(fb);
+		return;
 	}
 	LOG_INFO("KERNEL", "Physical Memory Manager initialized.");
 
@@ -76,7 +75,8 @@ void kernel_main() {
 	void *initial_heap_block = vma_alloc_pages(initial_pages);
 	if (!initial_heap_block) {
 		LOG_ERROR("KERNEL", "Failed to allocate initial heap pages!");
-		PANIC();
+		panic(fb);
+		return;
 	}
 
 	memalloc_init(vma_alloc_pages, initial_heap_block, initial_heap_bytes);
@@ -84,12 +84,12 @@ void kernel_main() {
 
 	// Init font
 	LOG_INFO("KERNEL", "Font initializing...");
-	font_data_t *font = psf_init();
+	xddos_psf_data_t *font = psf_init();
 	LOG_INFO("KERNEL", "Font initialized.");
 
-	graphics_clear(fb, 0);
-	const char *msg = "xddos (Extended Drive - Disk Operating System)\r\nMaintained by Jason Christian\r\n\r\n";
-	graphics_put_text(fb, font, msg, 4, 4, 0xFFFFFF, 0x000000);
+	xddos_graphics_clear(fb, 0);
+	const char *msg = "xD-DOS (Extended Drive - Disk Operating System)\r\nMaintained by Jason Christian\r\n\r\n";
+	xddos_graphics_put_text(fb, font, msg, 4, 4, 0xFFFFFF, 0x000000);
 	SLEEP(2000);
 
 	// Halt

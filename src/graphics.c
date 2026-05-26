@@ -1,13 +1,13 @@
 #include "xddos/graphics.h"
-#include "xddos/font.h"
+#include "xddos/psf.h"
 #include "xddos/logging.h"
-#include "xddos/memory.h" // IWYU pragma: keep
+#include "xddos/stdlib.h" // IWYU pragma: keep
 #include "xddos/requests.h"
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
-void __put_char(xddos_framebuffer_t *fb, font_data_t *font, uint32_t width, uint32_t height, uint32_t bytes_per_glyph, uint8_t *glyph_bitmap, uint32_t cx, uint32_t cy, uint32_t fg, uint32_t bg) {
+void _put_char(xddos_framebuffer_t *fb, xddos_psf_data_t *font, uint32_t width, uint32_t height, uint32_t bytes_per_glyph, uint8_t *glyph_bitmap, uint32_t cx, uint32_t cy, uint32_t fg, uint32_t bg) {
 	if (cy >= fb->height || cx >= fb->width) return;
 
 	uint32_t *fb_ptr = (uint32_t *) fb->address;
@@ -32,7 +32,7 @@ void __put_char(xddos_framebuffer_t *fb, font_data_t *font, uint32_t width, uint
 	}
 }
 
-void graphics_put_char(xddos_framebuffer_t *fb, font_data_t *font, char ch, uint32_t x, uint32_t y, uint32_t fg, uint32_t bg) {
+void xddos_graphics_put_char(xddos_framebuffer_t *fb, xddos_psf_data_t *font, char ch, uint32_t x, uint32_t y, uint32_t fg, uint32_t bg) {
 	if (!fb || !fb->address) {
 		LOG_ERROR("TERMGRAPHICS", "Framebuffer is NULL!");
 		return;
@@ -59,10 +59,10 @@ void graphics_put_char(xddos_framebuffer_t *fb, font_data_t *font, char ch, uint
 	}
 	glyph_bitmap = font->data + (ch * bytes_per_glyph);
 
-	__put_char(fb, font, width, height, bytes_per_glyph, glyph_bitmap, x, y, fg, bg);
+	_put_char(fb, font, width, height, bytes_per_glyph, glyph_bitmap, x, y, fg, bg);
 }
 
-void graphics_put_text(xddos_framebuffer_t *fb, font_data_t *font, const char *str, uint32_t x, uint32_t y, uint32_t fg, uint32_t bg) {
+void xddos_graphics_put_text(xddos_framebuffer_t *fb, xddos_psf_data_t *font, const char *str, uint32_t x, uint32_t y, uint32_t fg, uint32_t bg) {
 	if (!fb || !fb->address) {
 		LOG_ERROR("TERMGRAPHICS", "Framebuffer is NULL!");
 		return;
@@ -99,18 +99,18 @@ void graphics_put_text(xddos_framebuffer_t *fb, font_data_t *font, const char *s
 			ch = ' ';
 			if (font->unicode) ch = font->unicode[' '];
 			uint8_t *glyph_bitmap = font->data + (ch * bytes_per_glyph);
-			for (int j = 0; j < 8; j++) {
-				__put_char(fb, font, width, height, bytes_per_glyph, glyph_bitmap, term_x, term_y, fg, bg);
+			for (uint8_t j = 0; j < 8; j++) {
+				_put_char(fb, font, width, height, bytes_per_glyph, glyph_bitmap, term_x, term_y, fg, bg);
 				term_x += width;
 			}
 		} else {
-			__put_char(fb, font, width, height, bytes_per_glyph, glyph_bitmap, term_x, term_y, fg, bg);
+			_put_char(fb, font, width, height, bytes_per_glyph, glyph_bitmap, term_x, term_y, fg, bg);
 			term_x += width;
 		}
 	}
 }
 
-void graphics_clear(xddos_framebuffer_t *fb, uint32_t col) {
+void xddos_graphics_clear(xddos_framebuffer_t *fb, uint32_t col) {
 	uint32_t *fb_ptr = (uint32_t *) fb->address;
 	uint32_t pixels = (fb->height * fb->pitch) / sizeof(uint32_t);
 	for (uint32_t i = 0; i < pixels; i++) {

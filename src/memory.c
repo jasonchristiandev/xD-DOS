@@ -1,7 +1,7 @@
 #include "xddos/memory.h"
 #include <stdint.h>
 
-void *memcpy(void *restrict dest, const void *restrict src, size_t n) {
+void *memory_copy(void *restrict dest, const void *restrict src, size_t n) {
 	uint8_t *restrict pdest = dest;
 	const uint8_t *restrict psrc = src;
 
@@ -12,7 +12,7 @@ void *memcpy(void *restrict dest, const void *restrict src, size_t n) {
 	return dest;
 }
 
-void *memset(void *s, int c, size_t n) {
+void *memory_set(void *s, int c, size_t n) {
 	uint8_t *p = s;
 
 	for (size_t i = 0; i < n; i++) {
@@ -22,7 +22,7 @@ void *memset(void *s, int c, size_t n) {
 	return s;
 }
 
-void *memmove(void *dest, const void *src, size_t n) {
+void *memory_move(void *dest, const void *src, size_t n) {
 	uint8_t *pdest = dest;
 	const uint8_t *psrc = src;
 
@@ -39,7 +39,7 @@ void *memmove(void *dest, const void *src, size_t n) {
 	return dest;
 }
 
-int memcmp(const void *a, const void *b, size_t n) {
+int memory_cmp(const void *a, const void *b, size_t n) {
 	const uint8_t *pa = a;
 	const uint8_t *pb = b;
 

@@ -1,6 +1,7 @@
 #include "xddos/asm.h"
 #include "xddos/pit.h"
 #include <stddef.h>
+#include <stdint.h>
 #define PORT 0x3f8
 
 static uint8_t serial_initialized = 0;
@@ -45,7 +46,7 @@ uint8_t serial_is_transmit_empty() {
 uint8_t serial_write(char a) {
 	if (!serial_initialized) return 0;
 
-	int ms_passed = 0;
+	uint16_t ms_passed = 0;
 	while (serial_is_transmit_empty() == 0) {
 		if (ms_passed >= 1000) { // 1000 ms = 1 second
 			serial_initialized = 0;

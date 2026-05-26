@@ -1,6 +1,6 @@
 #include "xddos/vmm.h"
 #include "xddos/logging.h"
-#include "xddos/memory.h" // IWYU pragma: keep
+#include "xddos/stdlib.h" // IWYU pragma: keep
 #include "xddos/pmm.h"
 #include "xddos/requests.h"
 #include <stdint.h>
