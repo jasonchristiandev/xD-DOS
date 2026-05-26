@@ -111,7 +111,7 @@ uint8_t xddos_pmm_init() {
 
 	LOG_DEBUG("PMM", "Protecting bitmap... (addr: 0x%llx, size: %d)", best_chunk->base, bitmap_size);
 	xddos_pmm_lock_region(best_chunk->base, bitmap_size); // bitmap
-	LOG_DEBUG("PMM", "Protecting bitmap... (addr: 0x%llx, size: %d)", 0, PAGE_SIZE);
+	LOG_DEBUG("PMM", "Protecting zero page... (addr: 0x%llx, size: %d)", 0, PAGE_SIZE);
 	xddos_pmm_lock_region(0, PAGE_SIZE);
 
 	LOG_DEBUG("PMM", "Done init.");
@@ -121,9 +121,7 @@ uint8_t xddos_pmm_init() {
 
 // Allocates a single page
 void *xddos_pmm_alloc_page() {
-	size_t bitmap_bytes = total_pages / 8;
-
-	for (size_t i = 0; i < bitmap_bytes; i++) {
+	for (size_t i = 0; i < bitmap_size; i++) {
 		if (bitmap[i] == 0xFF) continue;
 
 		// Found a byte with at least one free bit

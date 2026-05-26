@@ -43,8 +43,9 @@ uint8_t xddos_vmm_init(void) {
 	LOG_DEBUG("VMM", "Zeroing out PML4...");
 	memset(kernel_pml4, 0, 4096);
 
-	for (uint64_t i = 0; i < 0x100000000ULL; i += 4096) {
-		xddos_vmm_map_table(kernel_pml4, (uint64_t) MEMORY_PHYS_TO_VIRT(i), i, MEMORY_PTE_WRITABLE);
+	LOG_DEBUG("VMM", "Mapping huge table...");
+	for (uint64_t i = 0; i < 0x100000000ULL; i += 0x200000) {
+		xddos_vmm_map_table_huge(kernel_pml4, (uint64_t) MEMORY_PHYS_TO_VIRT(i), i, MEMORY_PTE_WRITABLE);
 	}
 
 	// Map the kernel code/data space
@@ -110,6 +111,41 @@ uint8_t xddos_vmm_map_table(xddos_vmm_page_table_t *pml4, uint64_t virt, uint64_
 
 	// Map the actual target address with the requested flags
 	current_table->entries[pt_i] = (phys & MEMORY_PTE_FRAME) | flags | MEMORY_PTE_PRESENT;
+
+	__asm__ volatile("invlpg (%0)" ::"r"(virt) : "memory");
+
+	return 1;
+}
+
+uint8_t xddos_vmm_map_table_huge(xddos_vmm_page_table_t *pml4, uint64_t virt, uint64_t phys, uint64_t flags) {
+	uint16_t pml4_i = (virt >> 39) & 0x1FF;
+	uint16_t pdpt_i = (virt >> 30) & 0x1FF;
+	uint16_t pd_i = (virt >> 21) & 0x1FF;
+
+	xddos_vmm_page_table_t *current_table = pml4;
+
+	// PDPT to PD
+	if (!(current_table->entries[pml4_i] & MEMORY_PTE_PRESENT)) {
+		uint64_t new_phys = (uint64_t) xddos_pmm_alloc_page();
+		xddos_vmm_page_table_t *new_virt = (xddos_vmm_page_table_t *) MEMORY_PHYS_TO_VIRT(new_phys);
+		memset(new_virt, 0, 4096);
+		current_table->entries[pml4_i] = new_phys | MEMORY_PTE_PRESENT | MEMORY_PTE_WRITABLE;
+	}
+
+	current_table = (xddos_vmm_page_table_t *) MEMORY_PHYS_TO_VIRT(current_table->entries[pml4_i] & MEMORY_PTE_FRAME);
+
+	// PD to PT
+	if (!(current_table->entries[pdpt_i] & MEMORY_PTE_PRESENT)) {
+		uint64_t new_phys = (uint64_t) xddos_pmm_alloc_page();
+		xddos_vmm_page_table_t *new_virt = (xddos_vmm_page_table_t *) MEMORY_PHYS_TO_VIRT(new_phys);
+		memset(new_virt, 0, 4096);
+		current_table->entries[pdpt_i] = new_phys | MEMORY_PTE_PRESENT | MEMORY_PTE_WRITABLE;
+	}
+
+	current_table = (xddos_vmm_page_table_t *) MEMORY_PHYS_TO_VIRT(current_table->entries[pdpt_i] & MEMORY_PTE_FRAME);
+
+	// Map the actual target address with the requested flags
+	current_table->entries[pd_i] = (phys & 0x000FFFFFFFE00000ULL) | flags | MEMORY_PTE_PRESENT | MEMORY_PTE_HUGE;
 
 	__asm__ volatile("invlpg (%0)" ::"r"(virt) : "memory");
 
