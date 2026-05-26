@@ -1,7 +1,7 @@
 #ifndef PRINT_C
 #define PRINT_C
 
-#include "xD-DOS/serial.h"
+#include "xddos/serial.h"
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>

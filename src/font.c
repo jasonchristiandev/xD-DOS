@@ -1,7 +1,7 @@
-#include "xD-DOS/font.h"
-#include "xD-DOS/logging.h" // IWYU pragma: keep
-#include "xD-DOS/memalloc.h" // IWYU pragma: keep
-#include "xD-DOS/requests.h"
+#include "xddos/font.h"
+#include "xddos/logging.h" // IWYU pragma: keep
+#include "xddos/memalloc.h" // IWYU pragma: keep
+#include "xddos/requests.h"
 #include <limits.h>
 #include <string.h>
 
@@ -107,7 +107,7 @@ font_data_t *psf_init() {
 	static font_data_t data;
 	memset(&data, 0, sizeof(font_data_t));
 
-	xD_DOS_executable_address_t *exeaddr = request_executable_address();
+	xddos_executable_address_t *exeaddr = request_executable_address();
 	if (!exeaddr) return NULL;
 
 	uint64_t font_virt = (uint64_t) &_binary_font_psf_start;

@@ -1,14 +1,14 @@
-#include "xD-DOS/font.h"
-#include "xD-DOS/graphics.h"
-#include "xD-DOS/logging.h"
-#include "xD-DOS/memalloc.h"
-#include "xD-DOS/pit.h"
-#include "xD-DOS/pmm.h"
-#include "xD-DOS/requests.h"
-#include "xD-DOS/serial.h"
-#include "xD-DOS/string.h" // IWYU pragma: keep
-#include "xD-DOS/vma.h"
-#include "xD-DOS/vmm.h"
+#include "xddos/font.h"
+#include "xddos/graphics.h"
+#include "xddos/logging.h"
+#include "xddos/memalloc.h"
+#include "xddos/pit.h"
+#include "xddos/pmm.h"
+#include "xddos/requests.h"
+#include "xddos/serial.h"
+#include "xddos/string.h" // IWYU pragma: keep
+#include "xddos/vma.h"
+#include "xddos/vmm.h"
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -23,7 +23,7 @@ static void hcf() {
 	}
 }
 
-static void panic(xD_DOS_framebuffer_t *fb) {
+static void panic(xddos_framebuffer_t *fb) {
 	LOG_ERROR("KERNEL", "Kernel panic! Something went wrong.");
 	hcf();
 }
@@ -33,15 +33,15 @@ void kernel_main() {
 		hcf();
 	}
 
-	xD_DOS_framebuffers_t *fbs = request_framebuffers();
+	xddos_framebuffers_t *fbs = request_framebuffers();
 	if (fbs == NULL || fbs->count < 1) hcf();
 
-	xD_DOS_framebuffer_t *fb = fbs->framebuffers[0];
+	xddos_framebuffer_t *fb = fbs->framebuffers[0];
 	volatile uint32_t *fb_ptr = fb->address;
 
 	serial_init();
 
-	LOG_INFO("xD-DOS", "Extended Drive - Disk Operating System (xD-DOS) Starting...");
+	LOG_INFO("xddos", "Extended Drive - Disk Operating System (xddos) Starting...");
 
 	// PMM init
 	LOG_INFO("KERNEL", "Physical Memory Manager initializing...");
@@ -88,7 +88,7 @@ void kernel_main() {
 	LOG_INFO("KERNEL", "Font initialized.");
 
 	graphics_clear(fb, 0);
-	const char *msg = "xD-DOS (Extended Drive - Disk Operating System)\r\nMaintained by Jason Christian\r\n\r\n";
+	const char *msg = "xddos (Extended Drive - Disk Operating System)\r\nMaintained by Jason Christian\r\n\r\n";
 	graphics_put_text(fb, font, msg, 4, 4, 0xFFFFFF, 0x000000);
 	SLEEP(2000);
 

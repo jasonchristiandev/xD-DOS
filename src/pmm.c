@@ -1,7 +1,7 @@
-#include "xD-DOS/pmm.h"
-#include "xD-DOS/logging.h"
-#include "xD-DOS/memory.h" // IWYU pragma: keep
-#include "xD-DOS/requests.h"
+#include "xddos/pmm.h"
+#include "xddos/logging.h"
+#include "xddos/memory.h" // IWYU pragma: keep
+#include "xddos/requests.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -49,8 +49,8 @@ void pmm_lock_region(uint64_t base_address, uint64_t length) {
 // Returns 2 if no memory is usable
 uint8_t pmm_init() {
 	LOG_DEBUG("PMM", "Checking responses...");
-	xD_DOS_memmap_t *memmap = request_memmap();
-	xD_DOS_hhdm_t *hhdm = request_hhdm();
+	xddos_memmap_t *memmap = request_memmap();
+	xddos_hhdm_t *hhdm = request_hhdm();
 
 	if (memmap == NULL || hhdm == NULL) {
 		LOG_ERROR("PMM", "Memmap or HHDM is NULL!");
@@ -62,14 +62,14 @@ uint8_t pmm_init() {
 	hhdm_offset = hhdm->offset;
 
 	uint64_t highest_address = 0;
-	xD_DOS_memmap_entry_t *best_chunk = NULL;
+	xddos_memmap_entry_t *best_chunk = NULL;
 
 	LOG_DEBUG("PMM", "Searching usable physical memory...");
 
 	for (uint64_t i = 0; i < memmap->count; i++) {
-		xD_DOS_memmap_entry_t *entry = memmap->entries[i];
+		xddos_memmap_entry_t *entry = memmap->entries[i];
 
-		if (entry->type == XD_DOS_MEMMAP_USABLE) {
+		if (entry->type == xddos_MEMMAP_USABLE) {
 			uint64_t top = entry->base + entry->length;
 			if (top > highest_address) {
 				highest_address = top;
@@ -106,7 +106,7 @@ uint8_t pmm_init() {
 
 	// Free only usable memory
 	for (uint64_t i = 0; i < memmap->count; i++) {
-		if (memmap->entries[i]->type == XD_DOS_MEMMAP_USABLE) {
+		if (memmap->entries[i]->type == xddos_MEMMAP_USABLE) {
 			pmm_free_region(memmap->entries[i]->base, memmap->entries[i]->length);
 		}
 	}

@@ -1,7 +1,7 @@
-#include "xD-DOS/vma.h"
-#include "xD-DOS/logging.h"
-#include "xD-DOS/pmm.h"
-#include "xD-DOS/vmm.h"
+#include "xddos/vma.h"
+#include "xddos/logging.h"
+#include "xddos/pmm.h"
+#include "xddos/vmm.h"
 
 extern vmm_page_table_t *kernel_pml4;
 

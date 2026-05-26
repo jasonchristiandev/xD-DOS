@@ -1,4 +1,4 @@
-#include "xD-DOS/memalloc.h"
+#include "xddos/memalloc.h"
 #include <string.h>
 
 #define ALIGNMENT 16

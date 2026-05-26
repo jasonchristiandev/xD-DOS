@@ -1,4 +1,4 @@
-#include "xD-DOS/requests.h"
+#include "xddos/requests.h"
 #include <limine.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -26,45 +26,45 @@ uint8_t request_base_revision_supported() {
 	return LIMINE_BASE_REVISION_SUPPORTED(limine_base_revision);
 }
 
-xD_DOS_executable_address_t *request_executable_address() {
+xddos_executable_address_t *request_executable_address() {
 	struct limine_executable_address_response *response = executable_address_request.response;
 	if (response == NULL) return NULL;
-	static xD_DOS_executable_address_t res;
+	static xddos_executable_address_t res;
 	res.phys = response->physical_base;
 	res.virt = response->virtual_base;
 	return &res;
 }
 
-xD_DOS_executable_file_t *request_executable_file() {
+xddos_executable_file_t *request_executable_file() {
 	struct limine_executable_file_response *response = executable_file_request.response;
 	if (response == NULL) return NULL;
-	static xD_DOS_executable_file_t res;
+	static xddos_executable_file_t res;
 	res.address = response->executable_file->address;
 	res.size = response->executable_file->size;
 	return &res;
 }
 
-xD_DOS_memmap_t *request_memmap() {
+xddos_memmap_t *request_memmap() {
 	struct limine_memmap_response *response = memmap_request.response;
 	if (response == NULL) return NULL;
-	static xD_DOS_memmap_t res;
+	static xddos_memmap_t res;
 	res.count = response->entry_count;
 	res.entries = response->entries;
 	return &res;
 }
 
-xD_DOS_hhdm_t *request_hhdm() {
+xddos_hhdm_t *request_hhdm() {
 	struct limine_hhdm_response *response = hhdm_request.response;
 	if (response == NULL) return NULL;
-	static xD_DOS_hhdm_t res;
+	static xddos_hhdm_t res;
 	res.offset = response->offset;
 	return &res;
 }
 
-xD_DOS_framebuffers_t *request_framebuffers() {
+xddos_framebuffers_t *request_framebuffers() {
 	struct limine_framebuffer_response *response = framebuffer_request.response;
 	if (response == NULL) return NULL;
-	static xD_DOS_framebuffers_t res;
+	static xddos_framebuffers_t res;
 	res.count = response->framebuffer_count;
 	res.framebuffers = response->framebuffers;
 	return &res;

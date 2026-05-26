@@ -1,7 +1,7 @@
 #ifndef LOGGING_H
 #define LOGGING_H
 
-#include "xD-DOS/printf.h" // IWYU pragma: keep
+#include "xddos/printf.h" // IWYU pragma: keep
 
 #define PRINT(format, ...) printf(format, ##__VA_ARGS__)
 

@@ -1,7 +1,7 @@
 #ifndef FONT_H
 #define FONT_H
 
-#include "xD-DOS/memalloc.h" // IWYU pragma: keep
+#include "xddos/memalloc.h" // IWYU pragma: keep
 #include <limits.h>
 #include <stdint.h>
 

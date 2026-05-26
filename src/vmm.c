@@ -1,8 +1,8 @@
-#include "xD-DOS/vmm.h"
-#include "xD-DOS/logging.h"
-#include "xD-DOS/memory.h" // IWYU pragma: keep
-#include "xD-DOS/pmm.h"
-#include "xD-DOS/requests.h"
+#include "xddos/vmm.h"
+#include "xddos/logging.h"
+#include "xddos/memory.h" // IWYU pragma: keep
+#include "xddos/pmm.h"
+#include "xddos/requests.h"
 #include <stdint.h>
 
 uint64_t hhdm_offset;
@@ -15,9 +15,9 @@ vmm_page_table_t *kernel_pml4 = NULL;
 // Returns 0 otherwise.
 uint8_t vmm_init(void) {
 	LOG_DEBUG("VMM", "Checking responses...");
-	xD_DOS_hhdm_t *hhdm = request_hhdm();
-	xD_DOS_executable_address_t *exeaddr = request_executable_address();
-	xD_DOS_executable_file_t *exefile = request_executable_file();
+	xddos_hhdm_t *hhdm = request_hhdm();
+	xddos_executable_address_t *exeaddr = request_executable_address();
+	xddos_executable_file_t *exefile = request_executable_file();
 
 	if (!hhdm || !exeaddr || !exefile) {
 		LOG_ERROR("VMM", "HHDM or executable address or executable file is NULL!");

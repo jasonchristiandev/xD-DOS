@@ -1,13 +1,13 @@
-#include "xD-DOS/graphics.h"
-#include "xD-DOS/font.h"
-#include "xD-DOS/logging.h"
-#include "xD-DOS/memory.h" // IWYU pragma: keep
-#include "xD-DOS/requests.h"
+#include "xddos/graphics.h"
+#include "xddos/font.h"
+#include "xddos/logging.h"
+#include "xddos/memory.h" // IWYU pragma: keep
+#include "xddos/requests.h"
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
-void __put_char(xD_DOS_framebuffer_t *fb, font_data_t *font, uint32_t width, uint32_t height, uint32_t bytes_per_glyph, uint8_t *glyph_bitmap, uint32_t cx, uint32_t cy, uint32_t fg, uint32_t bg) {
+void __put_char(xddos_framebuffer_t *fb, font_data_t *font, uint32_t width, uint32_t height, uint32_t bytes_per_glyph, uint8_t *glyph_bitmap, uint32_t cx, uint32_t cy, uint32_t fg, uint32_t bg) {
 	if (cy >= fb->height || cx >= fb->width) return;
 
 	uint32_t *fb_ptr = (uint32_t *) fb->address;
@@ -32,7 +32,7 @@ void __put_char(xD_DOS_framebuffer_t *fb, font_data_t *font, uint32_t width, uin
 	}
 }
 
-void graphics_put_char(xD_DOS_framebuffer_t *fb, font_data_t *font, char ch, uint32_t x, uint32_t y, uint32_t fg, uint32_t bg) {
+void graphics_put_char(xddos_framebuffer_t *fb, font_data_t *font, char ch, uint32_t x, uint32_t y, uint32_t fg, uint32_t bg) {
 	if (!fb || !fb->address) {
 		LOG_ERROR("TERMGRAPHICS", "Framebuffer is NULL!");
 		return;
@@ -62,7 +62,7 @@ void graphics_put_char(xD_DOS_framebuffer_t *fb, font_data_t *font, char ch, uin
 	__put_char(fb, font, width, height, bytes_per_glyph, glyph_bitmap, x, y, fg, bg);
 }
 
-void graphics_put_text(xD_DOS_framebuffer_t *fb, font_data_t *font, const char *str, uint32_t x, uint32_t y, uint32_t fg, uint32_t bg) {
+void graphics_put_text(xddos_framebuffer_t *fb, font_data_t *font, const char *str, uint32_t x, uint32_t y, uint32_t fg, uint32_t bg) {
 	if (!fb || !fb->address) {
 		LOG_ERROR("TERMGRAPHICS", "Framebuffer is NULL!");
 		return;
@@ -110,7 +110,7 @@ void graphics_put_text(xD_DOS_framebuffer_t *fb, font_data_t *font, const char *
 	}
 }
 
-void graphics_clear(xD_DOS_framebuffer_t *fb, uint32_t col) {
+void graphics_clear(xddos_framebuffer_t *fb, uint32_t col) {
 	uint32_t *fb_ptr = (uint32_t *) fb->address;
 	uint32_t pixels = (fb->height * fb->pitch) / sizeof(uint32_t);
 	for (uint32_t i = 0; i < pixels; i++) {

@@ -1,5 +1,5 @@
-#include "xD-DOS/asm.h"
-#include "xD-DOS/pit.h"
+#include "xddos/asm.h"
+#include "xddos/pit.h"
 #include <stddef.h>
 #define PORT 0x3f8
 

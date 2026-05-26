@@ -1,7 +1,7 @@
 #ifndef PIT_H
 #define PIT_H
 
-#include "xD-DOS/asm.h"
+#include "xddos/asm.h"
 #include <stdint.h>
 
 #define PIT_CHANNEL_2 0x42
