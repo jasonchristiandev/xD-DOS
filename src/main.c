@@ -1,7 +1,6 @@
 #include "xddos/graphics.h"
 #include "xddos/logging.h"
 #include "xddos/memalloc.h"
-#include "xddos/pit.h"
 #include "xddos/pmm.h"
 #include "xddos/psf.h"
 #include "xddos/requests.h"
@@ -106,7 +105,6 @@ void kernel_main() {
 	const char *msg = "xD-DOS (Extended Drive - Disk Operating System)\r\nMaintained by Jason Christian\r\n\r\n";
 	xddos_graphics_clear(fb, 0x000000);
 	xddos_graphics_put_text(fb, font, msg, 4, 4, 0xFFFFFF, 0x000000);
-	SLEEP(2000);
 
 	// Halt
 	LOG_INFO("KERNEL", "Nothing to do, halting...");

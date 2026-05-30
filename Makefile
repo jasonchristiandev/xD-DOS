@@ -111,8 +111,8 @@ run: $(ISO_IMAGE)
 		-device VGA,xres=640,yres=480 \
 	| tee qemu.log
 
-distclean:
-	rm -rf $(BUILD_DIR) $(ISO_IMAGE) $(ISO_DIR) $(LIMINE_DIR) $(FONTS_DIR)
+distclean: clean
+	rm -rf $(LIMINE_DIR) $(FONTS_DIR) $(INCLUDE_DIR)/limine.h
 
 clean:
-	rm -rf $(BUILD_DIR) $(ISO_IMAGE) $(ISO_DIR)
+	rm -rf $(BUILD_DIR) $(ISO_IMAGE) $(ISO_DIR) qemu.log
