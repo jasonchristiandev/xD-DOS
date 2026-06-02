@@ -40,12 +40,12 @@ void xddos_printf(const char *format, ...) {
 		if (format[i] == '%' && format[i + 1] != '\0') {
 			i++;
 
-			uint8_t is64 = 0;
+			bool is64 = false;
 			if (format[i] == 'l' && format[i + 1] == 'l') {
-				is64 = 1;
+				is64 = true;
 				i += 2;
 			} else if (format[i] == 'l' && format[i + 1] != 'l') {
-				is64 = 1;
+				is64 = true;
 				i++;
 			}
 

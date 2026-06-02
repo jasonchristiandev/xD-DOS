@@ -1,11 +1,12 @@
+#include <stdbool.h>
 #include "xddos/asm.h"
 #include "xddos/pit.h"
 #include <stdint.h>
 #define SERIAL_PORT 0x3f8
 
-static uint8_t xddos_serial_initialized = 0;
+static bool xddos_serial_initialized = 0;
 
-uint8_t xddos_serial_init() {
+bool xddos_serial_init() {
 	// osdev template hehe
 	outb(SERIAL_PORT + 1, 0x00); // Disable all interrupts
 	outb(SERIAL_PORT + 3, 0x80); // Enable DLAB (set baud rate divisor)
@@ -28,7 +29,7 @@ uint8_t xddos_serial_init() {
 	return 1;
 }
 
-uint8_t xddos_serial_received() {
+bool xddos_serial_received() {
 	return inb(SERIAL_PORT + 5) & 1;
 }
 
@@ -39,11 +40,11 @@ char xddos_serial_read() {
 	return inb(SERIAL_PORT);
 }
 
-uint8_t xddos_serial_is_transmit_empty() {
+bool xddos_serial_is_transmit_empty() {
 	return inb(SERIAL_PORT + 5) & 0x20;
 }
 
-uint8_t xddos_serial_write(char a) {
+bool xddos_serial_write(char a) {
 	if (!xddos_serial_initialized) return 0;
 
 	uint16_t ms_passed = 0;
@@ -61,7 +62,7 @@ uint8_t xddos_serial_write(char a) {
 	return 1;
 }
 
-uint8_t xddos_serial_write_text(const char *a) {
+bool xddos_serial_write_text(const char *a) {
 	while (*a) {
 		if (!xddos_serial_write(*a++)) return 0;
 	}

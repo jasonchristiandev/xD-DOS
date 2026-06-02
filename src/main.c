@@ -39,7 +39,7 @@ void kernel_main() {
 	LOG_INFO("KERNEL", "Initializing memory...");
 	// PMM init
 	LOG_DEBUG("KERNEL", "Physical Memory Manager initializing...");
-	xddos_vmm_init_result_t pmm_result = xddos_pmm_init();
+	xddos_pmm_init_result_t pmm_result = xddos_pmm_init();
 	if (pmm_result == XDDOS_PMM_NO_RESPONSES) {
 		LOG_ERROR("KERNEL", "Failed to initialize Physical Memory Manager! Error code 0x%x (Memory Map or HHDM Not Ready).", pmm_result);
 		panic(fb);
@@ -56,7 +56,7 @@ void kernel_main() {
 
 	// VMM init
 	LOG_DEBUG("KERNEL", "Virtual Memory Manager initializing...");
-	uint8_t vmm_result = xddos_vmm_init();
+	xddos_vmm_init_result_t vmm_result = xddos_vmm_init();
 	if (vmm_result == XDDOS_VMM_NO_RESPONSES) {
 		LOG_ERROR("KERNEL", "Failed to initialize Virtual Memory Manager! Error code 0x%x (HHDM or Executable Address or Executable File Not Ready).", vmm_result);
 		panic(fb);

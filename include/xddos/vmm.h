@@ -22,8 +22,8 @@ typedef enum xddos_vmm_init_result {
 	XDDOS_VMM_OUT_OF_MEMORY = 3,
 } xddos_vmm_init_result_t;
 
-uint8_t xddos_vmm_init();
-uint8_t xddos_vmm_map_table(xddos_vmm_page_table_t *pml4, uint64_t virt, uint64_t phys, uint64_t flags);
-uint8_t xddos_vmm_map_table_huge(xddos_vmm_page_table_t *pml4, uint64_t virt, uint64_t phys, uint64_t flags);
+xddos_vmm_init_result_t xddos_vmm_init();
+void xddos_vmm_map_table(xddos_vmm_page_table_t *pml4, uint64_t virt, uint64_t phys, uint64_t flags);
+void xddos_vmm_map_table_huge(xddos_vmm_page_table_t *pml4, uint64_t virt, uint64_t phys, uint64_t flags);
 
 #endif // !VMM_H

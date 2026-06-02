@@ -1,5 +1,6 @@
 #include "xddos/requests.h"
 #include <limine.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -22,7 +23,7 @@ __attribute__((used, section(".limine_requests"))) static volatile struct limine
 	.id = LIMINE_FRAMEBUFFER_REQUEST_ID,
 	.revision = 0};
 
-uint8_t xddos_request_base_revision_supported() {
+bool xddos_request_base_revision_supported() {
 	return LIMINE_BASE_REVISION_SUPPORTED(limine_base_revision);
 }
 

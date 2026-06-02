@@ -4,16 +4,12 @@
 #include "xddos/requests.h"
 #include <stdint.h>
 #include <string.h>
+#include <stdbool.h>
 
 uint64_t hhdm_offset;
 xddos_vmm_page_table_t *kernel_pml4 = NULL;
 
-// Initializes VMM.
-// Returns 1 if HHDM or executable address or executable file is unavailable.
-// Returns 2 if HHDM offset is 0.
-// Returns 3 if out of memory.
-// Returns 0 otherwise.
-uint8_t xddos_vmm_init(void) {
+xddos_vmm_init_result_t xddos_vmm_init(void) {
 	LOG_DEBUG("VMM", "Checking responses...");
 	xddos_hhdm_t *hhdm = xddos_request_hhdm();
 	xddos_executable_address_t *exeaddr = xddos_request_executable_address();
@@ -69,7 +65,7 @@ uint8_t xddos_vmm_init(void) {
 	return 0;
 }
 
-uint8_t xddos_vmm_map_table(xddos_vmm_page_table_t *pml4, uint64_t virt, uint64_t phys, uint64_t flags) {
+void xddos_vmm_map_table(xddos_vmm_page_table_t *pml4, uint64_t virt, uint64_t phys, uint64_t flags) {
 	uint16_t pml4_i = (virt >> 39) & 0x1FF;
 	uint16_t pdpt_i = (virt >> 30) & 0x1FF;
 	uint16_t pd_i = (virt >> 21) & 0x1FF;
@@ -113,11 +109,9 @@ uint8_t xddos_vmm_map_table(xddos_vmm_page_table_t *pml4, uint64_t virt, uint64_
 	current_table->entries[pt_i] = (phys & MEMORY_PTE_FRAME) | flags | MEMORY_PTE_PRESENT;
 
 	__asm__ volatile("invlpg (%0)" ::"r"(virt) : "memory");
-
-	return 1;
 }
 
-uint8_t xddos_vmm_map_table_huge(xddos_vmm_page_table_t *pml4, uint64_t virt, uint64_t phys, uint64_t flags) {
+void xddos_vmm_map_table_huge(xddos_vmm_page_table_t *pml4, uint64_t virt, uint64_t phys, uint64_t flags) {
 	uint16_t pml4_i = (virt >> 39) & 0x1FF;
 	uint16_t pdpt_i = (virt >> 30) & 0x1FF;
 	uint16_t pd_i = (virt >> 21) & 0x1FF;
@@ -148,6 +142,4 @@ uint8_t xddos_vmm_map_table_huge(xddos_vmm_page_table_t *pml4, uint64_t virt, ui
 	current_table->entries[pd_i] = (phys & 0x000FFFFFFFE00000ULL) | flags | MEMORY_PTE_PRESENT | MEMORY_PTE_HUGE;
 
 	__asm__ volatile("invlpg (%0)" ::"r"(virt) : "memory");
-
-	return 1;
 }
