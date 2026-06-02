@@ -1,0 +1,51 @@
+include ../settings.mk
+
+LINKER_SCRIPT = linker.lds
+
+SRCS = $(wildcard $(SRC_DIR)/*.c)
+OBJS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRCS)) $(BUILD_DIR)/font_data.o
+
+CFLAGS = -fno-stack-protector -ffreestanding -mno-red-zone \
+		 -fms-extensions -nostdlib -nostdinc -Wall -Wextra \
+		 -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast \
+		 -Wno-compare-distinct-pointer-types -Wno-enum-conversion \
+		 -Wno-variadic-macros -Wno-enum-compare -std=c11 -O2 \
+		 -mno-mmx -mno-sse -mno-sse2 -MMD -MP -I$(INCLUDE_DIR) \
+		 -I$(LIBC_DIR)/$(INCLUDE_DIR) -I$(LIMINE_PROTOCOL)/include
+
+.PHONY: all run clean
+
+all: $(KERNEL_ELF)
+
+$(BUILD_DIR):
+	@mkdir -p $(BUILD_DIR)
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(LIMINE_H) | $(BUILD_DIR)
+	@echo " [CC] $<"
+ifeq ($(DEBUG),1)
+	@$(CC) $(CFLAGS) -c $< -o $@ -DDEBUG
+else
+	@$(CC) $(CFLAGS) -c $< -o $@
+endif
+
+FONT_STEM = $(subst -,_,$(subst .,_,$(notdir $(FONT_PSF))))
+
+$(BUILD_DIR)/font_data.o: $(FONT_PSF) | $(BUILD_DIR)
+	@echo " [OBJCOPY] $<"
+	cd $(dir $(FONT_PSF)) && objcopy -I binary -O elf64-x86-64 -B i386 \
+		--rename-section .data=.data,alloc,load,readonly,data,contents \
+		$(notdir $(FONT_PSF)) $(abspath $@)
+	@objcopy $@ $@ \
+		--redefine-sym _binary_$(FONT_STEM)_start=_binary_font_psf_start \
+		--redefine-sym _binary_$(FONT_STEM)_end=_binary_font_psf_end \
+		--redefine-sym _binary_$(FONT_STEM)_size=_binary_font_psf_size
+
+$(KERNEL_ELF): $(OBJS) $(LINKER_SCRIPT) | $(BUILD_DIR)
+	@echo " [LD] Linking..."
+	@echo "     $(OBJS)"
+	@$(LD) -T $(LINKER_SCRIPT) $(OBJS) -o $(KERNEL_ELF)
+
+clean:
+	rm -rf $(BUILD_DIR)
+
+-include $(OBJS:.o=.d)
