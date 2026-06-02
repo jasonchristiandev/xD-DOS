@@ -72,7 +72,6 @@ static void initialize_chunk(void *start, size_t size) {
 	xddos_memalloc_block_t *block = (xddos_memalloc_block_t *) start;
 	size_t payload_size = size - sizeof(xddos_memalloc_block_t) - sizeof(block_footer_t);
 
-	LOG_DEBUG("MEMALLOC", "Setting block state...");
 	set_block_state(block, payload_size, 1);
 	add_to_free(block);
 }
@@ -83,6 +82,7 @@ void xddos_memalloc_init(vmem_provider provider, void *initial_heap_base, size_t
 	heap_end_addr = heap_start_addr + initial_size;
 	LOG_DEBUG("MEMALLOC", "Initializing chunk...");
 	initialize_chunk(initial_heap_base, initial_size);
+	LOG_INFO("MEMALLOC", "Done init.");
 }
 
 void *xddos_memalloc_malloc(size_t size) {

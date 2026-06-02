@@ -53,8 +53,6 @@ uint8_t xddos_pmm_init() {
 		return 1;
 	}
 
-	LOG_DEBUG("PMM", "Memmap and HHDM not NULL.");
-
 	hhdm_offset = hhdm->offset;
 
 	uint64_t highest_address = 0;
@@ -96,7 +94,6 @@ uint8_t xddos_pmm_init() {
 
 	LOG_DEBUG("PMM", "Clearing bitmap... (addr: 0x%llx, size: %d)", bitmap, bitmap_size);
 	memset(bitmap, 0xFF, bitmap_size);
-	LOG_DEBUG("PMM", "Cleared bitmap.");
 
 	LOG_DEBUG("PMM", "Parsing region for bitmap...");
 
@@ -107,14 +104,12 @@ uint8_t xddos_pmm_init() {
 		}
 	}
 
-	LOG_DEBUG("PMM", "Parsed region.");
-
 	LOG_DEBUG("PMM", "Protecting bitmap... (addr: 0x%llx, size: %d)", best_chunk->base, bitmap_size);
 	xddos_pmm_lock_region(best_chunk->base, bitmap_size); // bitmap
 	LOG_DEBUG("PMM", "Protecting zero page... (addr: 0x%llx, size: %d)", 0, PAGE_SIZE);
 	xddos_pmm_lock_region(0, PAGE_SIZE);
 
-	LOG_DEBUG("PMM", "Done init.");
+	LOG_INFO("PMM", "Done init.");
 
 	return 0;
 }

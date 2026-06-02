@@ -34,7 +34,7 @@ void kernel_main() {
 
 	xddos_serial_init();
 
-	LOG_INFO("xD-DOS", "Extended Drive - Disk Operating System (xddos) Starting...");
+	LOG_INFO("KERNEL", "Extended Drive - Disk Operating System (xD-DOS) Starting...");
 
 	// PMM init
 	LOG_INFO("KERNEL", "Physical Memory Manager initializing...");
@@ -52,7 +52,6 @@ void kernel_main() {
 		panic(fb);
 		return;
 	}
-	LOG_INFO("KERNEL", "Physical Memory Manager initialized.");
 
 	// VMM init
 	LOG_INFO("KERNEL", "Virtual Memory Manager initializing...");
@@ -74,12 +73,10 @@ void kernel_main() {
 		panic(fb);
 		return;
 	}
-	LOG_INFO("KERNEL", "Virtual Memory Manager initialized.");
 
 	// VMA init
 	LOG_INFO("KERNEL", "Virtual Memory Allocator initializing...");
 	xddos_vma_init(0xFFFFFFFF90000000ULL);
-	LOG_INFO("KERNEL", "Virtual Memory Allocator initialized.");
 
 	// Allocate initial heap
 	LOG_INFO("KERNEL", "Initial heap allocating...");
@@ -94,12 +91,10 @@ void kernel_main() {
 	}
 
 	xddos_memalloc_init(xddos_vma_alloc_pages, initial_heap_block, initial_heap_bytes);
-	LOG_INFO("KERNEL", "Initial heap allocated.");
 
 	// Init font
 	LOG_INFO("KERNEL", "Font initializing...");
 	xddos_psf_data_t *font = xddos_psf_init();
-	LOG_INFO("KERNEL", "Font initialized.");
 
 	xddos_graphics_clear(fb, 0);
 	const char *msg = "xD-DOS (Extended Drive - Disk Operating System)\r\nMaintained by Jason Christian\r\n\r\n";

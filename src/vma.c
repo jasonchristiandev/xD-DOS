@@ -11,7 +11,7 @@ static uint64_t heap_start = 0;
 void xddos_vma_init(uint64_t heap_base) {
 	heap_start = heap_base;
 	heap_current_break = heap_base;
-	LOG_DEBUG("VMA", "Virtual Heap initialized at: %llx", (unsigned long long) heap_start);
+	LOG_INFO("VMA", "Done init: %llx", (unsigned long long) heap_start);
 }
 
 // Allocates contiguous virtual pages and maps them to physical frames

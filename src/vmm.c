@@ -38,7 +38,6 @@ uint8_t xddos_vmm_init(void) {
 	LOG_DEBUG("VMM", "  hhdm_offset: 0x%llx", (unsigned long long) hhdm_offset);
 	LOG_DEBUG("VMM", "  pml4_phys:   0x%llx", (unsigned long long) pml4_phys);
 	LOG_DEBUG("VMM", "  kernel_pml4: 0x%llx", (unsigned long long) kernel_pml4);
-	LOG_DEBUG("VMM", "Allocated physical page frame.");
 
 	LOG_DEBUG("VMM", "Zeroing out PML4...");
 	memset(kernel_pml4, 0, 4096);
@@ -64,7 +63,8 @@ uint8_t xddos_vmm_init(void) {
 	// Load new page tables directly into the CPU control register
 	LOG_DEBUG("VMM", "Loading new page tables...");
 	__asm__ volatile("mov %0, %%cr3" ::"r"(pml4_phys) : "memory");
-	LOG_DEBUG("VMM", "Escaped bootloader memory.");
+
+	LOG_INFO("VMM", "Done init.");
 
 	return 0;
 }

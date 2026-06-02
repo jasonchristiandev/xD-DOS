@@ -24,7 +24,7 @@
 		printf("\r\n");                    \
 	} while (0)
 
-#ifdef DEBUG
+#if DEBUG == 1
 #define LOG_DEBUG(name, format, ...)      \
 	do {                                  \
 		printf("[DEBUG]     <%s> ", name); \

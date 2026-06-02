@@ -1,4 +1,5 @@
 #include "xddos/psf.h"
+#include "xddos/logging.h"
 #include "xddos/requests.h"
 #include <limits.h>
 #include <stdlib.h>
@@ -120,6 +121,8 @@ xddos_psf_data_t *xddos_psf_init() {
 	} else if (magic == PSF2_MAGIC) {
 		psf2_init(&data, (xddos_psf2_header_t *) virt_start, virt_end);
 	}
+
+	LOG_INFO("PSF", "Done init.");
 
 	return &data;
 }
