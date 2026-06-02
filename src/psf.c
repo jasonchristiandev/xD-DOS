@@ -122,7 +122,7 @@ xddos_psf_data_t *xddos_psf_init() {
 		psf2_init(&data, (xddos_psf2_header_t *) virt_start, virt_end);
 	}
 
-	LOG_INFO("PSF", "Done init.");
+	LOG_DEBUG("PSF", "Done init.");
 
 	return &data;
 }

@@ -36,8 +36,9 @@ void kernel_main() {
 
 	LOG_INFO("KERNEL", "Extended Drive - Disk Operating System (xD-DOS) Starting...");
 
+	LOG_INFO("KERNEL", "Initializing memory...");
 	// PMM init
-	LOG_INFO("KERNEL", "Physical Memory Manager initializing...");
+	LOG_DEBUG("KERNEL", "Physical Memory Manager initializing...");
 	uint8_t pmm_result = xddos_pmm_init();
 	if (pmm_result == 1) {
 		LOG_ERROR("KERNEL", "Failed to initialize Physical Memory Manager! Error code 0x%x (Memory Map or HHDM Not Ready).", pmm_result);
@@ -54,7 +55,7 @@ void kernel_main() {
 	}
 
 	// VMM init
-	LOG_INFO("KERNEL", "Virtual Memory Manager initializing...");
+	LOG_DEBUG("KERNEL", "Virtual Memory Manager initializing...");
 	uint8_t vmm_result = xddos_vmm_init();
 	if (vmm_result == 1) {
 		LOG_ERROR("KERNEL", "Failed to initialize Virtual Memory Manager! Error code 0x%x (HHDM or Executable Address or Executable File Not Ready).", vmm_result);
@@ -75,11 +76,11 @@ void kernel_main() {
 	}
 
 	// VMA init
-	LOG_INFO("KERNEL", "Virtual Memory Allocator initializing...");
+	LOG_DEBUG("KERNEL", "Virtual Memory Allocator initializing...");
 	xddos_vma_init(0xFFFFFFFF90000000ULL);
 
 	// Allocate initial heap
-	LOG_INFO("KERNEL", "Initial heap allocating...");
+	LOG_DEBUG("KERNEL", "Initial heap allocating...");
 	size_t initial_heap_bytes = 128 * 1024;
 	size_t initial_pages = initial_heap_bytes / PAGE_SIZE;
 
@@ -93,7 +94,7 @@ void kernel_main() {
 	xddos_memalloc_init(xddos_vma_alloc_pages, initial_heap_block, initial_heap_bytes);
 
 	// Init font
-	LOG_INFO("KERNEL", "Font initializing...");
+	LOG_DEBUG("KERNEL", "Font initializing...");
 	xddos_psf_data_t *font = xddos_psf_init();
 
 	xddos_graphics_clear(fb, 0);

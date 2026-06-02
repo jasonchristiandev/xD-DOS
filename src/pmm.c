@@ -109,7 +109,7 @@ uint8_t xddos_pmm_init() {
 	LOG_DEBUG("PMM", "Protecting zero page... (addr: 0x%llx, size: %d)", 0, PAGE_SIZE);
 	xddos_pmm_lock_region(0, PAGE_SIZE);
 
-	LOG_INFO("PMM", "Done init.");
+	LOG_DEBUG("PMM", "Done init.");
 
 	return 0;
 }

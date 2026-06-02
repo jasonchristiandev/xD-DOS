@@ -82,7 +82,7 @@ void xddos_memalloc_init(vmem_provider provider, void *initial_heap_base, size_t
 	heap_end_addr = heap_start_addr + initial_size;
 	LOG_DEBUG("MEMALLOC", "Initializing chunk...");
 	initialize_chunk(initial_heap_base, initial_size);
-	LOG_INFO("MEMALLOC", "Done init.");
+	LOG_DEBUG("MEMALLOC", "Done init.");
 }
 
 void *xddos_memalloc_malloc(size_t size) {

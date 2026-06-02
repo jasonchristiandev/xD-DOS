@@ -64,7 +64,7 @@ uint8_t xddos_vmm_init(void) {
 	LOG_DEBUG("VMM", "Loading new page tables...");
 	__asm__ volatile("mov %0, %%cr3" ::"r"(pml4_phys) : "memory");
 
-	LOG_INFO("VMM", "Done init.");
+	LOG_DEBUG("VMM", "Done init.");
 
 	return 0;
 }
