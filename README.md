@@ -32,14 +32,14 @@ git clone --recursive https://github.com/jasonchristiandev/xD-DOS.git
 2. **Build the OS**:
 ```bash
 cd xD-DOS
-make -j$(proc) # or
-make -j$(proc) DEBUG=1
+make -j$(nproc) # or
+make -j$(nproc) DEBUG=1
 ```
 
 3. **Run the OS using qemu-system-x86_64 (optional)**:
 ```bash
-make -j$(proc) clean # optional for clearing cache
-make -j$(proc) run
+make -j$(nproc) clean # optional for clearing cache
+make -j$(nproc) run
 ```
 
 ## License
@@ -52,16 +52,7 @@ Contributions are encouraged, due to my lack of experience in OS dev :p
 
 ### How to Contribute
 
-1. **Fork the repository**: Create your own copy of the project to work on.
+There are many ways to contribute, such as but not limited to:
 
-2. **Create a feature branch**:
-```bash
-git checkout -b feature/YourFeatureName
-```
-
-3. **Commit your changes**: 
-```bash
-git commit
-```
-
-4. **Push and pull request**: Push your branch to GitHub and open a pull request. Descriptions are very appreciated.
+- Submit bugs and feature requests
+- Review commits/source code changes

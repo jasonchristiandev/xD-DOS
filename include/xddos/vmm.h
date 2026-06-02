@@ -8,12 +8,19 @@
 #define MEMORY_PTE_USER (1ULL << 2)
 #define MEMORY_PTE_HUGE (1ULL << 7)
 #define MEMORY_PTE_FRAME 0x000FFFFFFFFFF000ULL
-#define MEMORY_PHYS_TO_VIRT(phys) ((uint64_t)(phys) + (uint64_t)(hhdm_offset))
-#define MEMORY_VIRT_TO_PHYS(virt) ((uint64_t)((uintptr_t)(virt)) - (uint64_t)(hhdm_offset))
+#define MEMORY_PHYS_TO_VIRT(phys) ((uint64_t) (phys) + (uint64_t) (hhdm_offset))
+#define MEMORY_VIRT_TO_PHYS(virt) ((uint64_t) ((uintptr_t) (virt)) - (uint64_t) (hhdm_offset))
 
 typedef struct xddos_vmm_page_table {
 	uint64_t entries[512];
 } xddos_vmm_page_table_t;
+
+typedef enum xddos_vmm_init_result {
+	XDDOS_VMM_OK = 0,
+	XDDOS_VMM_NO_RESPONSES = 1,
+	XDDOS_VMM_OFFSET_ZERO = 2,
+	XDDOS_VMM_OUT_OF_MEMORY = 3,
+} xddos_vmm_init_result_t;
 
 uint8_t xddos_vmm_init();
 uint8_t xddos_vmm_map_table(xddos_vmm_page_table_t *pml4, uint64_t virt, uint64_t phys, uint64_t flags);

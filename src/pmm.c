@@ -40,17 +40,14 @@ void xddos_pmm_lock_region(uint64_t base_address, uint64_t length) {
 	}
 }
 
-// Initializes the Physical Memory Manager
-// Returns 1 if memmap or HHDM is NULL
-// Returns 2 if no memory is usable
-uint8_t xddos_pmm_init() {
+xddos_pmm_init_result_t xddos_pmm_init() {
 	LOG_DEBUG("PMM", "Checking responses...");
 	xddos_memmap_t *memmap = xddos_request_memmap();
 	xddos_hhdm_t *hhdm = xddos_request_hhdm();
 
 	if (memmap == NULL || hhdm == NULL) {
 		LOG_ERROR("PMM", "Memmap or HHDM is NULL!");
-		return 1;
+		return XDDOS_PMM_NO_RESPONSES;
 	}
 
 	hhdm_offset = hhdm->offset;
@@ -76,7 +73,7 @@ uint8_t xddos_pmm_init() {
 
 	if (!best_chunk) {
 		LOG_ERROR("PMM", "No usable memory to use for bitmap!");
-		return 2;
+		return XDDOS_PMM_OUT_OF_SPACE;
 	}
 
 	LOG_DEBUG("PMM", "Found memory chunk to put bitmap (0x%llx)", best_chunk);
@@ -111,7 +108,7 @@ uint8_t xddos_pmm_init() {
 
 	LOG_DEBUG("PMM", "Done init.");
 
-	return 0;
+	return XDDOS_PMM_OK;
 }
 
 // Allocates a single page

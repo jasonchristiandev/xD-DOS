@@ -6,6 +6,7 @@
 static uint8_t xddos_serial_initialized = 0;
 
 uint8_t xddos_serial_init() {
+	// osdev template hehe
 	outb(SERIAL_PORT + 1, 0x00); // Disable all interrupts
 	outb(SERIAL_PORT + 3, 0x80); // Enable DLAB (set baud rate divisor)
 	outb(SERIAL_PORT + 0, 0x03); // Set divisor to 3 (low byte) 38400 baud

@@ -11,7 +11,7 @@ static inline size_t strlen(const char *str) {
 	return (s - str);
 }
 
-static inline void *memcopy(void *restrict dest, const void *restrict src, size_t n) {
+static inline void *memcpy(void *restrict dest, const void *restrict src, size_t n) {
 	uint8_t *restrict pdest = dest;
 	const uint8_t *restrict psrc = src;
 

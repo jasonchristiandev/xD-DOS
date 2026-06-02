@@ -25,9 +25,9 @@ OBJS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRCS)) $(BUILD_DIR)/font_d
 CFLAGS = -fno-stack-protector -ffreestanding -mno-red-zone \
 		 -fms-extensions -nostdlib -nostdinc -Wall -Wextra \
 		 -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast \
-		 -Wno-compare-distinct-pointer-types \
-		 -Wno-variadic-macros -std=c11 -O2 -mno-mmx -mno-sse \
-		 -mno-sse2 -I$(INCLUDE_DIR)
+		 -Wno-compare-distinct-pointer-types -Wno-enum-conversion \
+		 -Wno-variadic-macros -Wno-enum-compare -std=c11 -O2 \
+		 -mno-mmx -mno-sse -mno-sse2 -I$(INCLUDE_DIR)
 
 FONT_NAME = cp850-8x16.psf
 FONT_URL = https://raw.githubusercontent.com/ercanersoy/PSF-Fonts/master/$(FONT_NAME)

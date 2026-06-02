@@ -39,12 +39,12 @@ void kernel_main() {
 	LOG_INFO("KERNEL", "Initializing memory...");
 	// PMM init
 	LOG_DEBUG("KERNEL", "Physical Memory Manager initializing...");
-	uint8_t pmm_result = xddos_pmm_init();
-	if (pmm_result == 1) {
+	xddos_vmm_init_result_t pmm_result = xddos_pmm_init();
+	if (pmm_result == XDDOS_PMM_NO_RESPONSES) {
 		LOG_ERROR("KERNEL", "Failed to initialize Physical Memory Manager! Error code 0x%x (Memory Map or HHDM Not Ready).", pmm_result);
 		panic(fb);
 		return;
-	} else if (pmm_result == 2) {
+	} else if (pmm_result == XDDOS_PMM_OUT_OF_SPACE) {
 		LOG_ERROR("KERNEL", "Failed to initialize Physical Memory Manager! Error code 0x%x (No Memory Available for Bitmap).", pmm_result);
 		panic(fb);
 		return;
@@ -57,15 +57,15 @@ void kernel_main() {
 	// VMM init
 	LOG_DEBUG("KERNEL", "Virtual Memory Manager initializing...");
 	uint8_t vmm_result = xddos_vmm_init();
-	if (vmm_result == 1) {
+	if (vmm_result == XDDOS_VMM_NO_RESPONSES) {
 		LOG_ERROR("KERNEL", "Failed to initialize Virtual Memory Manager! Error code 0x%x (HHDM or Executable Address or Executable File Not Ready).", vmm_result);
 		panic(fb);
 		return;
-	} else if (vmm_result == 2) {
+	} else if (vmm_result == XDDOS_VMM_OFFSET_ZERO) {
 		LOG_ERROR("KERNEL", "Failed to initialize Virtual Memory Manager! Error code 0x%x (HHDM Offset is 0).", vmm_result);
 		panic(fb);
 		return;
-	} else if (vmm_result == 3) {
+	} else if (vmm_result == XDDOS_VMM_OUT_OF_MEMORY) {
 		LOG_ERROR("KERNEL", "Failed to initialize Virtual Memory Manager! Error code 0x%x (Out of Memory).", vmm_result);
 		panic(fb);
 		return;

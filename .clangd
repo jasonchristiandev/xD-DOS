@@ -14,6 +14,8 @@ CompileFlags:
     - -Wno-pointer-to-int-cast
     - -Wno-int-to-pointer-cast
     - -Wno-compare-distinct-pointer-types
+    - -Wno-enum-conversion
+    - -Wno-enum-compare
     - -std=c11
     - -O2
     - -mno-mmx
