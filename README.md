@@ -5,17 +5,16 @@ xD-DOS is an operating system inspired by **DOS**. xD-DOS is merely a fun projec
 * **Inspired, not rebuilt:** xD-DOS does not aim to be a remake of DOS, but only inspired by DOS.
 * **Modular:** Designed with every component of the OS being separate applications instead of one big kernel.
 
-## Checklist
+## To-Do List
 
 * ~~Configure limine~~
 * ~~Set up kernel entry point~~
+* ~~Setup PMM, VMM, and VMA~~
+* ~~Setup malloc and free~~
 * ~~Write to framebuffer~~
-* Set up a global descriptor table (GDT)
-* Set up an interrupt descriptor table (IDT)
-* Write assembly interrupt stubs
-* Handle CPU exceptions
-* Write basic drivers
-* Build a simple command line
+* ~~PSF graphics~~
+* Interrupt handling
+* Basic input
 
 ## Getting Started
 

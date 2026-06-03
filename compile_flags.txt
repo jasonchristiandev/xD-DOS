@@ -1,1 +1,3 @@
--Iinclude
+-Ilimine-protocol/include
+-Ikernel/include
+-Ilibc/include
