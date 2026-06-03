@@ -8,13 +8,13 @@
 
 // PSF1 glyph always have a width of 8 bits
 // and height of char_size
-typedef struct xddos_psf1_header {
+typedef struct {
 	uint16_t magic;	   // Magic bytes
 	uint8_t font_mode; // Font mode
 	uint8_t char_size; // Character size
 } xddos_psf1_header_t;
 
-typedef struct xddos_psf2_header {
+typedef struct {
 	uint32_t magic;			  // Magic bytes to identify PSF
 	uint32_t version;		  //
 	uint32_t header_size;	  // Offset of bitmaps in file
@@ -28,7 +28,7 @@ typedef struct xddos_psf2_header {
 extern uint8_t _binary_font_psf_start[];
 extern uint8_t _binary_font_psf_end[];
 
-typedef struct xddos_psf_data {
+typedef struct {
 	uint32_t version;
 	xddos_psf1_header_t *psf1_header;
 	xddos_psf2_header_t *psf2_header;

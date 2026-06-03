@@ -11,7 +11,7 @@
 #define MEMORY_PHYS_TO_VIRT(phys) ((uint64_t) (phys) + (uint64_t) (hhdm_offset))
 #define MEMORY_VIRT_TO_PHYS(virt) ((uint64_t) ((uintptr_t) (virt)) - (uint64_t) (hhdm_offset))
 
-typedef struct xddos_vmm_page_table {
+typedef struct {
 	uint64_t entries[512];
 } xddos_vmm_page_table_t;
 

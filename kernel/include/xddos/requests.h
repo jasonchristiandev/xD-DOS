@@ -14,24 +14,24 @@
 #define XD_DOS_MEMMAP_FRAMEBUFFER 7
 #define XD_DOS_MEMMAP_RESERVED_MAPPED 8
 
-typedef struct xddos_executable_address {
+typedef struct {
 	uint64_t phys;
 	uint64_t virt;
 } xddos_executable_address_t;
-typedef struct xddos_executable_file {
+typedef struct {
 	void *address;
 	uint64_t size;
 } xddos_executable_file_t;
 typedef struct limine_memmap_entry xddos_memmap_entry_t;
-typedef struct xddos_memmap {
+typedef struct {
 	uint64_t count;
 	xddos_memmap_entry_t **entries;
 } xddos_memmap_t;
-typedef struct xddos_hhdm {
+typedef struct {
 	uint64_t offset;
 } xddos_hhdm_t;
 typedef struct limine_framebuffer xddos_framebuffer_t;
-typedef struct xddos_framebuffers {
+typedef struct {
 	uint64_t count;
 	xddos_framebuffer_t **framebuffers;
 } xddos_framebuffers_t;

@@ -19,7 +19,7 @@ typedef struct xddos_memalloc_block {
 	struct xddos_memalloc_block *prev;
 } xddos_memalloc_block_t;
 
-typedef struct block_footer {
+typedef struct {
 	size_t size;
 } block_footer_t;
 
