@@ -1,13 +1,15 @@
 DEBUG ?= 0
 
-CC = gcc
-LD = ld
-OBJCOPY = objcopy
-MAKE = make
-QEMU = qemu-system-x86_64
+CC ?= gcc
+ASM ?= nasm
+LD ?= ld
+OBJCOPY ?= objcopy
+MAKE ?= make
+QEMU ?= qemu-system-x86_64
 
-ROOT_DIR = $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
+ROOT_DIR ?= $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 SRC_DIR = src
+ASM_DIR = asm
 INCLUDE_DIR = include
 BUILD_DIR = build
 KERNEL_DIR = $(ROOT_DIR)/kernel
@@ -28,5 +30,5 @@ FONT_URL = https://raw.githubusercontent.com/ercanersoy/PSF-Fonts/master/$(FONT_
 LIMINE_VERSION = v11.x-binary
 LIMINE_URL = https://github.com/limine-bootloader/limine.git
 
-export CC LD OBJCOPY MAKE QEMU DEBUG ROOT_DIR SRC_DIR INCLUDE_DIR BUILD_DIR KERNEL_DIR
+export CC ASM LD OBJCOPY MAKE QEMU DEBUG ROOT_DIR SRC_DIR INCLUDE_DIR BUILD_DIR KERNEL_DIR
 export ISO_DIR LIBC_DIR LIMINE_DIR FONTS_DIR LIMINE_PROTOCOL KERNEL_ELF ISO_IMAGE LIMINE_H FONT_PSF LINKER_SCRIPT

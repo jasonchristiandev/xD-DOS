@@ -1,4 +1,5 @@
 #include "xddos/graphics.h"
+#include "xddos/interrupts.h"
 #include "xddos/logging.h"
 #include "xddos/memalloc.h"
 #include "xddos/pmm.h"
@@ -8,7 +9,6 @@
 #include "xddos/vma.h"
 #include "xddos/vmm.h"
 #include <stddef.h>
-#include <stdint.h>
 
 static void hcf() {
 	for (;;) {
@@ -35,6 +35,10 @@ void kernel_main() {
 	xddos_serial_init();
 
 	LOG_INFO("KERNEL", "Extended Drive - Disk Operating System (xD-DOS) Starting...");
+
+	// Interrupts
+	LOG_INFO("KERNEL", "Initializing IDT (Interrupt Descriptor Table)...");
+	xddos_interrupts_init();
 
 	LOG_INFO("KERNEL", "Initializing memory...");
 	// PMM init
@@ -101,6 +105,12 @@ void kernel_main() {
 	const char *msg = "xD-DOS (Extended Drive - Disk Operating System)\r\nMaintained by Jason Christian\r\n\r\n";
 	xddos_graphics_clear(fb, 0x000000);
 	xddos_graphics_put_text(fb, font, msg, 4, 4, 0xFFFFFF, 0x000000);
+
+	// Exception test
+	volatile uint8_t a = 1;
+	volatile uint8_t b = 0;
+	volatile uint8_t x = a / b;
+	(void)x;
 
 	// Halt
 	LOG_INFO("KERNEL", "Nothing to do, halting...");
