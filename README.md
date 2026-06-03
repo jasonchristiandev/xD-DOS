@@ -13,7 +13,7 @@ xD-DOS is an operating system inspired by **DOS**. xD-DOS is merely a fun projec
 * ~~Setup malloc and free~~
 * ~~Write to framebuffer~~
 * ~~PSF graphics~~
-* Interrupt handling
+* ~~Interrupt handling~~
 * Basic input
 
 ## Getting Started
