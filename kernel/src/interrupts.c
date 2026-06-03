@@ -1,6 +1,8 @@
 #include "xddos/interrupts.h"
+#include "xddos/graphics.h"
 #include "xddos/logging.h"
 #include "xddos/pic.h"
+#include "xddos/requests.h"
 #include <stdbool.h>
 #define GDT_OFFSET_KERNEL_CODE 0x28 // just following tutorials
 #define IDT_ENTRY_NUM 256
@@ -9,12 +11,19 @@ __attribute__((aligned(0x10))) static xddos_interrupts_idtentry_t idt[IDT_ENTRY_
 static xddos_interrupts_idtr_t idtr;
 static bool vectors[IDT_ENTRY_NUM];
 extern void *isr_stub_table[];
+extern xddos_psf_data_t *fallback_font;
+
+void xddos_panic(xddos_framebuffer_t *fb, char *message) {
+	(void) fb;
+	LOG_ERROR("KERNEL", "Kernel panic! Something went wrong.");
+	xddos_graphics_clear(fb, 0x000000);
+	xddos_graphics_psf_put_text(fb, fallback_font, "xD-DOS KERNEL PANIC!", 8, 8, 0xFFFFFF, 0x000000);
+	xddos_graphics_psf_put_char(fb, fallback_font, '>', 8, 40, 0xFFFFFF, 0x000000);
+	xddos_graphics_psf_put_text(fb, fallback_font, message, 32, 40, 0xFFFFFF, 0x000000);
+	__asm__ volatile("cli; hlt");
+}
 
 void xddos_interrupts_exception_handler(xddos_register_state_t *state) {
-	if (state->vector_number < 31) {
-		int x = 1 / 0;
-		(void) x;
-	}
 	xddos_interrupt_exception_vector_t exception = xddos_interrupt_exception_vectors[state->vector_number];
 	LOG_ERROR("INT", "Caught exception in kernel level!");
 	LOG_ERROR("INT", "  Exception: 0x%x", state->vector_number);
@@ -24,7 +33,9 @@ void xddos_interrupts_exception_handler(xddos_register_state_t *state) {
 	LOG_ERROR("INT", "  Error code: 0x%x", state->error_code);
 	LOG_ERROR("INT", "  RIP: 0x%llx", state->rip);
 
-	__asm__ volatile("cli; hlt");
+	xddos_framebuffers_t *fbs = xddos_request_framebuffers();
+	if (fbs == NULL || fbs->count < 1) __asm__ volatile("hlt");
+	xddos_panic(fbs->framebuffers[0], "Caught exception in kernel level!\r\nPlease refer to serial console for more information.");
 }
 
 void xddos_interrupts_set_descriptor(uint8_t vector, void *isr, uint8_t flags) {

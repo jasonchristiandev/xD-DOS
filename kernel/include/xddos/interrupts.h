@@ -1,6 +1,7 @@
 #ifndef INTERRUPTS_H
 #define INTERRUPTS_H
 
+#include "xddos/requests.h"
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -82,5 +83,6 @@ static const char *xddos_interrupt_fault_names[5] = {"FAULT", "TRAP", "ABORT", "
 void xddos_interrupts_init(void);
 void xddos_interrupts_exception_handler(xddos_register_state_t *state);
 void xddos_interrupts_set_descriptor(uint8_t vector, void *isr, uint8_t flags);
+void xddos_panic(xddos_framebuffer_t *fb, char *message);
 
 #endif // !INTERRUPTS_H

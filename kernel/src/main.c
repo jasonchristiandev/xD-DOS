@@ -12,28 +12,17 @@
 #include "xddos/vmm.h"
 #include <stddef.h>
 
-static void hcf() {
-	for (;;) {
-		__asm__("hlt");
-	}
-}
-
-static void panic(xddos_framebuffer_t *fb) {
-	(void) fb;
-	LOG_ERROR("KERNEL", "Kernel panic! Something went wrong.");
-	hcf();
-}
+xddos_psf_data_t *fallback_font;
 
 void kernel_main() {
 	if (xddos_request_base_revision_supported() == 0) {
-		hcf();
+		__asm__ volatile("hlt");
 	}
 
 	xddos_framebuffers_t *fbs = xddos_request_framebuffers();
-	if (fbs == NULL || fbs->count < 1) hcf();
+	if (fbs == NULL || fbs->count < 1) __asm__ volatile("hlt");
 
 	xddos_framebuffer_t *fb = fbs->framebuffers[0];
-	xddos_psf_data_t *fallback_font;
 
 	xddos_serial_init();
 
@@ -49,15 +38,15 @@ void kernel_main() {
 	xddos_pmm_init_result_t pmm_result = xddos_pmm_init();
 	if (pmm_result == XDDOS_PMM_NO_RESPONSES) {
 		LOG_ERROR("KERNEL", "Failed to initialize Physical Memory Manager! Error code 0x%x (Memory Map or HHDM Not Ready).", pmm_result);
-		panic(fb);
+		xddos_panic(fb, "Failed to initialize Physical Memory Manager!\r\nPlease refer to serial console for more information.");
 		return;
 	} else if (pmm_result == XDDOS_PMM_OUT_OF_SPACE) {
 		LOG_ERROR("KERNEL", "Failed to initialize Physical Memory Manager! Error code 0x%x (No Memory Available for Bitmap).", pmm_result);
-		panic(fb);
+		xddos_panic(fb, "Failed to initialize Physical Memory Manager!\r\nPlease refer to serial console for more information.");
 		return;
 	} else if (pmm_result > 0) {
 		LOG_ERROR("KERNEL", "Failed to initialize Physical Memory Manager! Error code 0x%x (Unknown).", pmm_result);
-		panic(fb);
+		xddos_panic(fb, "Failed to initialize Physical Memory Manager!\r\nPlease refer to serial console for more information.");
 		return;
 	}
 
@@ -66,19 +55,19 @@ void kernel_main() {
 	xddos_vmm_init_result_t vmm_result = xddos_vmm_init();
 	if (vmm_result == XDDOS_VMM_NO_RESPONSES) {
 		LOG_ERROR("KERNEL", "Failed to initialize Virtual Memory Manager! Error code 0x%x (HHDM or Executable Address or Executable File Not Ready).", vmm_result);
-		panic(fb);
+		xddos_panic(fb, "Failed to initialize Virtual Memory Manager!\r\nPlease refer to serial console for more information.");
 		return;
 	} else if (vmm_result == XDDOS_VMM_OFFSET_ZERO) {
 		LOG_ERROR("KERNEL", "Failed to initialize Virtual Memory Manager! Error code 0x%x (HHDM Offset is 0).", vmm_result);
-		panic(fb);
+		xddos_panic(fb, "Failed to initialize Virtual Memory Manager!\r\nPlease refer to serial console for more information.");
 		return;
 	} else if (vmm_result == XDDOS_VMM_OUT_OF_MEMORY) {
 		LOG_ERROR("KERNEL", "Failed to initialize Virtual Memory Manager! Error code 0x%x (Out of Memory).", vmm_result);
-		panic(fb);
+		xddos_panic(fb, "Failed to initialize Virtual Memory Manager!\r\nPlease refer to serial console for more information.");
 		return;
 	} else if (vmm_result > 0) {
 		LOG_ERROR("KERNEL", "Failed to initialize Virtual Memory Manager! Error code 0x%x (Unknown).", vmm_result);
-		panic(fb);
+		xddos_panic(fb, "Failed to initialize Virtual Memory Manager!\r\nPlease refer to serial console for more information.");
 		return;
 	}
 
@@ -94,7 +83,7 @@ void kernel_main() {
 	void *initial_heap_block = xddos_vma_alloc_pages(initial_pages);
 	if (!initial_heap_block) {
 		LOG_ERROR("KERNEL", "Failed to allocate initial heap pages!");
-		panic(fb);
+		xddos_panic(fb, "Failed to initialize Virtual Memory Manager!\r\nPlease refer to serial console for more information.");
 		return;
 	}
 
@@ -116,5 +105,5 @@ void kernel_main() {
 
 	// Halt
 	LOG_INFO("KERNEL", "Nothing to do, halting...");
-	hcf();
+	__asm__ volatile("hlt");
 }
