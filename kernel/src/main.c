@@ -7,6 +7,7 @@
 #include "xddos/pmm.h"
 #include "xddos/psf.h"
 #include "xddos/requests.h"
+#include "xddos/scancode.h"
 #include "xddos/serial.h"
 #include "xddos/vma.h"
 #include "xddos/vmm.h"
@@ -100,7 +101,8 @@ void kernel_main() {
 
 	while (true) {
 		xddos_pit_sleep_ms(1);
-		xddos_graphics_psf_put_char(fb, fallback_font, inb(0x60), 4, 32, 0xFFFFFF, 0x000000);
+		uint8_t sc = inb(0x60);
+		xddos_graphics_psf_put_char(fb, fallback_font, SCANCODE_TO_ASCII[sc], 4, 36, 0xFFFFFF, 0x000000);
 	}
 
 	// Halt

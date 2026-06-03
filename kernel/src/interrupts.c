@@ -18,8 +18,8 @@ void xddos_panic(xddos_framebuffer_t *fb, char *message) {
 	LOG_ERROR("KERNEL", "Kernel panic! Something went wrong.");
 	xddos_graphics_clear(fb, 0x000000);
 	xddos_graphics_psf_put_text(fb, fallback_font, "xD-DOS KERNEL PANIC!", 8, 8, 0xFFFFFF, 0x000000);
-	xddos_graphics_psf_put_char(fb, fallback_font, '>', 8, 40, 0xFFFFFF, 0x000000);
-	xddos_graphics_psf_put_text(fb, fallback_font, message, 32, 40, 0xFFFFFF, 0x000000);
+	xddos_graphics_psf_put_char(fb, fallback_font, '>', 8, 32, 0xFFFFFF, 0x000000);
+	xddos_graphics_psf_put_text(fb, fallback_font, message, 28, 32, 0xFFFFFF, 0x000000);
 	__asm__ volatile("cli; hlt");
 }
 
