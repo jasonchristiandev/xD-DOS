@@ -11,8 +11,18 @@ static bool vectors[IDT_ENTRY_NUM];
 extern void *isr_stub_table[];
 
 void xddos_interrupts_exception_handler(xddos_register_state_t *state) {
-	LOG_ERROR("INT", "Exception Vector: %d, Error Code: 0x%x", state->vector_number, state->error_code);
-	LOG_ERROR("INT", "RIP: 0x%llx", state->rip);
+	if (state->vector_number < 31) {
+		int x = 1 / 0;
+		(void) x;
+	}
+	xddos_interrupt_exception_vector_t exception = xddos_interrupt_exception_vectors[state->vector_number];
+	LOG_ERROR("INT", "Caught exception in kernel level!");
+	LOG_ERROR("INT", "  Exception: 0x%x", state->vector_number);
+	LOG_ERROR("INT", "  Mnemonic: %s", exception.mnemonic);
+	LOG_ERROR("INT", "  Type: %s", xddos_interrupt_fault_names[exception.type]);
+	LOG_ERROR("INT", "  Name: %s", exception.name);
+	LOG_ERROR("INT", "  Error code: 0x%x", state->error_code);
+	LOG_ERROR("INT", "  RIP: 0x%llx", state->rip);
 
 	__asm__ volatile("cli; hlt");
 }

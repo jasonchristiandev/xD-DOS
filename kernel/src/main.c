@@ -1,7 +1,9 @@
+#include "xddos/asm.h"
 #include "xddos/graphics.h"
 #include "xddos/interrupts.h"
 #include "xddos/logging.h"
 #include "xddos/memalloc.h"
+#include "xddos/pit.h"
 #include "xddos/pmm.h"
 #include "xddos/psf.h"
 #include "xddos/requests.h"
@@ -31,6 +33,7 @@ void kernel_main() {
 	if (fbs == NULL || fbs->count < 1) hcf();
 
 	xddos_framebuffer_t *fb = fbs->framebuffers[0];
+	xddos_psf_data_t *fallback_font;
 
 	xddos_serial_init();
 
@@ -97,20 +100,19 @@ void kernel_main() {
 
 	xddos_memalloc_init(xddos_vma_alloc_pages, initial_heap_block, initial_heap_bytes);
 
-	// Init font
-	LOG_DEBUG("KERNEL", "Font initializing...");
-	xddos_psf_data_t *font = xddos_psf_init();
+	// Init fallback font
+	LOG_INFO("KERNEL", "Initializing fallback font...");
+	fallback_font = xddos_psf_init();
 
 	xddos_graphics_clear(fb, 0);
 	const char *msg = "xD-DOS (Extended Drive - Disk Operating System)\r\nMaintained by Jason Christian\r\n\r\n";
 	xddos_graphics_clear(fb, 0x000000);
-	xddos_graphics_put_text(fb, font, msg, 4, 4, 0xFFFFFF, 0x000000);
+	xddos_graphics_psf_put_text(fb, fallback_font, msg, 4, 4, 0xFFFFFF, 0x000000);
 
-	// Exception test
-	volatile uint8_t a = 1;
-	volatile uint8_t b = 0;
-	volatile uint8_t x = a / b;
-	(void)x;
+	while (true) {
+		xddos_pit_sleep_ms(1);
+		xddos_graphics_psf_put_char(fb, fallback_font, inb(0x60), 4, 32, 0xFFFFFF, 0x000000);
+	}
 
 	// Halt
 	LOG_INFO("KERNEL", "Nothing to do, halting...");

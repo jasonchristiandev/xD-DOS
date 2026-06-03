@@ -54,7 +54,7 @@ bool xddos_serial_write(char a) {
 			return 0;
 		}
 
-		SLEEP(1);
+		xddos_pit_sleep_ms(1);
 		ms_passed++;
 	}
 

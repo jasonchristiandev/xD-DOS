@@ -2,11 +2,11 @@
 #include "xddos/logging.h"
 #include "xddos/psf.h"
 #include "xddos/requests.h"
-#include <string.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
-static void put_char(xddos_framebuffer_t *fb, uint32_t width, uint32_t height, uint8_t *bitmap, uint32_t cx, uint32_t cy, uint32_t fg, uint32_t bg) {
+static void psf_put_char(xddos_framebuffer_t *fb, uint32_t width, uint32_t height, uint8_t *bitmap, uint32_t cx, uint32_t cy, uint32_t fg, uint32_t bg) {
 	if (cy >= fb->height || cx >= fb->width) return;
 
 	uint32_t *fb_ptr = (uint32_t *) fb->address;
@@ -31,7 +31,7 @@ static void put_char(xddos_framebuffer_t *fb, uint32_t width, uint32_t height, u
 	}
 }
 
-void xddos_graphics_put_char(xddos_framebuffer_t *fb, xddos_psf_data_t *font, char ch, uint32_t x, uint32_t y, uint32_t fg, uint32_t bg) {
+void xddos_graphics_psf_put_char(xddos_framebuffer_t *fb, xddos_psf_data_t *font, char ch, uint32_t x, uint32_t y, uint32_t fg, uint32_t bg) {
 	if (!fb || !fb->address) {
 		LOG_ERROR("GRAPHICS", "Framebuffer is NULL!");
 		return;
@@ -58,10 +58,10 @@ void xddos_graphics_put_char(xddos_framebuffer_t *fb, xddos_psf_data_t *font, ch
 	}
 	glyph_bitmap = font->data + (ch * bytes_per_glyph);
 
-	put_char(fb, width, height, glyph_bitmap, x, y, fg, bg);
+	psf_put_char(fb, width, height, glyph_bitmap, x, y, fg, bg);
 }
 
-void xddos_graphics_put_text(xddos_framebuffer_t *fb, xddos_psf_data_t *font, const char *str, uint32_t x, uint32_t y, uint32_t fg, uint32_t bg) {
+void xddos_graphics_psf_put_text(xddos_framebuffer_t *fb, xddos_psf_data_t *font, const char *str, uint32_t x, uint32_t y, uint32_t fg, uint32_t bg) {
 	if (!fb || !fb->address) {
 		LOG_ERROR("GRAPHICS", "Framebuffer is NULL!");
 		return;
@@ -99,11 +99,11 @@ void xddos_graphics_put_text(xddos_framebuffer_t *fb, xddos_psf_data_t *font, co
 			if (font->unicode) ch = font->unicode[' '];
 			uint8_t *glyph_bitmap = font->data + (ch * bytes_per_glyph);
 			for (uint8_t j = 0; j < 8; j++) {
-				put_char(fb, width, height, glyph_bitmap, term_x, term_y, fg, bg);
+				psf_put_char(fb, width, height, glyph_bitmap, term_x, term_y, fg, bg);
 				term_x += width;
 			}
 		} else {
-			put_char(fb, width, height, glyph_bitmap, term_x, term_y, fg, bg);
+			psf_put_char(fb, width, height, glyph_bitmap, term_x, term_y, fg, bg);
 			term_x += width;
 		}
 	}
