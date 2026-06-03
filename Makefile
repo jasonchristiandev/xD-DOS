@@ -50,7 +50,7 @@ run: $(ISO_IMAGE)
 	| tee qemu.log
 
 clean:
-	rm -rf $(ISO_DIR) qemu.log
+	rm -rf $(ISO_DIR) qemu.log $(ISO_IMAGE)
 	make -C $(KERNEL_DIR) clean
 
 distclean: clean
