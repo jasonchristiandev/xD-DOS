@@ -14,7 +14,13 @@ xD-DOS is an operating system inspired by **DOS**. xD-DOS is merely a fun projec
 * ~~Write to framebuffer~~
 * ~~PSF graphics~~
 * ~~Interrupt handling~~
-* Basic input
+* ~~Basic input~~
+* ~~GDT~~
+* Task state segment
+* Escape ring 0
+* User memory mapping
+* Load external program (maybe embed into kernel)
+* Syscalls working
 
 ## Getting Started
 
