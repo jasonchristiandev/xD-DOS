@@ -11,15 +11,20 @@
 #define KERNEL_CS 0x08
 #define USER_CS 0x1B
 
+extern uint64_t global_kernel_stack;
+uint8_t syscall_stack[4096];
+
 void xddos_syscall_init() {
 	uint32_t low, high;
 	__asm__ volatile("rdmsr" : "=a"(low), "=d"(high) : "c"(MSR_EFER));
 	low |= EFER_SCE;
 	__asm__ volatile("wrmsr" : : "a"(low), "d"(high), "c"(MSR_EFER));
 
-	// extern void syscall_entry_asm(void);
-	// uint64_t lstar = (uint64_t) syscall_entry_asm;
-	// __asm__ volatile("wrmsr" : : "a"((uint32_t) lstar), "d"((uint32_t) (lstar >> 32)), "c"(MSR_LSTAR));
+	extern void xddos_syscall_entry(void);
+	uint64_t lstar = (uint64_t) xddos_syscall_entry;
+	__asm__ volatile("wrmsr" : : "a"((uint32_t) lstar), "d"((uint32_t) (lstar >> 32)), "c"(MSR_LSTAR));
+
+	global_kernel_stack = (uint64_t) &syscall_stack[4096];
 
 	low = 0;
 	high = (KERNEL_CS << 0) | (USER_CS << 16);

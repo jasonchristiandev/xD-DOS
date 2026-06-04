@@ -51,7 +51,6 @@ run: $(ISO_IMAGE)
 		-vga none \
 		-device VGA,xres=640,yres=480 \
 		-d int,cpu_reset \
-		-no-reboot \
 		-D qemu.log \
 	| tee serial.log
 

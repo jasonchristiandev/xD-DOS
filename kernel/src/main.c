@@ -47,11 +47,11 @@ void kernel_main() {
 	xddos_gdt_init();
 	xddos_syscall_init();
 	xddos_serial_init();
-	
+
 	LOG_INFO("KERNEL", "Extended Drive - Disk Operating System (xD-DOS) Starting...");
 	
 	// Interrupts
-	LOG_INFO("KERNEL", "Initializing IDT (Interrupt Descriptor Table)...");
+	LOG_DEBUG("KERNEL", "Initializing IDT (Interrupt Descriptor Table)...");
 	xddos_interrupts_init();
 
 	// PMM init
@@ -111,15 +111,13 @@ void kernel_main() {
 	xddos_memalloc_init(xddos_vma_alloc_pages, initial_heap_block, initial_heap_bytes);
 
 	// Init fallback font
-	LOG_INFO("KERNEL", "Initializing fallback font...");
+	LOG_DEBUG("KERNEL", "Initializing fallback font...");
 	fallback_font = xddos_psf_init();
 
 	xddos_graphics_clear(fb, 0);
-	const char *msg = "xD-DOS (Extended Drive - Disk Operating System)\r\nMaintained by Jason Christian\r\n\r\n";
+	const char *msg = "xD-DOS (Extended Drive - Disk Operating System)\r\n> https://github.com/jasonchristiandev/xD-DOS\r\n> Maintained by Jason Christian.";
 	xddos_graphics_clear(fb, 0x000000);
 	xddos_graphics_psf_put_text(fb, fallback_font, msg, 4, 4, 0xFFFFFF, 0x000000);
-
-	syscall(SYSCALL_WRITE, 0, 'a', 0);
 
 	while (true) {
 		xddos_pit_sleep_ms(1);
@@ -127,7 +125,7 @@ void kernel_main() {
 		if (sc == 1) xddos_panic(fb, "Debug crash");
 		char *str = malloc(7);
 		snprintf(str, 7, "%d   ", sc);
-		xddos_graphics_psf_put_text(fb, fallback_font, str, 4, 36, 0xFFFFFF, 0x000000);
+		xddos_graphics_psf_put_text(fb, fallback_font, str, 4, 52, 0xFFFFFF, 0x000000);
 	}
 
 	// Halt

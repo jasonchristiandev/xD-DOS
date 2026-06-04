@@ -56,7 +56,9 @@ extern xddos_psf_data_t *fallback_font;
 extern xddos_acpi_fadt_t *global_fadt;
 
 void xddos_panic(xddos_framebuffer_t *fb, char *message) {
-	LOG_ERROR("INTERRUPTS", "Kernel panic! Something went wrong.");
+	if (fallback_font == NULL) {
+		__asm__ __volatile__("hlt");
+	}
 	xddos_graphics_clear(fb, 0x000000);
 	xddos_pit_sleep_ms(100);
 
