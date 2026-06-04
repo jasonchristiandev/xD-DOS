@@ -9,7 +9,7 @@
 uint64_t hhdm_offset;
 xddos_vmm_page_table_t *kernel_pml4 = NULL;
 
-xddos_vmm_init_result_t xddos_vmm_init(void) {
+xddos_vmm_init_result_t xddos_vmm_init() {
 	LOG_DEBUG("VMM", "Checking responses...");
 	xddos_hhdm_t *hhdm = xddos_request_hhdm();
 	xddos_executable_address_t *exeaddr = xddos_request_executable_address();

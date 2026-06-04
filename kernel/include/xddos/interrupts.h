@@ -80,7 +80,7 @@ static const xddos_interrupt_exception_vector_t xddos_interrupt_exception_vector
 	[31] = {"Reserved", NULL, XDDOS_INTERRUPT_EXCEPTION_TYPE_RESERVED, false}};
 static const char *xddos_interrupt_fault_names[5] = {"FAULT", "TRAP", "ABORT", "INTERRUPT", "RESERVED"};
 
-void xddos_interrupts_init(void);
+void xddos_interrupts_init();
 void xddos_interrupts_exception_handler(xddos_register_state_t *state);
 void xddos_interrupts_set_descriptor(uint8_t vector, void *isr, uint8_t flags);
 void xddos_panic(xddos_framebuffer_t *fb, char *message);
