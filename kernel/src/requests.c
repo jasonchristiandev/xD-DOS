@@ -13,6 +13,9 @@ __attribute__((used, section(".limine_requests"))) static volatile struct limine
 __attribute__((used, section(".limine_requests"))) static volatile struct limine_executable_file_request executable_file_request = {
 	.id = LIMINE_EXECUTABLE_FILE_REQUEST_ID,
 	.revision = 0};
+__attribute__((used, section(".limine_requests"))) static volatile struct limine_rsdp_request rsdp_request = {
+	.id = LIMINE_RSDP_REQUEST_ID,
+	.revision = 0};
 __attribute__((used, section(".limine_requests"))) static volatile struct limine_memmap_request memmap_request = {
 	.id = LIMINE_MEMMAP_REQUEST_ID,
 	.revision = 0};
@@ -43,6 +46,12 @@ xddos_executable_file_t *xddos_request_executable_file() {
 	res.address = response->executable_file->address;
 	res.size = response->executable_file->size;
 	return &res;
+}
+
+xddos_rsdp_t *xddos_request_rsdp() {
+	struct limine_rsdp_response *response = rsdp_request.response;
+	if (response == NULL || response->address == NULL) return NULL;
+	return (xddos_rsdp_t *) response->address;
 }
 
 xddos_memmap_t *xddos_request_memmap() {

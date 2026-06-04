@@ -16,8 +16,11 @@ $(LIMINE_DIR)/limine:
 		$(MAKE) -C $(LIMINE_DIR); \
 	fi
 
-$(KERNEL_ELF):
+$(KERNEL_ELF): $(LIBC_A)
 	make -C $(KERNEL_DIR)
+
+$(LIBC_A):
+	make -C $(LIBC_DIR)
 
 $(ISO_IMAGE): $(KERNEL_ELF) $(LIMINE_CONF) $(LIMINE_DIR)/limine
 	@echo " [ISO] Creating $(ISO_IMAGE)..."
@@ -52,6 +55,7 @@ run: $(ISO_IMAGE)
 clean:
 	rm -rf $(ISO_DIR) qemu.log $(ISO_IMAGE)
 	make -C $(KERNEL_DIR) clean
+	make -C $(LIBC_DIR) clean
 
 distclean: clean
 	rm -rf $(LIMINE_DIR) $(FONTS_DIR)

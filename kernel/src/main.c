@@ -7,8 +7,8 @@
 #include "xddos/pmm.h"
 #include "xddos/psf.h"
 #include "xddos/requests.h"
-#include "xddos/scancode.h"
 #include "xddos/serial.h"
+#include "xddos/syscallnums.h"
 #include "xddos/vma.h"
 #include "xddos/vmm.h"
 #include <stddef.h>
@@ -16,6 +16,21 @@
 #include <stdlib.h>
 
 xddos_psf_data_t *fallback_font;
+
+uint64_t syscall(uint64_t vector_id, uint64_t arg1, uint64_t arg2, uint64_t arg3) {
+	uint64_t ret;
+	__asm__ __volatile__(
+		"mov %1, %%rax\n\t"
+		"mov %2, %%rdi\n\t"
+		"mov %3, %%rsi\n\t"
+		"mov %4, %%rdx\n\t"
+		"syscall\n\t"
+		"mov %%rax, %0"
+		: "=r"(ret)
+		: "r"(vector_id), "r"(arg1), "r"(arg2), "r"(arg3)
+		: "rax", "rdi", "rsi", "rdx", "rcx", "r11", "memory");
+	return ret;
+}
 
 void kernel_main() {
 	if (xddos_request_base_revision_supported() == 0) {
@@ -99,6 +114,8 @@ void kernel_main() {
 	const char *msg = "xD-DOS (Extended Drive - Disk Operating System)\r\nMaintained by Jason Christian\r\n\r\n";
 	xddos_graphics_clear(fb, 0x000000);
 	xddos_graphics_psf_put_text(fb, fallback_font, msg, 4, 4, 0xFFFFFF, 0x000000);
+
+	// syscall(SYSCALL_WRITE, 0, 'a', 0);
 
 	while (true) {
 		xddos_pit_sleep_ms(1);

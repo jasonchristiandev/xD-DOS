@@ -112,7 +112,21 @@ void xddos_graphics_psf_put_text(xddos_framebuffer_t *fb, xddos_psf_data_t *font
 void xddos_graphics_clear(xddos_framebuffer_t *fb, uint32_t col) {
 	uint32_t *fb_ptr = (uint32_t *) fb->address;
 	uint32_t pixels = (fb->height * fb->pitch) / sizeof(uint32_t);
-	for (uint32_t i = 0; i < pixels; i++) {
-		fb_ptr[i] = col;
+	memset(fb_ptr, col, pixels);
+}
+
+void xddos_graphics_rect(xddos_framebuffer_t *fb, uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t col) {
+	if (x >= fb->width || y >= fb->height) return;
+	if (x + w > fb->width) w = fb->width - x;
+	if (h + y > fb->height) h = fb->height - y;
+
+	uint8_t *fb_ptr = (uint8_t *) fb->address;
+
+	for (uint32_t j = y; j < y + h; j++) {
+		uint32_t *row_ptr = (uint32_t *) (fb_ptr + (j * fb->pitch));
+
+		for (uint32_t i = x; i < x + w; i++) {
+			row_ptr[i] = col;
+		}
 	}
 }

@@ -5,7 +5,9 @@ LINKER_SCRIPT = linker.lds
 
 SRCS = $(wildcard $(SRC_DIR)/*.c)
 ASMS = $(wildcard $(ASM_DIR)/*.s)
-OBJS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRCS)) $(patsubst $(ASM_DIR)/%.s, $(BUILD_DIR)/%.o, $(ASMS)) $(BUILD_DIR)/font_data.o
+OBJS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRCS)) $(patsubst $(ASM_DIR)/%.s, $(BUILD_DIR)/%.o, $(ASMS))
+OBJS += $(BUILD_DIR)/font_data.o
+LIBS = $(LIBC_A)
 
 CFLAGS = -fno-stack-protector -ffreestanding -mno-red-zone \
 		 -fms-extensions -nostdlib -nostdinc -Wall -Wextra \
@@ -43,10 +45,10 @@ $(BUILD_DIR)/font_data.o: $(FONT_PSF) | $(BUILD_DIR)
 		--redefine-sym _binary_$(FONT_STEM)_end=_binary_font_psf_end \
 		--redefine-sym _binary_$(FONT_STEM)_size=_binary_font_psf_size
 
-$(KERNEL_ELF): $(OBJS) $(LINKER_SCRIPT) | $(BUILD_DIR)
+$(KERNEL_ELF): $(OBJS) $(LIBS) $(LINKER_SCRIPT) | $(BUILD_DIR)
 	@echo " [LD] Linking..."
 	@echo "     $(OBJS)"
-	@$(LD) -T $(LINKER_SCRIPT) $(OBJS) -o $(KERNEL_ELF)
+	@$(LD) -T $(LINKER_SCRIPT) $(OBJS) $(LIBS) -o $(KERNEL_ELF)
 
 clean:
 	rm -rf $(BUILD_DIR)

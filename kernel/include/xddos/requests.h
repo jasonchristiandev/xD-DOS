@@ -22,6 +22,18 @@ typedef struct {
 	void *address;
 	uint64_t size;
 } xddos_executable_file_t;
+typedef struct {
+	char signature[8];
+	uint8_t checksum;
+	char oem[6];
+	uint8_t revision;
+	uint32_t rsdt_ptr;
+
+	uint32_t length;
+	uint64_t xsdt_ptr;
+	uint8_t ext_checksum;
+	uint8_t reserved[3];
+} __attribute__((packed)) xddos_rsdp_t;
 typedef struct limine_memmap_entry xddos_memmap_entry_t;
 typedef struct {
 	uint64_t count;
@@ -39,6 +51,7 @@ typedef struct {
 uint8_t xddos_request_base_revision_supported();
 xddos_executable_address_t *xddos_request_executable_address();
 xddos_executable_file_t *xddos_request_executable_file();
+xddos_rsdp_t *xddos_request_rsdp();
 xddos_memmap_t *xddos_request_memmap();
 xddos_hhdm_t *xddos_request_hhdm();
 xddos_framebuffers_t *xddos_request_framebuffers();

@@ -1,11 +1,13 @@
-#include "xddos/serial.h"
+#include "xddos/syscallnums.h"
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <syscall.h>
 
 int putchar(char ch) {
-	return xddos_serial_write(ch) ? ch : '\0';
+	return syscall(SYSCALL_WRITE, 0, ch, 0) ? ch : '\0';
 }
 
 static void itoa(uint64_t n, char *str, uint8_t base, uint8_t signed_val) {
@@ -39,7 +41,7 @@ static void itoa(uint64_t n, char *str, uint8_t base, uint8_t signed_val) {
 int vprintf(const char *format, va_list args) {
 	char buf[128];
 	int result = vsnprintf(buf, sizeof(buf), format, args);
-	xddos_serial_write_text(buf);
+	for (int i = 0; buf[i] != '\0'; i++) putchar(buf[i]);
 	return result;
 }
 
