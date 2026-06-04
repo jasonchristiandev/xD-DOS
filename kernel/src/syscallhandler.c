@@ -3,6 +3,32 @@
 #include "xddos/syscallnums.h"
 #include "xddos/vma.h"
 
+#define MSR_EFER 0xC0000080
+#define EFER_SCE (1 << 0)
+#define MSR_STAR 0xC0000081
+#define MSR_LSTAR 0xC0000082
+#define MSR_FMASK 0xC0000084
+#define KERNEL_CS 0x08
+#define USER_CS 0x1B
+
+void xddos_syscall_init() {
+	uint32_t low, high;
+	__asm__ volatile("rdmsr" : "=a"(low), "=d"(high) : "c"(MSR_EFER));
+	low |= EFER_SCE;
+	__asm__ volatile("wrmsr" : : "a"(low), "d"(high), "c"(MSR_EFER));
+
+	// extern void syscall_entry_asm(void);
+	// uint64_t lstar = (uint64_t) syscall_entry_asm;
+	// __asm__ volatile("wrmsr" : : "a"((uint32_t) lstar), "d"((uint32_t) (lstar >> 32)), "c"(MSR_LSTAR));
+
+	low = 0;
+	high = (KERNEL_CS << 0) | (USER_CS << 16);
+	__asm__ volatile("wrmsr" : : "a"(low), "d"(high), "c"(MSR_STAR));
+
+	uint32_t fmask = 0x200;
+	__asm__ volatile("wrmsr" : : "a"(fmask), "d"(0), "c"(MSR_FMASK));
+}
+
 uint64_t xddos_syscall_handler(uint64_t id, uint64_t arg1, uint64_t arg2, uint64_t arg3) {
 	(void) arg3;
 	switch (id) {

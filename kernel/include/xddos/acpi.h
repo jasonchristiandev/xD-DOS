@@ -1,7 +1,6 @@
 #ifndef ACPI_H
 #define ACPI_H
 
-#include <stddef.h>
 #include <stdint.h>
 
 typedef struct {
@@ -48,7 +47,7 @@ typedef struct {
 	uint32_t pm1b_control_block;
 } __attribute__((packed)) xddos_acpi_fadt_t;
 
-static xddos_acpi_fadt_t *global_fadt = NULL;
+extern xddos_acpi_fadt_t *global_fadt;
 
 void xddos_acpi_init();
 void xddos_acpi_parse_fadt(xddos_acpi_header_t *table);

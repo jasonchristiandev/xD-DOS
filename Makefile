@@ -50,10 +50,13 @@ run: $(ISO_IMAGE)
 		-serial mon:stdio \
 		-vga none \
 		-device VGA,xres=640,yres=480 \
-	| tee qemu.log
+		-d int,cpu_reset \
+		-no-reboot \
+		-D qemu.log \
+	| tee serial.log
 
 clean:
-	rm -rf $(ISO_DIR) qemu.log $(ISO_IMAGE)
+	rm -rf $(ISO_DIR) qemu.log serial.log $(ISO_IMAGE)
 	make -C $(KERNEL_DIR) clean
 	make -C $(LIBC_DIR) clean
 

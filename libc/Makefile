@@ -5,7 +5,7 @@ include ../settings.mk
 
 SRCS = $(wildcard $(SRC_DIR)/*.c)
 ASMS = $(wildcard $(ASM_DIR)/*.s)
-OBJS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRCS)) $(patsubst $(ASM_DIR)/%.s, $(BUILD_DIR)/%.o, $(ASMS))
+OBJS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.c.o, $(SRCS)) $(patsubst $(ASM_DIR)/%.s, $(BUILD_DIR)/%.s.o, $(ASMS))
 
 CFLAGS = -fno-stack-protector -ffreestanding -mno-red-zone \
 		 -fms-extensions -nostdlib -nostdinc -Wall -Wextra \
@@ -22,11 +22,11 @@ all: $(LIBC_A)
 $(BUILD_DIR):
 	@mkdir -p $(BUILD_DIR)
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
+$(BUILD_DIR)/%.c.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
 	@echo " [CC] $<"
 	@$(CC) $(CFLAGS) -c $< -o $@ -DDEBUG=$(DEBUG)
 
-$(BUILD_DIR)/%.o: $(ASM_DIR)/%.s | $(BUILD_DIR)
+$(BUILD_DIR)/%.s.o: $(ASM_DIR)/%.s | $(BUILD_DIR)
 	@echo " [ASM] $<"
 	@$(ASM) -f elf64 $< -o $@
 

@@ -1,4 +1,5 @@
 #include "xddos/asm.h"
+#include "xddos/gdt.h"
 #include "xddos/graphics.h"
 #include "xddos/interrupts.h"
 #include "xddos/logging.h"
@@ -8,6 +9,7 @@
 #include "xddos/psf.h"
 #include "xddos/requests.h"
 #include "xddos/serial.h"
+#include "xddos/syscallhandler.h"
 #include "xddos/syscallnums.h"
 #include "xddos/vma.h"
 #include "xddos/vmm.h"
@@ -42,10 +44,12 @@ void kernel_main() {
 
 	xddos_framebuffer_t *fb = fbs->framebuffers[0];
 
+	xddos_gdt_init();
+	xddos_syscall_init();
 	xddos_serial_init();
-
+	
 	LOG_INFO("KERNEL", "Extended Drive - Disk Operating System (xD-DOS) Starting...");
-
+	
 	// Interrupts
 	LOG_INFO("KERNEL", "Initializing IDT (Interrupt Descriptor Table)...");
 	xddos_interrupts_init();
@@ -115,7 +119,7 @@ void kernel_main() {
 	xddos_graphics_clear(fb, 0x000000);
 	xddos_graphics_psf_put_text(fb, fallback_font, msg, 4, 4, 0xFFFFFF, 0x000000);
 
-	// syscall(SYSCALL_WRITE, 0, 'a', 0);
+	syscall(SYSCALL_WRITE, 0, 'a', 0);
 
 	while (true) {
 		xddos_pit_sleep_ms(1);

@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <string.h>
 
-extern xddos_acpi_fadt_t *global_fadt;
+xddos_acpi_fadt_t *global_fadt = NULL;
 
 void xddos_acpi_init(void) {
 	xddos_rsdp_t *rsdp = xddos_request_rsdp();
