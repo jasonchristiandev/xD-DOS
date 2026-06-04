@@ -22,7 +22,7 @@ extern xddos_psf_data_t *fallback_font;
 
 void xddos_panic(xddos_framebuffer_t *fb, char *message) {
 	(void) fb;
-	LOG_ERROR("KERNEL", "Kernel panic! Something went wrong.");
+	LOG_ERROR("INTERRUPTS", "Kernel panic! Something went wrong.");
 	xddos_graphics_clear(fb, 0x000000);
 	xddos_graphics_psf_put_text(fb, fallback_font, "xD-DOS KERNEL PANIC!", 8, 8, 0xFFFFFF, 0x000000);
 	xddos_graphics_psf_put_char(fb, fallback_font, '>', 8, 32, 0xFFFFFF, 0x000000);
@@ -32,13 +32,13 @@ void xddos_panic(xddos_framebuffer_t *fb, char *message) {
 
 void xddos_interrupts_exception_handler(xddos_register_state_t *state) {
 	xddos_interrupt_exception_vector_t exception = xddos_interrupt_exception_vectors[state->vector_number];
-	LOG_ERROR("INT", "Caught exception in kernel level!");
-	LOG_ERROR("INT", "  Exception: 0x%x", state->vector_number);
-	LOG_ERROR("INT", "  Mnemonic: %s", exception.mnemonic);
-	LOG_ERROR("INT", "  Type: %s", xddos_interrupt_fault_names[exception.type]);
-	LOG_ERROR("INT", "  Name: %s", exception.name);
-	LOG_ERROR("INT", "  Error code: 0x%x", state->error_code);
-	LOG_ERROR("INT", "  RIP: 0x%llx", state->rip);
+	LOG_ERROR("INTERRUPTS", "Caught exception in kernel level!\r\n");
+	LOG_ERROR("INTERRUPTS", "  Exception: 0x%x", state->vector_number);
+	LOG_ERROR("INTERRUPTS", "  Mnemonic: %s", exception.mnemonic);
+	LOG_ERROR("INTERRUPTS", "  Type: %s", xddos_interrupt_fault_names[exception.type]);
+	LOG_ERROR("INTERRUPTS", "  Name: %s", exception.name);
+	LOG_ERROR("INTERRUPTS", "  Error code: 0x%x", state->error_code);
+	LOG_ERROR("INTERRUPTS", "  RIP: 0x%llx", state->rip);
 
 	xddos_framebuffers_t *fbs = xddos_request_framebuffers();
 	if (fbs == NULL || fbs->count < 1) __asm__ volatile("hlt");
@@ -60,6 +60,7 @@ void xddos_interrupts_set_descriptor(uint8_t vector, void *isr, uint8_t flags) {
 #define GDT_OFFSET_KERNEL_CODE 0x28
 
 void xddos_interrupts_init() {
+	LOG_DEBUG("INTERRUPTS", "Creating interrupt descriptor table...");
 	idtr.base = (uintptr_t) &idt[0];
 	idtr.limit = (uint16_t) sizeof(xddos_interrupts_idtentry_t) * IDT_ENTRY_NUM - 1;
 
@@ -67,6 +68,8 @@ void xddos_interrupts_init() {
 		xddos_interrupts_set_descriptor(vector, isr_stub_table[vector], 0x8E);
 		vectors[vector] = true;
 	}
+
+	LOG_DEBUG("INTERRUPTS", "Remapping PIC...");
 
 	uint8_t a1 = inb(PIC1_DATA);
 	uint8_t a2 = inb(PIC2_DATA);
@@ -94,6 +97,10 @@ void xddos_interrupts_init() {
 	outb(PIC1_DATA, a1);
 	outb(PIC2_DATA, a2);
 
+	LOG_DEBUG("INTERRUPTS", "Loading interrupt descriptor table...");
+
 	__asm__ volatile("lidt %0" : : "m"(idtr));
 	__asm__ volatile("sti");
+
+	LOG_DEBUG("INTERRUPTS", "Done init.");
 }

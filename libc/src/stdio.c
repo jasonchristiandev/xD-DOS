@@ -4,6 +4,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
+int putchar(char ch) {
+	return xddos_serial_write(ch) ? ch : '\0';
+}
+
 static void itoa(uint64_t n, char *str, uint8_t base, uint8_t signed_val) {
 	char *p = str;
 	char *pa, *pb;

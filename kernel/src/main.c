@@ -12,6 +12,8 @@
 #include "xddos/vma.h"
 #include "xddos/vmm.h"
 #include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 xddos_psf_data_t *fallback_font;
 
@@ -33,7 +35,6 @@ void kernel_main() {
 	LOG_INFO("KERNEL", "Initializing IDT (Interrupt Descriptor Table)...");
 	xddos_interrupts_init();
 
-	LOG_INFO("KERNEL", "Initializing memory...");
 	// PMM init
 	LOG_DEBUG("KERNEL", "Physical Memory Manager initializing...");
 	xddos_pmm_init_result_t pmm_result = xddos_pmm_init();
@@ -102,7 +103,10 @@ void kernel_main() {
 	while (true) {
 		xddos_pit_sleep_ms(1);
 		uint8_t sc = inb(0x60);
-		xddos_graphics_psf_put_char(fb, fallback_font, SCANCODE_TO_ASCII[sc], 4, 36, 0xFFFFFF, 0x000000);
+		if (sc == 1) xddos_panic(fb, "Debug crash");
+		char *str = malloc(7);
+		snprintf(str, 7, "%d   ", sc);
+		xddos_graphics_psf_put_text(fb, fallback_font, str, 4, 36, 0xFFFFFF, 0x000000);
 	}
 
 	// Halt
