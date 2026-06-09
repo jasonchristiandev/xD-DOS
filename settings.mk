@@ -20,6 +20,7 @@ ISO_DIR = $(ROOT_DIR)/iso
 LIMINE_DIR = $(ROOT_DIR)/limine-bin
 FONTS_DIR = $(ROOT_DIR)/fonts
 LIMINE_PROTOCOL = $(ROOT_DIR)/limine-protocol
+TMP_MOUNT_DIR = /mnt/xddos_tmp
 
 KERNEL_ELF = $(KERNEL_DIR)/$(BUILD_DIR)/kernel.elf
 LIBC_A = $(LIBC_DIR)/$(BUILD_DIR)/libc.a
@@ -32,3 +33,5 @@ FONT_NAME = cp850-8x16.psf
 FONT_URL = https://raw.githubusercontent.com/ercanersoy/PSF-Fonts/master/$(FONT_NAME)
 LIMINE_VERSION = v11.x-binary
 LIMINE_URL = https://github.com/limine-bootloader/limine.git
+
+PARTITION_LABEL = xddos

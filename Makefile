@@ -19,10 +19,10 @@ $(LIMINE_DIR)/limine:
 	fi
 
 $(KERNEL_ELF): FORCE $(LIBC_A)
-	$(MAKE) -C $(KERNEL_DIR)
+	@$(MAKE) -C $(KERNEL_DIR)
 
 $(LIBC_A): FORCE
-	$(MAKE) -C $(LIBC_DIR)
+	@$(MAKE) -C $(LIBC_DIR)
 
 $(ISO_IMAGE): $(KERNEL_ELF) $(LIMINE_CONF) $(LIMINE_DIR)/limine
 	@echo " [ISO] Creating $(ISO_IMAGE)..."
@@ -55,6 +55,40 @@ run: $(ISO_IMAGE)
 		-d int,cpu_reset \
 		-D qemu.log \
 	| tee serial.log
+
+check-target:
+ifndef TARGET_VOLUME
+	$(error TARGET_VOLUME is not set!)
+endif
+	@# Check if partition is mounted at root
+	@MOUNT=$$(lsblk -no MOUNTPOINT $(TARGET_VOLUME) | head -n 1); \
+	if [ "$$MOUNT" = "/" ]; then \
+		echo "CRITICAL: Cannot format root partition"; exit 1; \
+	fi
+
+grub-install: $(ISO_IMAGE) check-target
+	@echo "[INSTALL] Wiping $(TARGET_VOLUME)!"
+	@read -p "[INSTALL] Continue? [y/N]: " confirm && [ "$$confirm" = "y" ]
+	
+	@echo "[INSTALL] Formatting $(TARGET_VOLUME)..."
+	sudo umount /dev/nvme0n1p7 || /bin/true
+	sudo mkfs.vfat -F 32 -n $(PARTITION_LABEL) $(TARGET_VOLUME)
+	
+	@echo "[INSTALL] Copying files to $(TARGET_VOLUME)..."
+	sudo mkdir -p $(TMP_MOUNT_DIR)
+	sudo mount $(TARGET_VOLUME) $(TMP_MOUNT_DIR)
+	sudo mkdir -p $(TMP_MOUNT_DIR)/boot
+	sudo mkdir -p $(TMP_MOUNT_DIR)/EFI/BOOT
+	
+	sudo mkdir -p $(TMP_MOUNT_DIR)/boot
+	sudo cp $(KERNEL_ELF) $(TMP_MOUNT_DIR)/boot/
+
+	sudo cp $(LIMINE_DIR)/BOOTX64.EFI $(TMP_MOUNT_DIR)/EFI/BOOT/BOOTX64.EFI
+	sudo cp $(LIMINE_CONF) $(TMP_MOUNT_DIR)/limine.conf
+
+	$(LIMINE_DIR)/limine bios-install $(ISO_IMAGE)
+	sudo umount $(TMP_MOUNT_DIR)
+	@echo " [INSTALL] Install success. Be sure to update your GRUB configuration before rebooting."
 
 clean:
 	rm -rf $(ISO_DIR) qemu.log serial.log $(ISO_IMAGE)

@@ -17,7 +17,7 @@ isr_stub_%+%1:
 %endmacro
 
 %assign i 0
-%rep 32
+%rep 256
 	; 8, 10, 11, 12, 13, 14, 17, 30
 	%if i == 8 || (i >= 10 && i <= 14) || i == 17 || i == 30
 		isr_err_stub i
