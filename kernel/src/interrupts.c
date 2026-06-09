@@ -96,13 +96,14 @@ void xddos_panic(xddos_framebuffer_t *fb, char *message) {
 	y += 33 * pixel_size + 8;
 
 	xddos_graphics_psf_put_text(fb, fallback_font, "Press [ENTER] to reboot.\r\n      [F1] to power off.", 28, y, 0xFFFFFF, 0x000000);
+	xddos_pit_sleep_ms(1000);
 	for (;;) {
 		uint8_t sc = inb(0x60);
-		if (sc == 59) {
+		if (sc == 59) { // f1
 			__asm__ __volatile__("cli");
 			outw(0x604, 0x2000); // qemu only (for now)
 			__asm__ __volatile__("hlt");
-		} else if (sc == 28) {
+		} else if (sc == 28) { // enter
 			volatile uint16_t invalid_idt[5] = {0, 0, 0, 0, 0};
 			__asm__ __volatile__("lidt (%0)" : : "r"(invalid_idt));
 			__asm__ __volatile__("int $3");
@@ -115,8 +116,8 @@ void xddos_panic(xddos_framebuffer_t *fb, char *message) {
 
 void xddos_interrupts_exception_handler(xddos_register_state_t *state) {
 	xddos_interrupt_exception_vector_t exception = xddos_interrupt_exception_vectors[state->vector_number];
-	char *msg = malloc(128);
-	snprintf(msg, 128, "Caught exception in kernel level!\r\n  Exception: 0x%x\r\n  Mnemonic: %s\r\n  Type: %s\r\n  Name: %s\r\n  Error code: 0x%x\r\n  RIP: 0x%llx", state->vector_number, exception.mnemonic, xddos_interrupt_fault_names[exception.type], exception.name, state->error_code, state->rip);
+	char *msg = malloc(256);
+	snprintf(msg, 256, "Caught exception in kernel level!\r\n  Exception: 0x%x\r\n  Mnemonic: %s\r\n  Type: %s\r\n  Name: %s\r\n  Error Code: 0x%x\r\n  RIP: 0x%llx", state->vector_number, exception.mnemonic, xddos_interrupt_fault_names[exception.type], exception.name, state->error_code, state->rip);
 	LOG_ERROR("INTERRUPTS", msg);
 
 	xddos_framebuffers_t *fbs = xddos_request_framebuffers();

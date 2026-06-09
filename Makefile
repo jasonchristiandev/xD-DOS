@@ -2,6 +2,8 @@ include settings.mk
 
 all: $(LIMINE_DIR)/limine $(FONT_PSF) $(ISO_IMAGE)
 
+FORCE:
+
 $(FONTS_DIR):
 	@mkdir -p $(FONTS_DIR)
 
@@ -16,11 +18,11 @@ $(LIMINE_DIR)/limine:
 		$(MAKE) -C $(LIMINE_DIR); \
 	fi
 
-$(KERNEL_ELF): $(LIBC_A)
-	make -C $(KERNEL_DIR)
+$(KERNEL_ELF): FORCE $(LIBC_A)
+	$(MAKE) -C $(KERNEL_DIR)
 
-$(LIBC_A):
-	make -C $(LIBC_DIR)
+$(LIBC_A): FORCE
+	$(MAKE) -C $(LIBC_DIR)
 
 $(ISO_IMAGE): $(KERNEL_ELF) $(LIMINE_CONF) $(LIMINE_DIR)/limine
 	@echo " [ISO] Creating $(ISO_IMAGE)..."

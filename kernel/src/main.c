@@ -10,7 +10,6 @@
 #include "xddos/requests.h"
 #include "xddos/serial.h"
 #include "xddos/syscallhandler.h"
-#include "xddos/syscallnums.h"
 #include "xddos/vma.h"
 #include "xddos/vmm.h"
 #include <stddef.h>
@@ -44,12 +43,10 @@ void kernel_main() {
 
 	xddos_framebuffer_t *fb = fbs->framebuffers[0];
 
-	xddos_gdt_init();
-	xddos_syscall_init();
 	xddos_serial_init();
 
 	LOG_INFO("KERNEL", "Extended Drive - Disk Operating System (xD-DOS) Starting...");
-	
+
 	// Interrupts
 	LOG_DEBUG("KERNEL", "Initializing IDT (Interrupt Descriptor Table)...");
 	xddos_interrupts_init();
@@ -110,6 +107,14 @@ void kernel_main() {
 
 	xddos_memalloc_init(xddos_vma_alloc_pages, initial_heap_block, initial_heap_bytes);
 
+	// Init GDT
+	LOG_DEBUG("KERNEL", "Initializing GDT (Global Descriptor Table)...");
+	xddos_gdt_init();
+
+	// Init syscall
+	LOG_DEBUG("KERNEL", "Initializing syscalls...");
+	xddos_syscall_init();
+
 	// Init fallback font
 	LOG_DEBUG("KERNEL", "Initializing fallback font...");
 	fallback_font = xddos_psf_init();
@@ -122,7 +127,11 @@ void kernel_main() {
 	while (true) {
 		xddos_pit_sleep_ms(1);
 		uint8_t sc = inb(0x60);
-		if (sc == 1) xddos_panic(fb, "Debug crash");
+		if (sc == 1) {
+			volatile int x = 1;
+			volatile int y = 0;
+			x /= y;
+		}
 		char *str = malloc(7);
 		snprintf(str, 7, "%d   ", sc);
 		xddos_graphics_psf_put_text(fb, fallback_font, str, 4, 52, 0xFFFFFF, 0x000000);
