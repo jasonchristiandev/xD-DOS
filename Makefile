@@ -26,23 +26,23 @@ $(LIBC_A): FORCE
 
 $(ISO_IMAGE): $(KERNEL_ELF) $(LIMINE_CONF) $(LIMINE_DIR)/limine
 	@echo " [ISO] Creating $(ISO_IMAGE)..."
-	mkdir -p $(ISO_DIR)/boot
-	mkdir -p $(ISO_DIR)/EFI/BOOT
+	@mkdir -p $(ISO_DIR)/boot
+	@mkdir -p $(ISO_DIR)/EFI/BOOT
 	
-	cp $(KERNEL_ELF) $(ISO_DIR)/boot/
-	cp $(LIMINE_CONF) $(ISO_DIR)/boot/
+	@cp $(KERNEL_ELF) $(ISO_DIR)/boot/
+	@cp $(LIMINE_CONF) $(ISO_DIR)/boot/
 	
-	cp $(LIMINE_DIR)/limine-bios.sys $(ISO_DIR)/boot/
-	cp $(LIMINE_DIR)/limine-bios-cd.bin $(ISO_DIR)/boot/
-	cp $(LIMINE_DIR)/limine-uefi-cd.bin $(ISO_DIR)/boot/
+	@cp $(LIMINE_DIR)/limine-bios.sys $(ISO_DIR)/boot/
+	@cp $(LIMINE_DIR)/limine-bios-cd.bin $(ISO_DIR)/boot/
+	@cp $(LIMINE_DIR)/limine-uefi-cd.bin $(ISO_DIR)/boot/
 	
-	xorriso -as mkisofs -b boot/limine-bios-cd.bin \
+	@xorriso -as mkisofs -b boot/limine-bios-cd.bin \
 		-no-emul-boot -boot-load-size 4 -boot-info-table \
 		--efi-boot boot/limine-uefi-cd.bin \
 		-efi-boot-part --efi-boot-image --protective-msdos-label \
 		$(ISO_DIR) -o $(ISO_IMAGE)
 
-	$(LIMINE_DIR)/limine bios-install $(ISO_IMAGE)
+	@$(LIMINE_DIR)/limine bios-install $(ISO_IMAGE)
 	@echo " [ISO] $(ISO_IMAGE) success."
 
 run: $(ISO_IMAGE)

@@ -36,7 +36,7 @@ FONT_STEM = $(subst -,_,$(subst .,_,$(notdir $(FONT_PSF))))
 
 $(BUILD_DIR)/font_data.o: $(FONT_PSF) | $(BUILD_DIR)
 	@echo " [OBJCOPY] $<"
-	cd $(dir $(FONT_PSF)); \
+	@cd $(dir $(FONT_PSF)); \
 	objcopy -I binary -O elf64-x86-64 -B i386 \
 		--rename-section .data=.data,alloc,load,readonly,data,contents \
 		$(notdir $(FONT_PSF)) $(abspath $@)

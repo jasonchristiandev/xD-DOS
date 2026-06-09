@@ -51,6 +51,40 @@ static const uint32_t qrcode[29] = {
 	0b10111010011001010111111111110,
 	0b10000010100100000000001101101,
 	0b11111110110111011101001110100};
+const xddos_interrupt_exception_vector_t xddos_interrupt_exception_vectors[32] = {
+	[0] = {"Division Error", "#DE", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, false},
+	[1] = {"Debug", "#DB", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, false},
+	[2] = {"Non-maskable Interrupt", "#NMI", XDDOS_INTERRUPT_EXCEPTION_TYPE_INTERRUPT, false},
+	[3] = {"Breakpoint", "#BP", XDDOS_INTERRUPT_EXCEPTION_TYPE_TRAP, false},
+	[4] = {"Overflow", "#OF", XDDOS_INTERRUPT_EXCEPTION_TYPE_TRAP, false},
+	[5] = {"Bound Range Exceeded", "#BR", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, false},
+	[6] = {"Invalid Opcode", "#UD", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, false},
+	[7] = {"Device Not Available", "#NM", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, false},
+	[8] = {"Double Fault", "#DF", XDDOS_INTERRUPT_EXCEPTION_TYPE_ABORT, true},
+	[9] = {"Coprocessor Segment Overrun", NULL, XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, false},
+	[10] = {"Invalid TSS", "#TS", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, true},
+	[11] = {"Segment Not Present", "#NP", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, true},
+	[12] = {"Stack-Segment Fault", "#SS", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, true},
+	[13] = {"General Protection Fault", "#GP", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, true},
+	[14] = {"Page Fault", "#PF", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, true},
+	[15] = {"Reserved", NULL, XDDOS_INTERRUPT_EXCEPTION_TYPE_RESERVED, false},
+	[16] = {"x87 Floating-Point Exception", "#MF", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, false},
+	[17] = {"Alignment Check", "#AC", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, true},
+	[18] = {"Machine Check", "#MC", XDDOS_INTERRUPT_EXCEPTION_TYPE_ABORT, false},
+	[19] = {"SIMD Floating-Point Exception", "#XM/#XF", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, false},
+	[20] = {"Virtualization Exception", "#VE", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, false},
+	[21] = {"Control Protection Exception", "#CP", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, true},
+	[22] = {"Reserved", NULL, XDDOS_INTERRUPT_EXCEPTION_TYPE_RESERVED, false},
+	[23] = {"Reserved", NULL, XDDOS_INTERRUPT_EXCEPTION_TYPE_RESERVED, false},
+	[24] = {"Reserved", NULL, XDDOS_INTERRUPT_EXCEPTION_TYPE_RESERVED, false},
+	[25] = {"Reserved", NULL, XDDOS_INTERRUPT_EXCEPTION_TYPE_RESERVED, false},
+	[26] = {"Reserved", NULL, XDDOS_INTERRUPT_EXCEPTION_TYPE_RESERVED, false},
+	[27] = {"Reserved", NULL, XDDOS_INTERRUPT_EXCEPTION_TYPE_RESERVED, false},
+	[28] = {"Hypervisor Injection Exception", "#HV", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, false},
+	[29] = {"VMM Communication Exception", "#VC", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, true},
+	[30] = {"Security Exception", "#SX", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, true},
+	[31] = {"Reserved", NULL, XDDOS_INTERRUPT_EXCEPTION_TYPE_RESERVED, false}};
+const char *xddos_interrupt_fault_names[5] = {"FAULT", "TRAP", "ABORT", "INTERRUPT", "RESERVED"};
 extern void *isr_stub_table[];
 extern xddos_psf_data_t *fallback_font;
 extern xddos_acpi_fadt_t *global_fadt;

@@ -31,7 +31,9 @@ $(BUILD_DIR)/%.s.o: $(ASM_DIR)/%.s | $(BUILD_DIR)
 	@$(ASM) -f elf64 $< -o $@
 
 $(LIBC_A): $(OBJS)
-	ar rcs $@ $(OBJS)
+	@echo " [AR] Archiving..."
+	@echo "     $(OBJS)"
+	@ar rcs $@ $(OBJS)
 
 clean:
 	rm -rf $(BUILD_DIR)

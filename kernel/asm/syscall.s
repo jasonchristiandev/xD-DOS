@@ -42,4 +42,4 @@ xddos_syscall_entry:
 
 	mov rsp, [rel global_user_stack_backup]
 
-	sysretq
+	sysret

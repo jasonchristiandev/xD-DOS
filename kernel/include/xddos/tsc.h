@@ -3,10 +3,6 @@
 
 #include <stdint.h>
 
-static inline uint64_t xddos_tsc_read() {
-	unsigned int lo, hi;
-	__asm__ __volatile__("rdtsc" : "=a"(lo), "=d"(hi));
-	return ((unsigned long long) hi << 32) | lo;
-}
+uint64_t xddos_tsc_read();
 
 #endif // !TSC_H
