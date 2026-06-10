@@ -66,7 +66,7 @@ endif
 		echo "CRITICAL: Cannot format root partition"; exit 1; \
 	fi
 
-grub-install: $(ISO_IMAGE) check-target
+install: $(ISO_IMAGE) check-target
 	@echo "[INSTALL] Wiping $(TARGET_VOLUME)!"
 	@read -p "[INSTALL] Continue? [y/N]: " confirm && [ "$$confirm" = "y" ]
 	
@@ -88,7 +88,7 @@ grub-install: $(ISO_IMAGE) check-target
 
 	$(LIMINE_DIR)/limine bios-install $(ISO_IMAGE)
 	sudo umount $(TMP_MOUNT_DIR)
-	@echo " [INSTALL] Install success. Be sure to update your GRUB configuration before rebooting."
+	@echo " [INSTALL] Install success."
 
 clean:
 	rm -rf $(ISO_DIR) qemu.log serial.log $(ISO_IMAGE)
