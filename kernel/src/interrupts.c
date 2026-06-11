@@ -2,12 +2,13 @@
 #include "xddos/acpi.h"
 #include "xddos/asm.h"
 #include "xddos/graphics.h"
+#include "xddos/kstdio.h"
 #include "xddos/logging.h"
 #include "xddos/pit.h"
 #include "xddos/requests.h"
 #include <stdbool.h>
-#include <stdio.h>
 #include <stdlib.h>
+
 #define GDT_OFFSET_KERNEL_CODE 0x28 // just following tutorials
 #define IDT_ENTRY_NUM 256
 #define PIC1_COMMAND 0x20
@@ -135,7 +136,7 @@ void xddos_panic(xddos_framebuffer_t *fb, char *message) {
 	for (;;) {
 		if ((inb(0x64) & 0x01) != 0) {
 			uint8_t sc = inb(0x60);
-			if (sc == 59) { // f1
+			if (sc == 59) {			 // f1
 				outw(0x604, 0x2000); // qemu only (for now)
 				__asm__ __volatile__("hlt");
 			} else if (sc == 28) { // enter
@@ -149,7 +150,7 @@ void xddos_panic(xddos_framebuffer_t *fb, char *message) {
 void xddos_interrupts_exception_handler(xddos_register_state_t *state) {
 	xddos_interrupt_exception_vector_t exception = xddos_interrupt_exception_vectors[state->vector_number];
 	char *msg = malloc(256);
-	snprintf(msg, 256, "Caught exception in kernel level!\r\n  Exception: 0x%x\r\n  Mnemonic: %s\r\n  Type: %s\r\n  Name: %s\r\n  Error Code: 0x%x\r\n  RIP: 0x%llx", state->vector_number, exception.mnemonic, xddos_interrupt_fault_names[exception.type], exception.name, state->error_code, state->rip);
+	xddos_kstdio_snprintf(msg, 256, "Caught exception in kernel level!\r\n  Exception: 0x%x\r\n  Mnemonic: %s\r\n  Type: %s\r\n  Name: %s\r\n  Error Code: 0x%x\r\n  RIP: 0x%llx", state->vector_number, exception.mnemonic, xddos_interrupt_fault_names[exception.type], exception.name, state->error_code, state->rip);
 	LOG_ERROR("INTERRUPTS", msg);
 
 	xddos_framebuffers_t *fbs = xddos_request_framebuffers();

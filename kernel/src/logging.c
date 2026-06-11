@@ -1,5 +1,5 @@
 #include "xddos/logging.h"
-#include <stdio.h>
+#include "xddos/kstdio.h"
 #define NAME_MAX_LENGTH 10
 
 static char *truncate(const char *name) {
@@ -27,19 +27,19 @@ static char *truncate(const char *name) {
 static void internal_log_write(const char *prefix, const char *name, const char *format, va_list args) {
 	char log_buf[512];
 
-	vsnprintf(log_buf, sizeof(log_buf), format, args);
-	printf("%s %s ", prefix, truncate(name));
+	xddos_kstdio_vsnprintf(log_buf, sizeof(log_buf), format, args);
+	xddos_kstdio_printf("%s %s ", prefix, truncate(name));
 
 	for (size_t i = 0; log_buf[i] != '\0'; i++) {
 		if (log_buf[i] == '\n') {
-			putchar('\n');
-			if (log_buf[i + 1] != '\0') printf("%s %s ", prefix, truncate(name));
+			xddos_kstdio_putchar('\n');
+			if (log_buf[i + 1] != '\0') xddos_kstdio_printf("%s %s ", prefix, truncate(name));
 		} else {
-			putchar(log_buf[i]);
+			xddos_kstdio_putchar(log_buf[i]);
 		}
 	}
 
-	printf("\r\n");
+	xddos_kstdio_printf("\r\n");
 }
 
 void LOG_INFO(const char *name, const char *format, ...) {

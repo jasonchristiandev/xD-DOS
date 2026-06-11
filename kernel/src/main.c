@@ -2,6 +2,7 @@
 #include "xddos/gdt.h"
 #include "xddos/graphics.h"
 #include "xddos/interrupts.h"
+#include "xddos/kstdio.h"
 #include "xddos/logging.h"
 #include "xddos/memalloc.h"
 #include "xddos/pit.h"
@@ -13,7 +14,6 @@
 #include "xddos/vma.h"
 #include "xddos/vmm.h"
 #include <stddef.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 xddos_psf_data_t *fallback_font;
@@ -133,7 +133,7 @@ void kernel_main() {
 			x /= y;
 		}
 		char *str = malloc(7);
-		snprintf(str, 7, "%d   ", sc);
+		xddos_kstdio_snprintf(str, 7, "%d   ", sc);
 		xddos_graphics_psf_put_text(fb, fallback_font, str, 4, 52, 0xFFFFFF, 0x000000);
 	}
 
