@@ -29,7 +29,7 @@ typedef struct {
 	uint64_t rip, cs, rflags, rsp, ss;
 } __attribute__((packed)) xddos_register_state_t;
 
-typedef enum {
+typedef enum : uint8_t {
 	XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT = 0,
 	XDDOS_INTERRUPT_EXCEPTION_TYPE_TRAP = 1,
 	XDDOS_INTERRUPT_EXCEPTION_TYPE_ABORT = 2,

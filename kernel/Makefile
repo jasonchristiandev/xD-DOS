@@ -1,21 +1,13 @@
 ROOT_DIR = $(abspath ..)
 include ../settings.mk
 
-LINKER_SCRIPT = linker.lds
+CFLAGS += -I$(LIBC_DIR)/$(INCLUDE_DIR) -I$(LIMINE_PROTOCOL)/include
 
 SRCS = $(wildcard $(SRC_DIR)/*.c)
 ASMS = $(wildcard $(ASM_DIR)/*.s)
 OBJS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.c.o, $(SRCS)) $(patsubst $(ASM_DIR)/%.s, $(BUILD_DIR)/%.s.o, $(ASMS))
 OBJS += $(BUILD_DIR)/font_data.o
 LIBS = $(LIBC_A)
-
-CFLAGS = -fno-stack-protector -ffreestanding -mno-red-zone \
-		 -fms-extensions -nostdlib -nostdinc -Wall -Wextra \
-		 -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast \
-		 -Wno-compare-distinct-pointer-types -Wno-enum-conversion \
-		 -Wno-variadic-macros -Wno-enum-compare -std=c11 -O2 \
-		 -mno-mmx -mno-sse -mno-sse2 -MMD -MP -I$(INCLUDE_DIR) \
-		 -I$(LIBC_DIR)/$(INCLUDE_DIR) -I$(LIMINE_PROTOCOL)/include
 
 .PHONY: all run clean
 

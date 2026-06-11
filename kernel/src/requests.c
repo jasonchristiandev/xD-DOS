@@ -48,10 +48,10 @@ xddos_executable_file_t *xddos_request_executable_file() {
 	return &res;
 }
 
-xddos_rsdp_t *xddos_request_rsdp() {
+xddos_acpi_rsdp_t *xddos_request_rsdp() {
 	struct limine_rsdp_response *response = rsdp_request.response;
 	if (response == NULL || response->address == NULL) return NULL;
-	return (xddos_rsdp_t *) response->address;
+	return (xddos_acpi_rsdp_t *) response->address;
 }
 
 xddos_memmap_t *xddos_request_memmap() {

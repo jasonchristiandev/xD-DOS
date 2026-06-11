@@ -1,3 +1,3 @@
--Ilimine-protocol/include
+-Ideps/limine-protocol/include
 -Ikernel/include
 -Ilibc/include

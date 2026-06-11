@@ -15,7 +15,7 @@ typedef struct {
 	uint64_t entries[512];
 } xddos_vmm_page_table_t;
 
-typedef enum xddos_vmm_init_result {
+typedef enum : uint8_t {
 	XDDOS_VMM_OK = 0,
 	XDDOS_VMM_NO_RESPONSES = 1,
 	XDDOS_VMM_OFFSET_ZERO = 2,
