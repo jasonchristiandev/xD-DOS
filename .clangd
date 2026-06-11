@@ -21,7 +21,8 @@ CompileFlags:
     - -mno-mmx
     - -mno-sse
     - -mno-sse2
-    - -Ilimine-protocol/include
+    - -Ideps/limine-protocol/include
+    - -Ideps/uACPI/include
     - -Ikernel/include
     - -Ilibc/include
 

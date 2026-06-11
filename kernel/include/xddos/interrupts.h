@@ -27,7 +27,7 @@ typedef struct {
 	uint64_t vector_number;
 	uint64_t error_code;
 	uint64_t rip, cs, rflags, rsp, ss;
-} __attribute__((packed)) xddos_register_state_t;
+} __attribute__((packed)) xddos_interrupts_regstate_t;
 
 typedef enum : uint8_t {
 	XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT = 0,
@@ -35,20 +35,20 @@ typedef enum : uint8_t {
 	XDDOS_INTERRUPT_EXCEPTION_TYPE_ABORT = 2,
 	XDDOS_INTERRUPT_EXCEPTION_TYPE_INTERRUPT = 3,
 	XDDOS_INTERRUPT_EXCEPTION_TYPE_RESERVED = 4
-} xddos_interrupt_exception_type_t;
+} xddos_interrupts_exception_type_t;
 
 typedef struct {
 	const char *name;
 	const char *mnemonic;
-	xddos_interrupt_exception_type_t type;
+	xddos_interrupts_exception_type_t type;
 	bool has_error_code;
-} xddos_interrupt_exception_vector_t;
+} xddos_interrupts_exception_vector_t;
 
-extern const xddos_interrupt_exception_vector_t xddos_interrupt_exception_vectors[32];
+extern const xddos_interrupts_exception_vector_t xddos_interrupt_exception_vectors[32];
 extern const char *xddos_interrupt_fault_names[5];
 
 void xddos_interrupts_init();
-void xddos_interrupts_exception_handler(xddos_register_state_t *state);
+void xddos_interrupts_exception_handler(xddos_interrupts_regstate_t *state);
 void xddos_interrupts_set_descriptor(uint8_t vector, void *isr, uint8_t flags);
 void xddos_panic(xddos_framebuffer_t *fb, char *message);
 

@@ -1,7 +1,7 @@
 ROOT_DIR = $(abspath ..)
 include ../settings.mk
 
-CFLAGS += -I$(LIBC_DIR)/$(INCLUDE_DIR) -I$(LIMINE_PROTOCOL)/include
+CFLAGS += -I$(LIBC_DIR)/$(INCLUDE_DIR) -I$(LIMINE_PROTOCOL)/include -I$(UACPI_DIR)/include
 
 SRCS = $(wildcard $(SRC_DIR)/*.c)
 ASMS = $(wildcard $(ASM_DIR)/*.s)

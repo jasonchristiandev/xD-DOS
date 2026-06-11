@@ -52,7 +52,7 @@ static const uint32_t qrcode[29] = {
 	0b10111010011001010111111111110,
 	0b10000010100100000000001101101,
 	0b11111110110111011101001110100};
-const xddos_interrupt_exception_vector_t xddos_interrupt_exception_vectors[32] = {
+const xddos_interrupts_exception_vector_t xddos_interrupt_exception_vectors[32] = {
 	[0] = {"Division Error", "#DE", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, false},
 	[1] = {"Debug", "#DB", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, false},
 	[2] = {"Non-maskable Interrupt", "#NMI", XDDOS_INTERRUPT_EXCEPTION_TYPE_INTERRUPT, false},
@@ -147,8 +147,8 @@ void xddos_panic(xddos_framebuffer_t *fb, char *message) {
 	}
 }
 
-void xddos_interrupts_exception_handler(xddos_register_state_t *state) {
-	xddos_interrupt_exception_vector_t exception = xddos_interrupt_exception_vectors[state->vector_number];
+void xddos_interrupts_exception_handler(xddos_interrupts_regstate_t *state) {
+	xddos_interrupts_exception_vector_t exception = xddos_interrupt_exception_vectors[state->vector_number];
 	char *msg = malloc(256);
 	xddos_kstdio_snprintf(msg, 256, "Caught exception in kernel level!\r\n  Exception: 0x%x\r\n  Mnemonic: %s\r\n  Type: %s\r\n  Name: %s\r\n  Error Code: 0x%x\r\n  RIP: 0x%llx", state->vector_number, exception.mnemonic, xddos_interrupt_fault_names[exception.type], exception.name, state->error_code, state->rip);
 	LOG_ERROR("INTERRUPTS", msg);

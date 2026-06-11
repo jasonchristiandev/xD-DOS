@@ -20,8 +20,10 @@ LIBC_DIR = $(ROOT_DIR)/libc
 ISO_DIR = $(ROOT_DIR)/iso
 LIMINE_DIR = $(ROOT_DIR)/limine-bin
 FONTS_DIR = $(ROOT_DIR)/fonts
-LIMINE_PROTOCOL = $(DEPS_DIR)/limine-protocol
 TMP_MOUNT_DIR = /mnt/xddos_tmp
+
+LIMINE_PROTOCOL = $(DEPS_DIR)/limine-protocol
+UACPI_DIR = $(DEPS_DIR)/uACPI
 
 KERNEL_ELF = $(KERNEL_DIR)/$(BUILD_DIR)/kernel.elf
 LIBC_A = $(LIBC_DIR)/$(BUILD_DIR)/libc.a
