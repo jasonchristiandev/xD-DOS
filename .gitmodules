@@ -1,3 +1,6 @@
 [submodule "limine-protocol"]
 	path = limine-protocol
 	url = https://github.com/Limine-Bootloader/limine-protocol/
+[submodule "uACPI"]
+	path = uACPI
+	url = https://github.com/uACPI/uACPI
