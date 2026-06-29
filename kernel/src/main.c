@@ -54,11 +54,11 @@ void kernel_main() {
 	// PMM init
 	LOG_DEBUG("KERNEL", "Physical Memory Manager initializing...");
 	xddos_pmm_init_result_t pmm_result = xddos_pmm_init();
-	if (pmm_result == XDDOS_PMM_NO_RESPONSES) {
+	if (pmm_result == XDDOS_PMM_INIT_NULL_RESPONSE) {
 		LOG_ERROR("KERNEL", "Failed to initialize Physical Memory Manager! Error code 0x%x (Memory Map or HHDM Not Ready).", pmm_result);
 		xddos_panic(fb, "Failed to initialize Physical Memory Manager!\r\nPlease refer to serial console for more information.");
 		return;
-	} else if (pmm_result == XDDOS_PMM_OUT_OF_SPACE) {
+	} else if (pmm_result == XDDOS_PMM_INIT_OUT_OF_SPACE) {
 		LOG_ERROR("KERNEL", "Failed to initialize Physical Memory Manager! Error code 0x%x (No Memory Available for Bitmap).", pmm_result);
 		xddos_panic(fb, "Failed to initialize Physical Memory Manager!\r\nPlease refer to serial console for more information.");
 		return;
