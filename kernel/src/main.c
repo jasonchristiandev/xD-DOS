@@ -71,15 +71,15 @@ void kernel_main() {
 	// VMM init
 	LOG_DEBUG("KERNEL", "Virtual Memory Manager initializing...");
 	xddos_vmm_init_result_t vmm_result = xddos_vmm_init();
-	if (vmm_result == XDDOS_VMM_NO_RESPONSES) {
+	if (vmm_result == XDDOS_VMM_INIT_NO_RESPONSES) {
 		LOG_ERROR("KERNEL", "Failed to initialize Virtual Memory Manager! Error code 0x%x (HHDM or Executable Address or Executable File Not Ready).", vmm_result);
 		xddos_panic(fb, "Failed to initialize Virtual Memory Manager!\r\nPlease refer to serial console for more information.");
 		return;
-	} else if (vmm_result == XDDOS_VMM_OFFSET_ZERO) {
+	} else if (vmm_result == XDDOS_VMM_INIT_OFFSET_ZERO) {
 		LOG_ERROR("KERNEL", "Failed to initialize Virtual Memory Manager! Error code 0x%x (HHDM Offset is 0).", vmm_result);
 		xddos_panic(fb, "Failed to initialize Virtual Memory Manager!\r\nPlease refer to serial console for more information.");
 		return;
-	} else if (vmm_result == XDDOS_VMM_OUT_OF_MEMORY) {
+	} else if (vmm_result == XDDOS_VMM_INIT_OUT_OF_MEMORY) {
 		LOG_ERROR("KERNEL", "Failed to initialize Virtual Memory Manager! Error code 0x%x (Out of Memory).", vmm_result);
 		xddos_panic(fb, "Failed to initialize Virtual Memory Manager!\r\nPlease refer to serial console for more information.");
 		return;

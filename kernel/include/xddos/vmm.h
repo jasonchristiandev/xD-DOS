@@ -3,23 +3,15 @@
 
 #include <stdint.h>
 
-#define MEMORY_PTE_PRESENT (1ULL << 0)
-#define MEMORY_PTE_WRITABLE (1ULL << 1)
-#define MEMORY_PTE_USER (1ULL << 2)
-#define MEMORY_PTE_HUGE (1ULL << 7)
-#define MEMORY_PTE_FRAME 0x000FFFFFFFFFF000ULL
-#define MEMORY_PHYS_TO_VIRT(phys) ((uint64_t) (phys) + (uint64_t) (hhdm_offset))
-#define MEMORY_VIRT_TO_PHYS(virt) ((uint64_t) ((uintptr_t) (virt)) - (uint64_t) (hhdm_offset))
-
 typedef struct {
 	uint64_t entries[512];
 } xddos_vmm_page_table_t;
 
 typedef enum : uint8_t {
-	XDDOS_VMM_OK = 0,
-	XDDOS_VMM_NO_RESPONSES = 1,
-	XDDOS_VMM_OFFSET_ZERO = 2,
-	XDDOS_VMM_OUT_OF_MEMORY = 3,
+	XDDOS_VMM_INIT_OK = 0,
+	XDDOS_VMM_INIT_NO_RESPONSES = 1,
+	XDDOS_VMM_INIT_OFFSET_ZERO = 2,
+	XDDOS_VMM_INIT_OUT_OF_MEMORY = 3,
 } xddos_vmm_init_result_t;
 
 xddos_vmm_init_result_t xddos_vmm_init();
