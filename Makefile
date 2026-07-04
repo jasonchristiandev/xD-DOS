@@ -18,7 +18,7 @@ $(LIMINE_DIR)/limine:
 		$(MAKE) -C $(LIMINE_DIR); \
 	fi
 
-$(KERNEL_ELF): FORCE $(LIBC_A)
+$(KERNEL_ELF): FORCE $(LIBC_A) $(FONT_PSF)
 	@$(MAKE) -C $(KERNEL_DIR)
 
 $(LIBC_A): FORCE
