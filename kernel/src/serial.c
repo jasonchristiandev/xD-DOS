@@ -23,8 +23,8 @@ bool xddos_serial_init() {
 
 	// loopback test
 	outb(COM1 + 4, 0b00011110); // loopback mode
-	outb(COM1 + 0, 67); // six seveeeenennenenenenenn
-	if (inb(COM1 + 0) != 67) return false;
+	outb(COM1 + 0, 0xDD);
+	if (inb(COM1 + 0) != 0xDD) return false;
 	outb(COM1 + 4, 0b00001111); // normal mode
 
 	initialized = true;
