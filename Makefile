@@ -71,7 +71,8 @@ install: $(ISO_IMAGE) check-target
 	@read -p "[INSTALL] Continue? [y/N]: " confirm && [ "$$confirm" = "y" ]
 	
 	@echo "[INSTALL] Formatting $(TARGET_VOLUME)..."
-	@sudo umount /dev/nvme0n1p7 || /bin/true
+	@sudo umount $(TARGET_VOLUME) || true
+	@sudo dd if=/dev/zero of=$(TARGET_VOLUME) bs=1M status=progress || true
 	@sudo mkfs.vfat -F 32 -n $(PARTITION_LABEL) $(TARGET_VOLUME)
 	
 	@echo "[INSTALL] Copying files to $(TARGET_VOLUME)..."
