@@ -73,7 +73,12 @@ install: $(ISO_IMAGE) check-target
 	@echo "[INSTALL] Formatting $(TARGET_VOLUME)..."
 	@sudo umount $(TARGET_VOLUME) || true
 	@sudo dd if=/dev/zero of=$(TARGET_VOLUME) bs=1M status=progress || true
+
+ifndef PARTITION_UUID
 	@sudo mkfs.vfat -F 32 -n $(PARTITION_LABEL) $(TARGET_VOLUME)
+else
+	@sudo mkfs.vfat -i $(PARTITION_UUID) -F 32 -n $(PARTITION_LABEL) $(TARGET_VOLUME)
+endif
 	
 	@echo "[INSTALL] Copying files to $(TARGET_VOLUME)..."
 	@sudo mkdir -p $(TMP_MOUNT_DIR)

@@ -38,7 +38,7 @@ FONT_URL = https://raw.githubusercontent.com/ercanersoy/PSF-Fonts/master/$(FONT_
 LIMINE_VERSION = v11.x-binary
 LIMINE_URL = https://github.com/limine-bootloader/limine.git
 
-PARTITION_LABEL = xddos
+PARTITION_LABEL = XDDOS
 
 CFLAGS = -fno-stack-protector -ffreestanding -mno-red-zone \
 		 -fms-extensions -nostdlib -nostdinc -Wall -Wextra \
