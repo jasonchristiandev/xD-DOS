@@ -2,7 +2,6 @@
 #include "xddos/logging.h"
 #include "xddos/requests.h"
 #include <limits.h>
-#include <stdlib.h>
 #include <string.h>
 
 extern uint64_t hhdm_offset;
@@ -18,7 +17,7 @@ static void psf1_init(xddos_psf_data_t *data, uint8_t *virt_start, uint8_t *virt
 		return;
 	}
 
-	data->unicode = calloc(USHRT_MAX, sizeof(uint16_t));
+	memset(data->unicode, 0, sizeof(*(data->unicode)));
 	uint32_t glyph_count = (header->font_mode & 1) ? 512 : 256;
 	uint8_t *ptr = data->data + (glyph_count * header->char_size);
 
@@ -64,7 +63,7 @@ static void psf2_init(xddos_psf_data_t *data, xddos_psf2_header_t *header, uint8
 		return;
 	}
 
-	data->unicode = calloc(USHRT_MAX, sizeof(uint16_t));
+	memset(data->unicode, 0, sizeof(*(data->unicode)));
 	uint8_t *ptr = ((uint8_t *) header) + header->header_size + (header->length * header->bytes_per_glyph);
 
 	uint16_t glyph = 0;

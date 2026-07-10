@@ -1,5 +1,6 @@
 #include "xddos/memalloc.h"
 #include "xddos/logging.h"
+#include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -22,6 +23,8 @@ typedef struct xddos_memalloc_block {
 typedef struct {
 	size_t size;
 } block_footer_t;
+
+bool memalloc_initialized = false;
 
 static xddos_memalloc_block_t *free_list_head = NULL;
 static vmem_provider raw_vmem_provider = NULL;
@@ -82,6 +85,7 @@ void xddos_memalloc_init(vmem_provider provider, void *initial_heap_base, size_t
 	heap_end_addr = heap_start_addr + initial_size;
 	LOG_DEBUG("MEMALLOC", "Initializing chunk...");
 	initialize_chunk(initial_heap_base, initial_size);
+	memalloc_initialized = true;
 	LOG_DEBUG("MEMALLOC", "Done init.");
 }
 

@@ -1,6 +1,5 @@
 #include "xddos/main.h"
 #include "xddos/asm.h"
-#include "xddos/gdt.h"
 #include "xddos/graphics.h"
 #include "xddos/interrupts.h"
 #include "xddos/kstdio.h"
@@ -40,17 +39,9 @@ void kernel_main() {
 
 	xddos_memalloc_init(xddos_vma_alloc_pages, initial_heap_block, initial_heap_bytes);
 
-	// Init GDT
-	LOG_DEBUG("KERNEL", "Initializing GDT (Global Descriptor Table)...");
-	xddos_gdt_init();
-
 	// Init syscall
 	LOG_DEBUG("KERNEL", "Initializing syscalls...");
 	xddos_syscall_init();
-
-	// Init fallback font
-	LOG_DEBUG("KERNEL", "Initializing fallback font...");
-	fallback_font = xddos_psf_init();
 
 	xddos_graphics_clear(fb, 0);
 	const char *msg = "xD-DOS (Extended Drive - Disk Operating System)\r\n> https://github.com/jasonchristiandev/xD-DOS\r\n> Maintained by Jason Christian.";

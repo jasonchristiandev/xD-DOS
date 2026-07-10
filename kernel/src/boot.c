@@ -1,3 +1,4 @@
+#include "xddos/gdt.h"
 #include "xddos/interrupts.h"
 #include "xddos/logging.h"
 #include "xddos/pmm.h"
@@ -34,9 +35,17 @@ void boot_main() {
 	}
 	hhdm_offset = hhdm->offset;
 
+	// Init fallback font
+	LOG_DEBUG("KERNEL", "Initializing fallback font...");
+	fallback_font = xddos_psf_init();
+
 	// Interrupts
 	LOG_DEBUG("KERNEL", "Initializing IDT (Interrupt Descriptor Table)...");
 	xddos_interrupts_init();
+
+	// Init GDT
+	LOG_DEBUG("KERNEL", "Initializing GDT (Global Descriptor Table)...");
+	xddos_gdt_init();
 
 	// PMM init
 	LOG_DEBUG("KERNEL", "Physical Memory Manager initializing...");
@@ -71,4 +80,6 @@ void boot_main() {
 		xddos_panic(fb, "Failed to initialize Virtual Memory Manager!\r\nPlease refer to serial console for more information.");
 		return;
 	}
+
+	// jump to kernel_main
 }

@@ -11,7 +11,7 @@ static uint64_t heap_start = 0;
 void xddos_vma_init(uint64_t heap_base) {
 	heap_start = heap_base;
 	heap_current_break = heap_base;
-	LOG_DEBUG("VMA", "Done init: %llx", (unsigned long long) heap_start);
+	LOG_DEBUG("VMA", "Done init.");
 }
 
 // Allocates contiguous virtual pages and maps them to physical frames
@@ -25,10 +25,7 @@ void *xddos_vma_alloc_pages(size_t pages) {
 		uint64_t virt_addr = virt_start + (i * PAGE_SIZE);
 		void *phys_frame = xddos_pmm_alloc_page();
 
-		if (phys_frame == NULL) {
-			LOG_ERROR("VMA", "Out of physical memory during virtual allocation!");
-			return NULL;
-		}
+		if (phys_frame == NULL) return NULL;
 
 		// Map physical frame
 		xddos_vmm_map_table(xddos_pml4, virt_addr, (uint64_t) phys_frame, XDDOS_PTE_READWRITE);

@@ -69,7 +69,7 @@ interrupt_common:
 	pop rdi
 	pop rbp
 
-	add rsp, 16
+	; add rsp, 16
 
 	iretq
 
