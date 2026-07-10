@@ -8,7 +8,8 @@
 static uint8_t *bitmap = NULL;
 static size_t bitmap_size = 0;
 static size_t page_count = 0;
-static uint64_t hhdm_offset = 0;
+
+extern uint64_t hhdm_offset;
 
 xddos_pmm_init_result_t xddos_pmm_init() {
 	// get hhdm offset
@@ -17,12 +18,6 @@ xddos_pmm_init_result_t xddos_pmm_init() {
 		LOG_ERROR("PMM", "Memory map request responded with NULL!");
 		return XDDOS_PMM_INIT_NULL_RESPONSE;
 	}
-	xddos_hhdm_t *hhdm = xddos_request_hhdm();
-	if (hhdm == NULL) {
-		LOG_ERROR("PMM", "HHDM request responded with NULL!");
-		return XDDOS_PMM_INIT_NULL_RESPONSE;
-	}
-	hhdm_offset = hhdm->offset;
 
 	// find best spot for bitmap
 	xddos_memmap_entry_t *max = NULL;
@@ -60,10 +55,14 @@ xddos_pmm_init_result_t xddos_pmm_init() {
 	memset(bitmap, 0, bitmap_size);
 
 	// lock regions
-	LOG_DEBUG("PMM", "Locking bitmap... (addr: 0x%llx, size: %d)", max->base, bitmap_size);
-	xddos_pmm_lock_region(max->base, bitmap_size); // bitmap
-	LOG_DEBUG("PMM", "Locking page 0...");
+	LOG_DEBUG("PMM", "Locking reserved regions...");
 	xddos_pmm_lock_region(0, PAGE_SIZE);
+	for (uint64_t i = 0; i < memmap->count; i++) {
+		xddos_memmap_entry_t *entry = memmap->entries[i];
+		if (entry->type != XD_DOS_MEMMAP_USABLE) {
+			xddos_pmm_lock_region(entry->base, entry->length);
+		}
+	}
 
 	LOG_DEBUG("PMM", "Done init.");
 

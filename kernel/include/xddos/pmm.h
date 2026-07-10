@@ -12,8 +12,8 @@ typedef enum : uint8_t {
 } xddos_pmm_init_result_t;
 
 xddos_pmm_init_result_t xddos_pmm_init();
-void xddos_pmm_free_region(uint64_t base_address, uint64_t length);
-void xddos_pmm_lock_region(uint64_t base_address, uint64_t length);
+void xddos_pmm_free_region(uint64_t base, uint64_t count);
+void xddos_pmm_lock_region(uint64_t base, uint64_t count);
 uint8_t *xddos_pmm_alloc_page();
 void xddos_pmm_free_page(uint8_t *page);
 

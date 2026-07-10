@@ -3,7 +3,7 @@
 #include "xddos/pmm.h"
 #include "xddos/vmm.h"
 
-extern xddos_vmm_page_table_t *kernel_pml4;
+extern xddos_vmm_page_table_t *xddos_pml4;
 
 static uint64_t heap_current_break = 0;
 static uint64_t heap_start = 0;
@@ -31,7 +31,7 @@ void *xddos_vma_alloc_pages(size_t pages) {
 		}
 
 		// Map physical frame
-		xddos_vmm_map_table(kernel_pml4, virt_addr, (uint64_t) phys_frame, MEMORY_PTE_WRITABLE);
+		xddos_vmm_map_table(xddos_pml4, virt_addr, (uint64_t) phys_frame, XDDOS_PTE_READWRITE);
 	}
 
 	// Advance the break pointer

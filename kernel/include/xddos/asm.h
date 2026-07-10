@@ -11,5 +11,6 @@ void outw(uint16_t port, uint16_t val);
 uint16_t inw(uint16_t port);
 void insw(uint16_t port, void *addr, uint32_t count);
 void io_wait();
+void invlpg(uint64_t addr);
 
 #endif // !ASM_H

@@ -37,3 +37,7 @@ void insw(uint16_t port, void *addr, uint32_t count) {
 void io_wait() {
 	__asm__ volatile("outb %%al, $0x80" : : "a"(0));
 }
+
+void invlpg(uint64_t addr) {
+	__asm__ volatile("invlpg (%0)" ::"r"(addr) : "memory");
+}
