@@ -43,7 +43,8 @@ uint64_t xddos_syscall_handler(uint64_t id, uint64_t arg1, uint64_t arg2, uint64
 			}
 			return -1;
 		case SYSCALL_SBRK:
-			return (uint64_t) xddos_vma_alloc_pages(arg1);
+			// return (uint64_t) xddos_vma_alloc_pages(arg1);
+			break;
 		default:
 			return -1;
 	}

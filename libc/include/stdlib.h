@@ -1,10 +1,10 @@
 #ifndef STDLIB_H
 #define STDLIB_H
 
-#include "xddos/memalloc.h" // IWYU pragma: keep
+#include "xddos/vma.h" // IWYU pragma: keep
 
-#define malloc xddos_memalloc_malloc
-#define free xddos_memalloc_free
-#define calloc xddos_memalloc_calloc
+#define malloc xddos_vma_malloc
+#define free xddos_vma_free
+#define calloc xddos_vma_calloc
 
 #endif // !STDLIB_H

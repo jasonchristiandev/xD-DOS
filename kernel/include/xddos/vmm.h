@@ -18,10 +18,6 @@ typedef enum : uint16_t {
 	// XDDOS_PTE_ = 1 << 11
 } xddos_vmm_pte_flag_t;
 
-typedef struct {
-	uint64_t entries[512];
-} __attribute__((packed)) xddos_vmm_page_table_t;
-
 typedef enum : uint8_t {
 	XDDOS_VMM_INIT_OK = 0,
 	XDDOS_VMM_INIT_NULL_RESPONSE = 1,
@@ -29,9 +25,7 @@ typedef enum : uint8_t {
 } xddos_vmm_init_result_t;
 
 xddos_vmm_init_result_t xddos_vmm_init();
-void xddos_vmm_map_table(xddos_vmm_page_table_t *pml4, uint64_t virt, uint64_t phys, uint64_t flags);
-void xddos_vmm_map_table_huge(xddos_vmm_page_table_t *pml4, uint64_t virt, uint64_t phys, uint64_t flags);
-
-static xddos_vmm_page_table_t *xddos_pml4;
+void xddos_vmm_map_table(uint64_t virt, uint64_t phys, uint64_t flags);
+void xddos_vmm_map_table_huge(uint64_t virt, uint64_t phys, uint64_t flags);
 
 #endif // !VMM_H

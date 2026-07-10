@@ -2,37 +2,34 @@
 #include "xddos/logging.h"
 #include "xddos/pmm.h"
 #include "xddos/vmm.h"
+#include <stdbool.h>
 
-extern xddos_vmm_page_table_t *xddos_pml4;
+const size_t HEAP_SIZE = 1024 * 1024 * 16; // 16mb
 
-static uint64_t heap_current_break = 0;
-static uint64_t heap_start = 0;
+struct Block {
+	size_t size;
+	bool is_free;
+	struct Block *next;
+};
 
-void xddos_vma_init(uint64_t heap_base) {
-	heap_start = heap_base;
-	heap_current_break = heap_base;
+void xddos_vma_init(uint64_t base) {
+	for (size_t i = 0; i < HEAP_SIZE / PAGE_SIZE; i++) {
+		void *page = xddos_pmm_alloc_page();
+		if (!page) {
+			LOG_ERROR("VMA", "Out of memory during heap init!");
+			return;
+		}
+		uint64_t addr = base + i * PAGE_SIZE;
+		xddos_vmm_map_table(addr, (uint64_t) page, XDDOS_PTE_READWRITE);
+	}
 	LOG_DEBUG("VMA", "Done init.");
 }
 
-// Allocates contiguous virtual pages and maps them to physical frames
-void *xddos_vma_alloc_pages(size_t pages) {
-	if (pages == 0) return NULL;
+void *xddos_vma_malloc(size_t size) {
+}
 
-	uint64_t virt_start = heap_current_break;
+void xddos_vma_free(void *ptr) {
+}
 
-	// Allocate physical frames and map each page individually
-	for (size_t i = 0; i < pages; i++) {
-		uint64_t virt_addr = virt_start + (i * PAGE_SIZE);
-		void *phys_frame = xddos_pmm_alloc_page();
-
-		if (phys_frame == NULL) return NULL;
-
-		// Map physical frame
-		xddos_vmm_map_table(xddos_pml4, virt_addr, (uint64_t) phys_frame, XDDOS_PTE_READWRITE);
-	}
-
-	// Advance the break pointer
-	heap_current_break += (pages * PAGE_SIZE);
-
-	return (void *) virt_start;
+void *xddos_vma_calloc(size_t count, size_t size) {
 }

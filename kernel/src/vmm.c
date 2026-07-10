@@ -7,7 +7,12 @@
 #include <stddef.h>
 #include <string.h>
 
+typedef struct {
+	uint64_t entries[512];
+} __attribute__((packed)) xddos_vmm_page_table_t;
+
 extern uint64_t hhdm_offset;
+xddos_vmm_page_table_t *xddos_pml4;
 
 static void alloc_entry(xddos_vmm_page_table_t *table, uint16_t idx) {
 	uint64_t phys = (uint64_t) xddos_pmm_alloc_page();
@@ -43,26 +48,26 @@ xddos_vmm_init_result_t xddos_vmm_init() {
 
 	LOG_DEBUG("VMM", "Mapping reserved regions...");
 	for (uint64_t i = 0; i < 0x100000000ULL; i += 0x200000) {
-		xddos_vmm_map_table_huge(xddos_pml4, i + hhdm_offset, i, XDDOS_PTE_READWRITE);
+		xddos_vmm_map_table_huge(i + hhdm_offset, i, XDDOS_PTE_READWRITE);
 	}
 	for (uint64_t j = 0; j < exefile->size; j += PAGE_SIZE) {
 		uint64_t addr = (uint64_t) exeaddr->phys + j;
-		xddos_vmm_map_table(xddos_pml4, addr, addr, XDDOS_PTE_READWRITE);
+		xddos_vmm_map_table(addr, addr, XDDOS_PTE_READWRITE);
 	}
 	for (uint64_t j = 0; j < exefile->size; j += PAGE_SIZE) {
 		uint64_t phys = (uint64_t) exeaddr->phys + j;
 		uint64_t virt = (uint64_t) exeaddr->virt + j;
-		xddos_vmm_map_table(xddos_pml4, virt, phys, XDDOS_PTE_READWRITE);
+		xddos_vmm_map_table(virt, phys, XDDOS_PTE_READWRITE);
 	}
-	xddos_vmm_map_table(xddos_pml4, (uint64_t) xddos_pml4 - hhdm_offset, (uint64_t) xddos_pml4 - hhdm_offset, XDDOS_PTE_PRESENT | XDDOS_PTE_READWRITE);
+	xddos_vmm_map_table((uint64_t) xddos_pml4 - hhdm_offset, (uint64_t) xddos_pml4 - hhdm_offset, XDDOS_PTE_PRESENT | XDDOS_PTE_READWRITE);
 
 	// create stack
 	LOG_DEBUG("VMM", "Creating stack...");
 	const uint64_t base = 0xFFFFFFFF90000000;
 	for (uint8_t i = 0; i < 8; i++) {
-		xddos_vmm_map_table(xddos_pml4, base + i * PAGE_SIZE, (uint64_t) xddos_pmm_alloc_page(), XDDOS_PTE_PRESENT | XDDOS_PTE_READWRITE);
+		xddos_vmm_map_table(base + i * PAGE_SIZE, (uint64_t) xddos_pmm_alloc_page(), XDDOS_PTE_PRESENT | XDDOS_PTE_READWRITE);
 	}
-	xddos_vmm_map_table(xddos_pml4, base + 8 * PAGE_SIZE, (uint64_t) xddos_pmm_alloc_page(), XDDOS_PTE_PRESENT | XDDOS_PTE_READWRITE); // to prevent silent error
+	xddos_vmm_map_table(base + 8 * PAGE_SIZE, (uint64_t) xddos_pmm_alloc_page(), XDDOS_PTE_PRESENT | XDDOS_PTE_READWRITE); // to prevent silent error
 
 	LOG_DEBUG("VMM", "Switching context...");
 	__asm__ volatile("mov %0, %%cr3" ::"r"((uint64_t) xddos_pml4 - hhdm_offset) : "memory");
@@ -75,7 +80,7 @@ xddos_vmm_init_result_t xddos_vmm_init() {
 	return XDDOS_VMM_INIT_OK;
 }
 
-void xddos_vmm_map_table(xddos_vmm_page_table_t *pml4, uint64_t virt, uint64_t phys, uint64_t flags) {
+void xddos_vmm_map_table(uint64_t virt, uint64_t phys, uint64_t flags) {
 	if ((virt & 0xFFF) != 0) return; // check alignment
 
 	uint16_t pml4e_i = (virt >> 39) & 0b111111111;
@@ -83,7 +88,7 @@ void xddos_vmm_map_table(xddos_vmm_page_table_t *pml4, uint64_t virt, uint64_t p
 	uint16_t pde_i = (virt >> 21) & 0b111111111;
 	uint16_t pte_i = (virt >> 12) & 0b111111111;
 
-	xddos_vmm_page_table_t *table = pml4;
+	xddos_vmm_page_table_t *table = xddos_pml4;
 	uint64_t entry;
 
 	// pml4 to pdpt
@@ -113,14 +118,14 @@ void xddos_vmm_map_table(xddos_vmm_page_table_t *pml4, uint64_t virt, uint64_t p
 	invlpg((uint64_t) virt);
 }
 
-void xddos_vmm_map_table_huge(xddos_vmm_page_table_t *pml4, uint64_t virt, uint64_t phys, uint64_t flags) {
+void xddos_vmm_map_table_huge(uint64_t virt, uint64_t phys, uint64_t flags) {
 	if ((virt & 0xFFF) != 0) return; // check alignment
 
 	uint16_t pml4e_i = (virt >> 39) & 0b111111111;
 	uint16_t pdpte_i = (virt >> 30) & 0b111111111;
 	uint16_t pde_i = (virt >> 21) & 0b111111111;
 
-	xddos_vmm_page_table_t *table = pml4;
+	xddos_vmm_page_table_t *table = xddos_pml4;
 	uint64_t entry;
 
 	// pml4 to pdpt

@@ -7,9 +7,8 @@
 #include "xddos/pit.h"
 #include "xddos/requests.h"
 #include <stdbool.h>
-#include <stdlib.h>
 
-#define GDT_OFFSET_KERNEL_CODE 0x28 // just following tutorials
+#define GDT_OFFSET_KERNEL_CODE 0x08
 #define IDT_ENTRY_NUM 256
 #define PIC1_COMMAND 0x20
 #define PIC1_DATA 0x21
@@ -18,8 +17,6 @@
 #define ICW1_INIT 0x10
 #define ICW1_ICW4 0x01
 #define ICW4_8086 0x01
-
-extern bool memalloc_initialized;
 
 __attribute__((aligned(0x10))) static xddos_interrupts_idtentry_t idt[IDT_ENTRY_NUM];
 static xddos_interrupts_idtr_t idtr;
@@ -148,18 +145,32 @@ void xddos_panic(xddos_framebuffer_t *fb, char *message) {
 	}
 }
 
+char msg[2048];
+
 void xddos_interrupts_exception_handler(xddos_interrupts_regstate_t *state) {
 	if (state->vector_number >= 32) {
 		if (state->vector_number >= 40) outb(PIC2_COMMAND, 0x20);
 		outb(PIC1_COMMAND, 0x20);
 	}
 
+	uint64_t cr2;
+	__asm__ volatile("mov %%cr2, %0" : "=r"(cr2));
 	xddos_interrupts_exception_vector_t exception = xddos_interrupt_exception_vectors[state->vector_number];
-	char *msg = ".";
-	if (memalloc_initialized) {
-		msg = malloc(256);
-		xddos_kstdio_snprintf(msg, 256, "Caught exception in kernel level!\r\n  Exception: 0x%x\r\n  Mnemonic: %s\r\n  Type: %s\r\n  Name: %s\r\n  Error Code: 0x%x\r\n  RIP: 0x%llx", state->vector_number, exception.mnemonic, xddos_interrupt_fault_names[exception.type], exception.name, state->error_code, state->rip);
-	}
+	xddos_kstdio_snprintf(msg, 256, "Caught exception in kernel level!\r\n"
+									"  Exception: 0x%x\r\n"
+									"  Mnemonic: %s\r\n"
+									"  Type: %s\r\n"
+									"  Name: %s\r\n"
+									"  Error Code: 0x%x\r\n"
+									"  RIP: 0x%llx\r\n"
+									"  CR2: 0x%llx",
+						  state->vector_number,
+						  exception.mnemonic,
+						  xddos_interrupt_fault_names[exception.type],
+						  exception.name,
+						  state->error_code,
+						  state->rip,
+						  cr2);
 	LOG_ERROR("INTERRUPTS", msg);
 
 	xddos_framebuffers_t *fbs = xddos_request_framebuffers();
@@ -179,8 +190,6 @@ void xddos_interrupts_set_descriptor(uint8_t vector, void *isr, uint8_t flags) {
 	descriptor->isr_high = ((uint64_t) isr >> 32) & 0xFFFFFFFF;
 	descriptor->reserved = 0;
 }
-
-#define GDT_OFFSET_KERNEL_CODE 0x28
 
 void xddos_interrupts_init() {
 	LOG_DEBUG("INTERRUPTS", "Creating interrupt descriptor table...");

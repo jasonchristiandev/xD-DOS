@@ -13,6 +13,7 @@ xddos_framebuffer_t *fb;
 xddos_psf_data_t *fallback_font;
 
 void boot_main() {
+	__asm__ volatile("cli");
 	if (xddos_request_base_revision_supported() == 0) {
 		__asm__ volatile("hlt");
 	}
@@ -39,13 +40,13 @@ void boot_main() {
 	LOG_DEBUG("KERNEL", "Initializing fallback font...");
 	fallback_font = xddos_psf_init();
 
-	// Interrupts
-	LOG_DEBUG("KERNEL", "Initializing IDT (Interrupt Descriptor Table)...");
-	xddos_interrupts_init();
-
 	// Init GDT
 	LOG_DEBUG("KERNEL", "Initializing GDT (Global Descriptor Table)...");
 	xddos_gdt_init();
+
+	// Interrupts
+	LOG_DEBUG("KERNEL", "Initializing IDT (Interrupt Descriptor Table)...");
+	xddos_interrupts_init();
 
 	// PMM init
 	LOG_DEBUG("KERNEL", "Physical Memory Manager initializing...");
