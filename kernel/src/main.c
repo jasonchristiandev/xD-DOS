@@ -20,6 +20,8 @@ void kernel_main() {
 	// syscall_init();
 
 	// simple keyboard and interrupt demo
+	graphics_clear(fb, 0xFFFFFF);
+	pit_sleep_ms(1000);
 	graphics_clear(fb, 0);
 	const char *msg = "xD-DOS (Extended Drive - Disk Operating System)\r\n> https://github.com/jasonchristiandev/xD-DOS\r\n> Maintained by Jason Christian.";
 	graphics_clear(fb, 0x000000);

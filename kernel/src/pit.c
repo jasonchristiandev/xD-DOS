@@ -19,7 +19,7 @@ void pit_sleep_ms(uint64_t ms) {
 		uint8_t port_b = inb(PIT_PORT_B);
 		outb(PIT_PORT_B, port_b | 1); // enable gate
 
-		while ((inb(PIT_PORT_B) & 0b10000) == 0); // bit 5 = status
+		while ((inb(PIT_PORT_B) & 0b100000) == 0); // bit 5 = status
 
 		outb(PIT_PORT_B, inb(PIT_PORT_B) & ~1); // disable gate
 	}

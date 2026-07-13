@@ -111,7 +111,7 @@ void graphics_psf_put_text(requests_framebuffer_t *fb, psf_data_t *font, const c
 
 void graphics_clear(requests_framebuffer_t *fb, uint32_t col) {
 	uint32_t *fb_ptr = (uint32_t *) fb->address;
-	uint32_t pixels = (fb->height * fb->pitch) / sizeof(uint32_t);
+	uint32_t pixels = fb->height * fb->pitch;
 	memset(fb_ptr, col, pixels);
 }
 

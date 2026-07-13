@@ -1,5 +1,4 @@
 #include "xddos/interrupts.h"
-#include "xddos/acpi.h"
 #include "xddos/asm.h"
 #include "xddos/graphics.h"
 #include "xddos/kstdio.h"
@@ -19,11 +18,10 @@
 #define ICW1_ICW4 0x01
 #define ICW4_8086 0x01
 
-__attribute__((aligned(0x10))) static interrupts_idt_entry_t idt[IDT_ENTRY_NUM];
-static interrupts_idt_pointer_t idtr;
-static bool vectors[IDT_ENTRY_NUM];
+__attribute__((aligned(0x10))) interrupts_idt_entry_t idt[IDT_ENTRY_NUM];
+interrupts_idt_pointer_t idtr;
+bool vectors[IDT_ENTRY_NUM];
 extern void *isr_stub_table[];
-extern acpi_fadt_t *global_fadt;
 
 const uint32_t qrcode[29] = {
 	0x1fc7547f, 0x104cc941, 0x1743525d, 0x1750885d,
