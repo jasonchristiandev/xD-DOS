@@ -1,5 +1,5 @@
 bits 64
-extern xddos_interrupts_exception_handler
+extern interrupts_exception_handler
 
 %macro isr_no_err_stub 1
 global isr_stub_%+%1
@@ -49,7 +49,7 @@ interrupt_common:
 	mov rbp, rsp
 	and rsp, ~0xF
 
-	call xddos_interrupts_exception_handler
+	call interrupts_exception_handler
 
 	mov rsp, rbp
 

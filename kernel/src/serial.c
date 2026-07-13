@@ -6,7 +6,7 @@
 
 static bool initialized = false;
 
-bool xddos_serial_init() {
+bool serial_init() {
 	// - disable interrupts
 	// - set dlab to 1, data to 7, parity to none, stop to 1, break to 0?
 	// - set baud rate (115200/3 = 38400)
@@ -32,32 +32,32 @@ bool xddos_serial_init() {
 	return true;
 }
 
-bool xddos_serial_received() {
+bool serial_received() {
 	return inb(COM1 + 5) & 0b00000001;
 }
 
-char xddos_serial_read() {
+char serial_read() {
 	if (!initialized) return 0;
-	while (xddos_serial_received() == 0);
+	while (serial_received() == 0);
 
 	return inb(COM1 + 0);
 }
 
-bool xddos_serial_is_transmit_empty() {
+bool serial_is_transmit_empty() {
 	return inb(COM1 + 5) & 0b00100000;
 }
 
-bool xddos_serial_write(char a) {
+bool serial_write(char a) {
 	if (!initialized) return 0;
 
 	uint16_t timeout = 1000;
-	while (xddos_serial_is_transmit_empty() == 0) {
+	while (serial_is_transmit_empty() == 0) {
 		if (timeout <= 0) {
 			initialized = 0;
 			return 0;
 		}
 
-		xddos_pit_sleep_ms(1);
+		pit_sleep_ms(1);
 		timeout--;
 	}
 
@@ -65,9 +65,9 @@ bool xddos_serial_write(char a) {
 	return true;
 }
 
-bool xddos_serial_write_text(const char *a) {
+bool serial_write_text(const char *a) {
 	while (*a) {
-		if (!xddos_serial_write(*a++)) return false;
+		if (!serial_write(*a++)) return false;
 	}
 	return true;
 }

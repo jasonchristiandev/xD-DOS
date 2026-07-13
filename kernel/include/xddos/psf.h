@@ -12,7 +12,7 @@ typedef struct {
 	uint16_t magic;	   // Magic bytes
 	uint8_t font_mode; // Font mode
 	uint8_t char_size; // Character size
-} xddos_psf1_header_t;
+} psf1_header_t;
 
 typedef struct {
 	uint32_t magic;			  // Magic bytes to identify PSF
@@ -23,19 +23,19 @@ typedef struct {
 	uint32_t bytes_per_glyph; // Size of each glyph
 	uint32_t height;		  //
 	uint32_t width;			  //
-} xddos_psf2_header_t;
+} psf2_header_t;
 
 extern uint8_t _binary_font_psf_start[];
 extern uint8_t _binary_font_psf_end[];
 
 typedef struct {
 	uint32_t version;
-	xddos_psf1_header_t *psf1_header;
-	xddos_psf2_header_t *psf2_header;
+	psf1_header_t *psf1_header;
+	psf2_header_t *psf2_header;
 	uint16_t *unicode;
 	uint8_t *data;
-} xddos_psf_data_t;
+} psf_data_t;
 
-xddos_psf_data_t *xddos_psf_init();
+psf_data_t *psf_init();
 
 #endif // !FONT_H

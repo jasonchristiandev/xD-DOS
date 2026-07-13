@@ -10,17 +10,17 @@ typedef struct {
 	uint8_t access;
 	uint8_t granularity;
 	uint8_t base_high;
-} __attribute__((packed)) xddos_gdt_entry_t;
+} __attribute__((packed)) gdt_entry_t;
 
 typedef struct {
 	uint16_t limit;
 	uint64_t base;
-} __attribute__((packed)) xddos_gdt_ptr_t;
+} __attribute__((packed)) gdt_ptr_t;
 
-extern xddos_gdt_entry_t gdt[6];
-extern xddos_gdt_ptr_t gp;
+extern gdt_entry_t gdt[6];
+extern gdt_ptr_t gp;
 
-void xddos_gdt_set_gate(int num, uint8_t access, uint8_t gran);
-void xddos_gdt_init();
+void gdt_set_gate(int num, uint8_t access, uint8_t gran);
+void gdt_init();
 
 #endif // !GDT_H

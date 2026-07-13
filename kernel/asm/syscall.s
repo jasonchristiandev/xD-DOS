@@ -1,6 +1,6 @@
-global xddos_syscall_entry
+global syscall_entry
 global global_kernel_stack
-extern xddos_syscall_handler
+extern syscall_handler
 
 section .data
 	global_user_stack_backup: dq 0x0
@@ -9,7 +9,7 @@ section .data
 section .text
 bits 64
 
-xddos_syscall_entry:
+syscall_entry:
 	mov [rel global_user_stack_backup], rsp
 	mov rsp, [rel global_kernel_stack]
 
@@ -28,7 +28,7 @@ xddos_syscall_entry:
 	mov rsi, rdi
 	mov rdi, rax
 
-	call xddos_syscall_handler
+	call syscall_handler
 
 	pop r15
 	pop r14

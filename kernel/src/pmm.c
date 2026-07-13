@@ -11,21 +11,21 @@ static size_t page_count = 0;
 
 extern uint64_t hhdm_offset;
 
-xddos_pmm_init_result_t xddos_pmm_init() {
+pmm_init_result_t pmm_init() {
 	// get hhdm offset
-	xddos_memmap_t *memmap = xddos_request_memmap();
+	pmm_memmap_t *memmap = request_memmap();
 	if (memmap == NULL) {
 		LOG_ERROR("PMM", "Memory map request responded with NULL!");
-		return XDDOS_PMM_INIT_NULL_RESPONSE;
+		return PMM_INIT_NULL_RESPONSE;
 	}
 
 	// find best spot for bitmap
-	xddos_memmap_entry_t *max = NULL;
+	pmm_memmap_entry_t *max = NULL;
 	uint64_t max_addr = 0;
 	LOG_DEBUG("PMM", "Finding spot for bitmap...");
 	for (uint64_t i = 0; i < memmap->count; i++) {
-		xddos_memmap_entry_t *entry = memmap->entries[i];
-		if (entry->type != XD_DOS_MEMMAP_USABLE) continue;
+		pmm_memmap_entry_t *entry = memmap->entries[i];
+		if (entry->type != MEMMAP_USABLE) continue;
 
 		uint64_t top = entry->base + entry->length;
 		if (top > max_addr) {
@@ -38,7 +38,7 @@ xddos_pmm_init_result_t xddos_pmm_init() {
 
 	if (max == NULL) {
 		LOG_ERROR("PMM", "No memory chunk available for bitmap!");
-		return XDDOS_PMM_INIT_OUT_OF_SPACE;
+		return PMM_INIT_OUT_OF_SPACE;
 	}
 	LOG_DEBUG("PMM", "Found memory chunk for bitmap at 0x%llx.", max);
 
@@ -48,7 +48,7 @@ xddos_pmm_init_result_t xddos_pmm_init() {
 
 	if (max->length < bitmap_size) {
 		LOG_ERROR("PMM", "Not enough space to fit bitmap! (0x%llx)", max);
-		return XDDOS_PMM_INIT_OUT_OF_SPACE;
+		return PMM_INIT_OUT_OF_SPACE;
 	}
 
 	bitmap = (uint8_t *) (max->base + hhdm_offset);
@@ -56,20 +56,20 @@ xddos_pmm_init_result_t xddos_pmm_init() {
 
 	// lock regions
 	LOG_DEBUG("PMM", "Locking reserved regions...");
-	xddos_pmm_lock_region((uint64_t)NULL, PAGE_SIZE);
+	pmm_lock_region((uint64_t) NULL, PAGE_SIZE);
 	for (uint64_t i = 0; i < memmap->count; i++) {
-		xddos_memmap_entry_t *entry = memmap->entries[i];
-		if (entry->type != XD_DOS_MEMMAP_USABLE) {
-			xddos_pmm_lock_region(entry->base, entry->length);
+		pmm_memmap_entry_t *entry = memmap->entries[i];
+		if (entry->type != MEMMAP_USABLE) {
+			pmm_lock_region(entry->base, entry->length);
 		}
 	}
 
 	LOG_DEBUG("PMM", "Done init.");
 
-	return XDDOS_PMM_INIT_OK;
+	return PMM_INIT_OK;
 }
 
-void xddos_pmm_lock_region(uint64_t base, uint64_t count) {
+void pmm_lock_region(uint64_t base, uint64_t count) {
 	uint64_t start = base / PAGE_SIZE;
 	uint64_t end = (base + count + PAGE_SIZE - 1) / PAGE_SIZE;
 
@@ -80,7 +80,7 @@ void xddos_pmm_lock_region(uint64_t base, uint64_t count) {
 	}
 }
 
-void xddos_pmm_free_region(uint64_t base, uint64_t count) {
+void pmm_free_region(uint64_t base, uint64_t count) {
 	uint64_t start = base / PAGE_SIZE;
 	uint64_t end = (base + count + PAGE_SIZE - 1) / PAGE_SIZE;
 
@@ -91,7 +91,7 @@ void xddos_pmm_free_region(uint64_t base, uint64_t count) {
 	}
 }
 
-uint8_t *xddos_pmm_alloc_page() {
+uint8_t *pmm_alloc_page() {
 	for (uint64_t i = 0; i < bitmap_size; i++) {
 		if (bitmap[i] == 0b11111111) continue; // if byte is full then skip
 
@@ -109,7 +109,7 @@ uint8_t *xddos_pmm_alloc_page() {
 	return NULL; // no memory available aka out of memory
 }
 
-void xddos_pmm_free_page(uint8_t *page) {
+void pmm_free_page(uint8_t *page) {
 	if (page == NULL) return;
 
 	uint64_t idx = (uint64_t) page / PAGE_SIZE;

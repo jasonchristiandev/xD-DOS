@@ -9,76 +9,76 @@
 #include <stddef.h>
 
 uint64_t hhdm_offset;
-xddos_framebuffer_t *fb;
-xddos_psf_data_t *fallback_font;
+requests_framebuffer_t *fb;
+psf_data_t *fallback_font;
 
 void boot_main() {
 	__asm__ volatile("cli");
-	if (xddos_request_base_revision_supported() == 0) {
+	if (request_base_revision_supported() == 0) {
 		__asm__ volatile("hlt");
 	}
 
-	xddos_framebuffers_t *fbs = xddos_request_framebuffers();
+	requests_framebuffers_t *fbs = request_framebuffers();
 	if (fbs == NULL || fbs->count < 1) __asm__ volatile("hlt");
 
 	fb = fbs->framebuffers[0];
 
-	xddos_serial_init();
+	serial_init();
 
 	LOG_INFO("KERNEL", "Extended Drive - Disk Operating System (xD-DOS) Starting...");
 
 	// HHDM
-	xddos_hhdm_t *hhdm = xddos_request_hhdm();
+	requests_hhdm_t *hhdm = request_hhdm();
 	if (hhdm == NULL) {
 		LOG_ERROR("PMM", "HHDM request responded with NULL!");
-		xddos_panic(fb, "HHDM request responded with NULL!\r\nPlease refer to serial console for more information.");
+		interrupts_panic(fb, "HHDM request responded with NULL!\r\nPlease refer to serial console for more information.");
 		return;
 	}
 	hhdm_offset = hhdm->offset;
 
 	// Init fallback font
 	LOG_DEBUG("KERNEL", "Initializing fallback font...");
-	fallback_font = xddos_psf_init();
+	fallback_font = psf_init();
 
 	// Init GDT
 	LOG_DEBUG("KERNEL", "Initializing GDT (Global Descriptor Table)...");
-	xddos_gdt_init();
+	gdt_init();
 
 	// Interrupts
 	LOG_DEBUG("KERNEL", "Initializing IDT (Interrupt Descriptor Table)...");
-	xddos_interrupts_init();
+	interrupts_init();
 
 	// PMM init
 	LOG_DEBUG("KERNEL", "Physical Memory Manager initializing...");
-	xddos_pmm_init_result_t pmm_result = xddos_pmm_init();
-	if (pmm_result == XDDOS_PMM_INIT_NULL_RESPONSE) {
+	pmm_init_result_t pmm_result = pmm_init();
+	if (pmm_result == PMM_INIT_NULL_RESPONSE) {
 		LOG_ERROR("KERNEL", "Failed to initialize Physical Memory Manager! Error code 0x%x (Memory Map or HHDM Not Ready).", pmm_result);
-		xddos_panic(fb, "Failed to initialize Physical Memory Manager!\r\nPlease refer to serial console for more information.");
+		interrupts_panic(fb, "Failed to initialize Physical Memory Manager!\r\nPlease refer to serial console for more information.");
 		return;
-	} else if (pmm_result == XDDOS_PMM_INIT_OUT_OF_SPACE) {
+	} else if (pmm_result == PMM_INIT_OUT_OF_SPACE) {
 		LOG_ERROR("KERNEL", "Failed to initialize Physical Memory Manager! Error code 0x%x (No Memory Available for Bitmap).", pmm_result);
-		xddos_panic(fb, "Failed to initialize Physical Memory Manager!\r\nPlease refer to serial console for more information.");
+		interrupts_panic(fb, "Failed to initialize Physical Memory Manager!\r\nPlease refer to serial console for more information.");
 		return;
 	} else if (pmm_result > 0) {
 		LOG_ERROR("KERNEL", "Failed to initialize Physical Memory Manager! Error code 0x%x (Unknown).", pmm_result);
-		xddos_panic(fb, "Failed to initialize Physical Memory Manager!\r\nPlease refer to serial console for more information.");
+		interrupts_panic(fb, "Failed to initialize Physical Memory Manager!\r\nPlease refer to serial console for more information.");
 		return;
 	}
 
 	// VMM init
 	LOG_DEBUG("KERNEL", "Virtual Memory Manager initializing...");
-	xddos_vmm_init_result_t vmm_result = xddos_vmm_init();
-	if (vmm_result == XDDOS_VMM_INIT_NULL_RESPONSE) {
+	vmm_init_result_t vmm_result = vmm_init();
+	if (vmm_result == VMM_INIT_NULL_RESPONSE) {
 		LOG_ERROR("KERNEL", "Failed to initialize Virtual Memory Manager! Error code 0x%x (HHDM or Executable Address or Executable File Not Ready).", vmm_result);
-		xddos_panic(fb, "Failed to initialize Virtual Memory Manager!\r\nPlease refer to serial console for more information.");
+		interrupts_panic(fb, "Failed to initialize Virtual Memory Manager!\r\nPlease refer to serial console for more information.");
 		return;
-	} else if (vmm_result == XDDOS_VMM_INIT_OUT_OF_MEMORY) {
+	} else if (vmm_result == VMM_INIT_OUT_OF_MEMORY) {
 		LOG_ERROR("KERNEL", "Failed to initialize Virtual Memory Manager! Error code 0x%x (Out of Memory).", vmm_result);
-		xddos_panic(fb, "Failed to initialize Virtual Memory Manager!\r\nPlease refer to serial console for more information.");
+		interrupts_panic(fb, "Failed to initialize Virtual Memory Manager!\r\nPlease refer to serial console for more information.");
 		return;
 	} else if (vmm_result > 0) {
 		LOG_ERROR("KERNEL", "Failed to initialize Virtual Memory Manager! Error code 0x%x (Unknown).", vmm_result);
-		xddos_panic(fb, "Failed to initialize Virtual Memory Manager!\r\nPlease refer to serial console for more information.");
+		interrupts_panic(fb, "Failed to initialize Virtual Memory Manager!\r\nPlease refer to serial console for more information.");
 		return;
 	}
 

@@ -5,8 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-int xddos_kstdio_putchar(char ch) {
-	return xddos_serial_write(ch) ? ch : '\0';
+int kstdio_putchar(char ch) {
+	return serial_write(ch) ? ch : '\0';
 }
 
 static void itoa(uint64_t n, char *str, uint8_t base, uint8_t signed_val) {
@@ -37,18 +37,18 @@ static void itoa(uint64_t n, char *str, uint8_t base, uint8_t signed_val) {
 	}
 }
 
-int xddos_kstdio_vprintf(const char *format, va_list args) {
+int kstdio_vprintf(const char *format, va_list args) {
 	char buf[128];
-	int result = xddos_kstdio_vsnprintf(buf, sizeof(buf), format, args);
-	xddos_serial_write_text(buf);
+	int result = kstdio_vsnprintf(buf, sizeof(buf), format, args);
+	serial_write_text(buf);
 	return result;
 }
 
-int xddos_kstdio_vsprintf(char *str, const char *format, va_list args) {
-	return xddos_kstdio_vsnprintf(str, (size_t) -1, format, args);
+int kstdio_vsprintf(char *str, const char *format, va_list args) {
+	return kstdio_vsnprintf(str, (size_t) -1, format, args);
 }
 
-int xddos_kstdio_vsnprintf(char *str, size_t size, const char *format, va_list args) {
+int kstdio_vsnprintf(char *str, size_t size, const char *format, va_list args) {
 	if (str == NULL || size == 0) {
 		return 0;
 	}
@@ -125,25 +125,25 @@ int xddos_kstdio_vsnprintf(char *str, size_t size, const char *format, va_list a
 	return idx;
 }
 
-void xddos_kstdio_printf(const char *format, ...) {
+void kstdio_printf(const char *format, ...) {
 	va_list args;
 	va_start(args, format);
-	xddos_kstdio_vprintf(format, args);
+	kstdio_vprintf(format, args);
 	va_end(args);
 }
 
-int xddos_kstdio_sprintf(char *str, const char *format, ...) {
+int kstdio_sprintf(char *str, const char *format, ...) {
 	va_list args;
 	va_start(args, format);
-	int result = xddos_kstdio_vsnprintf(str, (size_t) -1, format, args);
+	int result = kstdio_vsnprintf(str, (size_t) -1, format, args);
 	va_end(args);
 	return result;
 }
 
-int xddos_kstdio_snprintf(char *str, size_t size, const char *format, ...) {
+int kstdio_snprintf(char *str, size_t size, const char *format, ...) {
 	va_list args;
 	va_start(args, format);
-	int result = xddos_kstdio_vsnprintf(str, size, format, args);
+	int result = kstdio_vsnprintf(str, size, format, args);
 	va_end(args);
 	return result;
 }

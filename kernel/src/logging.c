@@ -27,19 +27,19 @@ static char *truncate(const char *name) {
 static void internal_log_write(const char *prefix, const char *name, const char *format, va_list args) {
 	char log_buf[512];
 
-	xddos_kstdio_vsnprintf(log_buf, sizeof(log_buf), format, args);
-	xddos_kstdio_printf("%s %s ", prefix, truncate(name));
+	kstdio_vsnprintf(log_buf, sizeof(log_buf), format, args);
+	kstdio_printf("%s %s ", prefix, truncate(name));
 
 	for (size_t i = 0; log_buf[i] != '\0'; i++) {
 		if (log_buf[i] == '\n') {
-			xddos_kstdio_putchar('\n');
-			if (log_buf[i + 1] != '\0') xddos_kstdio_printf("%s %s ", prefix, truncate(name));
+			kstdio_putchar('\n');
+			if (log_buf[i + 1] != '\0') kstdio_printf("%s %s ", prefix, truncate(name));
 		} else {
-			xddos_kstdio_putchar(log_buf[i]);
+			kstdio_putchar(log_buf[i]);
 		}
 	}
 
-	xddos_kstdio_printf("\r\n");
+	kstdio_printf("\r\n");
 }
 
 void LOG_INFO(const char *name, const char *format, ...) {

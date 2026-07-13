@@ -1,7 +1,7 @@
 #include "xddos/syscallhandler.h"
 #include "xddos/serial.h"
 #include "xddos/syscallnums.h"
-#include "xddos/vma.h"
+// #include "xddos/vma.h"
 
 #define MSR_EFER 0xC0000080
 #define EFER_SCE (1 << 0)
@@ -14,14 +14,14 @@
 extern uint64_t global_kernel_stack;
 uint8_t syscall_stack[4096];
 
-void xddos_syscall_init() {
+void syscall_init() {
 	uint32_t low, high;
 	__asm__ volatile("rdmsr" : "=a"(low), "=d"(high) : "c"(MSR_EFER));
 	low |= EFER_SCE;
 	__asm__ volatile("wrmsr" : : "a"(low), "d"(high), "c"(MSR_EFER));
 
-	extern void xddos_syscall_entry(void);
-	uint64_t lstar = (uint64_t) xddos_syscall_entry;
+	extern void syscall_entry(void);
+	uint64_t lstar = (uint64_t) syscall_entry;
 	__asm__ volatile("wrmsr" : : "a"((uint32_t) lstar), "d"((uint32_t) (lstar >> 32)), "c"(MSR_LSTAR));
 
 	global_kernel_stack = (uint64_t) &syscall_stack[4096];
@@ -34,17 +34,17 @@ void xddos_syscall_init() {
 	__asm__ volatile("wrmsr" : : "a"(fmask), "d"(0), "c"(MSR_FMASK));
 }
 
-uint64_t xddos_syscall_handler(uint64_t id, uint64_t arg1, uint64_t arg2, uint64_t arg3) {
+uint64_t syscall_handler(uint64_t id, uint64_t arg1, uint64_t arg2, uint64_t arg3) {
 	(void) arg3;
 	switch (id) {
 		case SYSCALL_WRITE:
 			if (arg1 == 0) {
-				return xddos_serial_write((char) arg2);
+				return serial_write((char) arg2);
 			}
 			return -1;
 		case SYSCALL_SBRK:
-			// return (uint64_t) xddos_vma_alloc_pages(arg1);
-			break;
+			// return (uint64_t) vma_alloc_pages(arg1);
+			return -1;
 		default:
 			return -1;
 	}

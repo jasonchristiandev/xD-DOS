@@ -18,8 +18,8 @@
 #define ICW1_ICW4 0x01
 #define ICW4_8086 0x01
 
-__attribute__((aligned(0x10))) static xddos_interrupts_idtentry_t idt[IDT_ENTRY_NUM];
-static xddos_interrupts_idtr_t idtr;
+__attribute__((aligned(0x10))) static interrupts_idtentry_t idt[IDT_ENTRY_NUM];
+static interrupts_idtr_t idtr;
 static bool vectors[IDT_ENTRY_NUM];
 static const uint32_t qrcode[29] = {
 	0b11111110001110101010001111111,
@@ -51,55 +51,55 @@ static const uint32_t qrcode[29] = {
 	0b10111010011001010111111111110,
 	0b10000010100100000000001101101,
 	0b11111110110111011101001110100};
-const xddos_interrupts_exception_vector_t xddos_interrupt_exception_vectors[32] = {
-	[0] = {"Division Error", "#DE", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, false},
-	[1] = {"Debug", "#DB", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, false},
-	[2] = {"Non-maskable Interrupt", "#NMI", XDDOS_INTERRUPT_EXCEPTION_TYPE_INTERRUPT, false},
-	[3] = {"Breakpoint", "#BP", XDDOS_INTERRUPT_EXCEPTION_TYPE_TRAP, false},
-	[4] = {"Overflow", "#OF", XDDOS_INTERRUPT_EXCEPTION_TYPE_TRAP, false},
-	[5] = {"Bound Range Exceeded", "#BR", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, false},
-	[6] = {"Invalid Opcode", "#UD", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, false},
-	[7] = {"Device Not Available", "#NM", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, false},
-	[8] = {"Double Fault", "#DF", XDDOS_INTERRUPT_EXCEPTION_TYPE_ABORT, true},
-	[9] = {"Coprocessor Segment Overrun", NULL, XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, false},
-	[10] = {"Invalid TSS", "#TS", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, true},
-	[11] = {"Segment Not Present", "#NP", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, true},
-	[12] = {"Stack-Segment Fault", "#SS", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, true},
-	[13] = {"General Protection Fault", "#GP", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, true},
-	[14] = {"Page Fault", "#PF", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, true},
-	[15] = {"Reserved", NULL, XDDOS_INTERRUPT_EXCEPTION_TYPE_RESERVED, false},
-	[16] = {"x87 Floating-Point Exception", "#MF", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, false},
-	[17] = {"Alignment Check", "#AC", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, true},
-	[18] = {"Machine Check", "#MC", XDDOS_INTERRUPT_EXCEPTION_TYPE_ABORT, false},
-	[19] = {"SIMD Floating-Point Exception", "#XM/#XF", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, false},
-	[20] = {"Virtualization Exception", "#VE", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, false},
-	[21] = {"Control Protection Exception", "#CP", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, true},
-	[22] = {"Reserved", NULL, XDDOS_INTERRUPT_EXCEPTION_TYPE_RESERVED, false},
-	[23] = {"Reserved", NULL, XDDOS_INTERRUPT_EXCEPTION_TYPE_RESERVED, false},
-	[24] = {"Reserved", NULL, XDDOS_INTERRUPT_EXCEPTION_TYPE_RESERVED, false},
-	[25] = {"Reserved", NULL, XDDOS_INTERRUPT_EXCEPTION_TYPE_RESERVED, false},
-	[26] = {"Reserved", NULL, XDDOS_INTERRUPT_EXCEPTION_TYPE_RESERVED, false},
-	[27] = {"Reserved", NULL, XDDOS_INTERRUPT_EXCEPTION_TYPE_RESERVED, false},
-	[28] = {"Hypervisor Injection Exception", "#HV", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, false},
-	[29] = {"VMM Communication Exception", "#VC", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, true},
-	[30] = {"Security Exception", "#SX", XDDOS_INTERRUPT_EXCEPTION_TYPE_FAULT, true},
-	[31] = {"Reserved", NULL, XDDOS_INTERRUPT_EXCEPTION_TYPE_RESERVED, false}};
-const char *xddos_interrupt_fault_names[5] = {"FAULT", "TRAP", "ABORT", "INTERRUPT", "RESERVED"};
+const interrupts_exception_vector_t interrupt_exception_vectors[32] = {
+	[0] = {"Division Error", "#DE", INTERRUPT_EXCEPTION_TYPE_FAULT, false},
+	[1] = {"Debug", "#DB", INTERRUPT_EXCEPTION_TYPE_FAULT, false},
+	[2] = {"Non-maskable Interrupt", "#NMI", INTERRUPT_EXCEPTION_TYPE_INTERRUPT, false},
+	[3] = {"Breakpoint", "#BP", INTERRUPT_EXCEPTION_TYPE_TRAP, false},
+	[4] = {"Overflow", "#OF", INTERRUPT_EXCEPTION_TYPE_TRAP, false},
+	[5] = {"Bound Range Exceeded", "#BR", INTERRUPT_EXCEPTION_TYPE_FAULT, false},
+	[6] = {"Invalid Opcode", "#UD", INTERRUPT_EXCEPTION_TYPE_FAULT, false},
+	[7] = {"Device Not Available", "#NM", INTERRUPT_EXCEPTION_TYPE_FAULT, false},
+	[8] = {"Double Fault", "#DF", INTERRUPT_EXCEPTION_TYPE_ABORT, true},
+	[9] = {"Coprocessor Segment Overrun", NULL, INTERRUPT_EXCEPTION_TYPE_FAULT, false},
+	[10] = {"Invalid TSS", "#TS", INTERRUPT_EXCEPTION_TYPE_FAULT, true},
+	[11] = {"Segment Not Present", "#NP", INTERRUPT_EXCEPTION_TYPE_FAULT, true},
+	[12] = {"Stack-Segment Fault", "#SS", INTERRUPT_EXCEPTION_TYPE_FAULT, true},
+	[13] = {"General Protection Fault", "#GP", INTERRUPT_EXCEPTION_TYPE_FAULT, true},
+	[14] = {"Page Fault", "#PF", INTERRUPT_EXCEPTION_TYPE_FAULT, true},
+	[15] = {"Reserved", NULL, INTERRUPT_EXCEPTION_TYPE_RESERVED, false},
+	[16] = {"x87 Floating-Point Exception", "#MF", INTERRUPT_EXCEPTION_TYPE_FAULT, false},
+	[17] = {"Alignment Check", "#AC", INTERRUPT_EXCEPTION_TYPE_FAULT, true},
+	[18] = {"Machine Check", "#MC", INTERRUPT_EXCEPTION_TYPE_ABORT, false},
+	[19] = {"SIMD Floating-Point Exception", "#XM/#XF", INTERRUPT_EXCEPTION_TYPE_FAULT, false},
+	[20] = {"Virtualization Exception", "#VE", INTERRUPT_EXCEPTION_TYPE_FAULT, false},
+	[21] = {"Control Protection Exception", "#CP", INTERRUPT_EXCEPTION_TYPE_FAULT, true},
+	[22] = {"Reserved", NULL, INTERRUPT_EXCEPTION_TYPE_RESERVED, false},
+	[23] = {"Reserved", NULL, INTERRUPT_EXCEPTION_TYPE_RESERVED, false},
+	[24] = {"Reserved", NULL, INTERRUPT_EXCEPTION_TYPE_RESERVED, false},
+	[25] = {"Reserved", NULL, INTERRUPT_EXCEPTION_TYPE_RESERVED, false},
+	[26] = {"Reserved", NULL, INTERRUPT_EXCEPTION_TYPE_RESERVED, false},
+	[27] = {"Reserved", NULL, INTERRUPT_EXCEPTION_TYPE_RESERVED, false},
+	[28] = {"Hypervisor Injection Exception", "#HV", INTERRUPT_EXCEPTION_TYPE_FAULT, false},
+	[29] = {"VMM Communication Exception", "#VC", INTERRUPT_EXCEPTION_TYPE_FAULT, true},
+	[30] = {"Security Exception", "#SX", INTERRUPT_EXCEPTION_TYPE_FAULT, true},
+	[31] = {"Reserved", NULL, INTERRUPT_EXCEPTION_TYPE_RESERVED, false}};
+const char *interrupt_fault_names[5] = {"FAULT", "TRAP", "ABORT", "INTERRUPT", "RESERVED"};
 extern void *isr_stub_table[];
-extern xddos_psf_data_t *fallback_font;
-extern xddos_acpi_fadt_t *global_fadt;
+extern psf_data_t *fallback_font;
+extern acpi_fadt_t *global_fadt;
 
-void xddos_panic(xddos_framebuffer_t *fb, char *message) {
+void interrupts_panic(requests_framebuffer_t *fb, char *message) {
 	__asm__ __volatile__("cli");
 	if (fallback_font == NULL) {
 		__asm__ __volatile__("hlt");
 	}
-	xddos_graphics_clear(fb, 0x000000);
-	xddos_pit_sleep_ms(100);
+	graphics_clear(fb, 0x000000);
+	pit_sleep_ms(100);
 
-	xddos_graphics_psf_put_text(fb, fallback_font, ":( xD-DOS KERNEL PANIC!", 8, 8, 0xFFFFFF, 0x000000);
-	xddos_graphics_psf_put_char(fb, fallback_font, '>', 8, 32, 0xFFFFFF, 0x000000);
-	xddos_graphics_psf_put_text(fb, fallback_font, message, 28, 32, 0xFFFFFF, 0x000000);
+	graphics_psf_put_text(fb, fallback_font, ":( xD-DOS KERNEL PANIC!", 8, 8, 0xFFFFFF, 0x000000);
+	graphics_psf_put_char(fb, fallback_font, '>', 8, 32, 0xFFFFFF, 0x000000);
+	graphics_psf_put_text(fb, fallback_font, message, 28, 32, 0xFFFFFF, 0x000000);
 	char *msg1 = "Unexpected kernel exception? Please report this issue at:\r\nhttps://github.com/jasonchristiandev/xD-DOS/issues";
 	char *msg2 = "or through the below QR code:";
 	LOG_ERROR("INTERRUPTS", msg1);
@@ -109,12 +109,12 @@ void xddos_panic(xddos_framebuffer_t *fb, char *message) {
 		if (message[i] == '\n') y += 16;
 	}
 
-	xddos_graphics_psf_put_text(fb, fallback_font, msg1, 28, y, 0xFFFFFF, 0x000000);
-	xddos_graphics_psf_put_text(fb, fallback_font, msg2, 28, y + 32, 0xFFFFFF, 0x000000);
+	graphics_psf_put_text(fb, fallback_font, msg1, 28, y, 0xFFFFFF, 0x000000);
+	graphics_psf_put_text(fb, fallback_font, msg2, 28, y + 32, 0xFFFFFF, 0x000000);
 	y += 52;
 
 	const uint8_t pixel_size = 4;
-	xddos_graphics_rect(fb, 28, y, pixel_size * 33, pixel_size * 33, 0xFFFFFF);
+	graphics_rect(fb, 28, y, pixel_size * 33, pixel_size * 33, 0xFFFFFF);
 
 	for (int yi = 0; yi < 29; yi++) {
 		for (int xi = 0; xi < 29; xi++) {
@@ -122,15 +122,15 @@ void xddos_panic(xddos_framebuffer_t *fb, char *message) {
 				uint32_t sx = 28 + (xi + 2) * pixel_size;
 				uint32_t sy = y + (yi + 2) * pixel_size;
 
-				xddos_graphics_rect(fb, sx, sy, pixel_size, pixel_size, 0x000000);
+				graphics_rect(fb, sx, sy, pixel_size, pixel_size, 0x000000);
 			}
 		}
 	}
 
 	y += 33 * pixel_size + 8;
 
-	xddos_graphics_psf_put_text(fb, fallback_font, "Press [ENTER] to reboot.\r\n      [F1] to power off.", 28, y, 0xFFFFFF, 0x000000);
-	xddos_pit_sleep_ms(1000);
+	graphics_psf_put_text(fb, fallback_font, "Press [ENTER] to reboot.\r\n      [F1] to power off.", 28, y, 0xFFFFFF, 0x000000);
+	pit_sleep_ms(1000);
 	for (;;) {
 		if ((inb(0x64) & 0x01) != 0) {
 			uint8_t sc = inb(0x60);
@@ -147,7 +147,7 @@ void xddos_panic(xddos_framebuffer_t *fb, char *message) {
 
 char msg[2048];
 
-void xddos_interrupts_exception_handler(xddos_interrupts_regstate_t *state) {
+void interrupts_exception_handler(interrupts_regstate_t *state) {
 	if (state->vector_number >= 32) {
 		if (state->vector_number >= 40) outb(PIC2_COMMAND, 0x20);
 		outb(PIC1_COMMAND, 0x20);
@@ -155,32 +155,32 @@ void xddos_interrupts_exception_handler(xddos_interrupts_regstate_t *state) {
 
 	uint64_t cr2;
 	__asm__ volatile("mov %%cr2, %0" : "=r"(cr2));
-	xddos_interrupts_exception_vector_t exception = xddos_interrupt_exception_vectors[state->vector_number];
-	xddos_kstdio_snprintf(msg, 256, "Caught exception in kernel level!\r\n"
-									"  Exception: 0x%x\r\n"
-									"  Mnemonic: %s\r\n"
-									"  Type: %s\r\n"
-									"  Name: %s\r\n"
-									"  Error Code: 0x%x\r\n"
-									"  RIP: 0x%llx\r\n"
-									"  CR2: 0x%llx",
-						  state->vector_number,
-						  exception.mnemonic,
-						  xddos_interrupt_fault_names[exception.type],
-						  exception.name,
-						  state->error_code,
-						  state->rip,
-						  cr2);
+	interrupts_exception_vector_t exception = interrupt_exception_vectors[state->vector_number];
+	kstdio_snprintf(msg, 256, "Caught exception in kernel level!\r\n"
+							  "  Exception: 0x%x\r\n"
+							  "  Mnemonic: %s\r\n"
+							  "  Type: %s\r\n"
+							  "  Name: %s\r\n"
+							  "  Error Code: 0x%x\r\n"
+							  "  RIP: 0x%llx\r\n"
+							  "  CR2: 0x%llx",
+					state->vector_number,
+					exception.mnemonic,
+					interrupt_fault_names[exception.type],
+					exception.name,
+					state->error_code,
+					state->rip,
+					cr2);
 	LOG_ERROR("INTERRUPTS", msg);
 
-	xddos_framebuffers_t *fbs = xddos_request_framebuffers();
+	requests_framebuffers_t *fbs = request_framebuffers();
 	if (fbs == NULL || fbs->count < 1) __asm__ volatile("hlt");
-	xddos_framebuffer_t *fb = fbs->framebuffers[0];
-	xddos_panic(fb, msg);
+	requests_framebuffer_t *fb = fbs->framebuffers[0];
+	interrupts_panic(fb, msg);
 }
 
-void xddos_interrupts_set_descriptor(uint8_t vector, void *isr, uint8_t flags) {
-	xddos_interrupts_idtentry_t *descriptor = &idt[vector];
+void interrupts_set_descriptor(uint8_t vector, void *isr, uint8_t flags) {
+	interrupts_idtentry_t *descriptor = &idt[vector];
 
 	descriptor->isr_low = (uint64_t) isr & 0xFFFF;
 	descriptor->selector = GDT_OFFSET_KERNEL_CODE;
@@ -191,13 +191,13 @@ void xddos_interrupts_set_descriptor(uint8_t vector, void *isr, uint8_t flags) {
 	descriptor->reserved = 0;
 }
 
-void xddos_interrupts_init() {
+void interrupts_init() {
 	LOG_DEBUG("INTERRUPTS", "Creating interrupt descriptor table...");
 	idtr.base = (uintptr_t) &idt[0];
-	idtr.limit = (uint16_t) sizeof(xddos_interrupts_idtentry_t) * IDT_ENTRY_NUM - 1;
+	idtr.limit = (uint16_t) sizeof(interrupts_idtentry_t) * IDT_ENTRY_NUM - 1;
 
 	for (uint8_t vector = 0; vector < 48; vector++) {
-		xddos_interrupts_set_descriptor(vector, isr_stub_table[vector], 0x8E);
+		interrupts_set_descriptor(vector, isr_stub_table[vector], 0x8E);
 		vectors[vector] = true;
 	}
 

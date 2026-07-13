@@ -3,11 +3,11 @@
 
 #include <stdbool.h>
 
-bool xddos_serial_init();
-bool xddos_serial_received();
-char xddos_serial_read();
-bool xddos_serial_is_transmit_empty();
-bool xddos_serial_write(char a);
-bool xddos_serial_write_text(const char *a);
+bool serial_init();
+bool serial_received();
+char serial_read();
+bool serial_is_transmit_empty();
+bool serial_write(char a);
+bool serial_write_text(const char *a);
 
 #endif // !SERIAL_H

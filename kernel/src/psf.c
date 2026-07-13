@@ -6,11 +6,11 @@
 
 extern uint64_t hhdm_offset;
 
-static void psf1_init(xddos_psf_data_t *data, uint8_t *virt_start, uint8_t *virt_end) {
-	xddos_psf1_header_t *header = (xddos_psf1_header_t *) virt_start;
+static void psf1_init(psf_data_t *data, uint8_t *virt_start, uint8_t *virt_end) {
+	psf1_header_t *header = (psf1_header_t *) virt_start;
 	data->psf1_header = header;
 	data->version = 1;
-	data->data = virt_start + sizeof(xddos_psf1_header_t);
+	data->data = virt_start + sizeof(psf1_header_t);
 
 	if ((header->font_mode & 2) == 0 && (header->font_mode & 4) == 0) {
 		data->unicode = NULL;
@@ -53,7 +53,7 @@ static void psf1_init(xddos_psf_data_t *data, uint8_t *virt_start, uint8_t *virt
 	}
 }
 
-static void psf2_init(xddos_psf_data_t *data, xddos_psf2_header_t *header, uint8_t *virt_end) {
+static void psf2_init(psf_data_t *data, psf2_header_t *header, uint8_t *virt_end) {
 	data->psf2_header = header;
 	data->version = 2;
 	data->data = ((uint8_t *) header) + header->header_size;
@@ -102,11 +102,11 @@ static void psf2_init(xddos_psf_data_t *data, xddos_psf2_header_t *header, uint8
 	}
 }
 
-xddos_psf_data_t *xddos_psf_init() {
-	static xddos_psf_data_t data;
-	memset(&data, 0, sizeof(xddos_psf_data_t));
+psf_data_t *psf_init() {
+	static psf_data_t data;
+	memset(&data, 0, sizeof(psf_data_t));
 
-	xddos_executable_address_t *exeaddr = xddos_request_executable_address();
+	requests_executable_address_t *exeaddr = request_executable_address();
 	if (!exeaddr) return NULL;
 
 	uint64_t font_virt = (uint64_t) &_binary_font_psf_start;
@@ -118,7 +118,7 @@ xddos_psf_data_t *xddos_psf_init() {
 	if ((magic & 0xFFFF) == PSF1_MAGIC) {
 		psf1_init(&data, virt_start, virt_end);
 	} else if (magic == PSF2_MAGIC) {
-		psf2_init(&data, (xddos_psf2_header_t *) virt_start, virt_end);
+		psf2_init(&data, (psf2_header_t *) virt_start, virt_end);
 	}
 
 	LOG_DEBUG("PSF", "Done init.");

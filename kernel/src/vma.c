@@ -14,12 +14,12 @@ typedef struct heap_block {
 heap_block_t *heap_head;
 heap_block_t *heap_end;
 
-xddos_vma_init_result_t xddos_vma_init() {
+vma_init_result_t vma_init() {
 	for (size_t i = 0; i < HEAP_SIZE / PAGE_SIZE; i++) {
-		void *page = xddos_pmm_alloc_page();
-		if (!page) return XDDOS_VMA_INIT_OUT_OF_MEMORY;
+		void *page = pmm_alloc_page();
+		if (!page) return VMA_INIT_OUT_OF_MEMORY;
 		uint64_t addr = HEAP_BASE + i * PAGE_SIZE;
-		xddos_vmm_map_table(addr, (uint64_t) page, XDDOS_PTE_READWRITE);
+		vmm_map_table(addr, (uint64_t) page, PTE_READWRITE);
 	}
 
 	heap_head = (heap_block_t *) HEAP_BASE;
@@ -29,10 +29,10 @@ xddos_vma_init_result_t xddos_vma_init() {
 	heap_end = (heap_block_t *) (HEAP_BASE + HEAP_SIZE);
 
 	LOG_DEBUG("VMA", "Done init.");
-	return XDDOS_VMA_INIT_OK;
+	return VMA_INIT_OK;
 }
 
-void *xddos_vma_malloc(size_t size) {
+void *vma_malloc(size_t size) {
 	if (size == 0) return NULL;
 
 	size = (size + 7) & ~7;
@@ -60,10 +60,10 @@ void *xddos_vma_malloc(size_t size) {
 			size_t pages = (required + PAGE_SIZE - 1) / PAGE_SIZE;
 
 			for (size_t i = 0; i < pages; i++) {
-				void *page = xddos_pmm_alloc_page();
+				void *page = pmm_alloc_page();
 				if (!page) return NULL;
 				uint64_t addr = (uint64_t) heap_end + i * PAGE_SIZE;
-				xddos_vmm_map_table(addr, (uint64_t) page, XDDOS_PTE_READWRITE);
+				vmm_map_table(addr, (uint64_t) page, PTE_READWRITE);
 			}
 
 			heap_block_t *block = (heap_block_t *) heap_end;
@@ -87,7 +87,7 @@ void *xddos_vma_malloc(size_t size) {
 	return NULL;
 }
 
-void xddos_vma_free(void *ptr) {
+void vma_free(void *ptr) {
 	if (!ptr) return;
 
 	heap_block_t *block = (heap_block_t *) ((uint8_t *) ptr - sizeof(heap_block_t));
@@ -104,8 +104,8 @@ void xddos_vma_free(void *ptr) {
 	}
 }
 
-void *xddos_vma_calloc(size_t count, size_t size) {
-	void *ptr = xddos_vma_malloc(count * size);
+void *vma_calloc(size_t count, size_t size) {
+	void *ptr = vma_malloc(count * size);
 	memset(ptr, 0, count * size);
 	return ptr;
 }

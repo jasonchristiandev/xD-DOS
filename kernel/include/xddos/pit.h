@@ -7,6 +7,6 @@
 #define PIT_COMMAND 0x43
 #define PIT_PORT_B 0x61
 
-void xddos_pit_sleep_ms(uint32_t ms);
+void pit_sleep_ms(uint32_t ms);
 
 #endif // !PIT_H

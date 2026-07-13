@@ -1,9 +1,9 @@
-global xddos_gdt_flush
+global gdt_flush
 
 section .text
 bits 64
 
-xddos_gdt_flush:
+gdt_flush:
 	mov ax, 0x10
 	mov ds, ax
 	mov es, ax
