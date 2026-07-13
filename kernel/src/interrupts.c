@@ -21,73 +21,19 @@
 __attribute__((aligned(0x10))) static interrupts_idtentry_t idt[IDT_ENTRY_NUM];
 static interrupts_idtr_t idtr;
 static bool vectors[IDT_ENTRY_NUM];
-static const uint32_t qrcode[29] = {
-	0b11111110001110101010001111111,
-	0b10000010011001100100101000001,
-	0b10111010000110101001001011101,
-	0b10111010100001000100001011101,
-	0b10111010110101101111101011101,
-	0b10000010000000001100101000001,
-	0b11111110101010101010101111111,
-	0b00000000001000001010000000000,
-	0b11000111010010110100000011000,
-	0b11111001010100110011010110110,
-	0b00010011001000110110000010000,
-	0b00001100110000001001010001000,
-	0b01010011110100111000101100001,
-	0b11001000110101011111101110011,
-	0b10100010100000110010110011100,
-	0b01100101001110010011000110101,
-	0b00101110111000100101010101100,
-	0b11000001000100011001001110111,
-	0b11010010010101010011000011001,
-	0b10110000000110000010101000000,
-	0b10100111101000110101111110111,
-	0b00000000111101110110100011000,
-	0b11111110111001111011101011100,
-	0b10000010100010100001100010001,
-	0b10111010011011001001111111011,
-	0b10111010001100111001110001111,
-	0b10111010011001010111111111110,
-	0b10000010100100000000001101101,
-	0b11111110110111011101001110100};
-const interrupts_exception_vector_t interrupt_exception_vectors[32] = {
-	[0] = {"Division Error", "#DE", INTERRUPT_EXCEPTION_TYPE_FAULT, false},
-	[1] = {"Debug", "#DB", INTERRUPT_EXCEPTION_TYPE_FAULT, false},
-	[2] = {"Non-maskable Interrupt", "#NMI", INTERRUPT_EXCEPTION_TYPE_INTERRUPT, false},
-	[3] = {"Breakpoint", "#BP", INTERRUPT_EXCEPTION_TYPE_TRAP, false},
-	[4] = {"Overflow", "#OF", INTERRUPT_EXCEPTION_TYPE_TRAP, false},
-	[5] = {"Bound Range Exceeded", "#BR", INTERRUPT_EXCEPTION_TYPE_FAULT, false},
-	[6] = {"Invalid Opcode", "#UD", INTERRUPT_EXCEPTION_TYPE_FAULT, false},
-	[7] = {"Device Not Available", "#NM", INTERRUPT_EXCEPTION_TYPE_FAULT, false},
-	[8] = {"Double Fault", "#DF", INTERRUPT_EXCEPTION_TYPE_ABORT, true},
-	[9] = {"Coprocessor Segment Overrun", NULL, INTERRUPT_EXCEPTION_TYPE_FAULT, false},
-	[10] = {"Invalid TSS", "#TS", INTERRUPT_EXCEPTION_TYPE_FAULT, true},
-	[11] = {"Segment Not Present", "#NP", INTERRUPT_EXCEPTION_TYPE_FAULT, true},
-	[12] = {"Stack-Segment Fault", "#SS", INTERRUPT_EXCEPTION_TYPE_FAULT, true},
-	[13] = {"General Protection Fault", "#GP", INTERRUPT_EXCEPTION_TYPE_FAULT, true},
-	[14] = {"Page Fault", "#PF", INTERRUPT_EXCEPTION_TYPE_FAULT, true},
-	[15] = {"Reserved", NULL, INTERRUPT_EXCEPTION_TYPE_RESERVED, false},
-	[16] = {"x87 Floating-Point Exception", "#MF", INTERRUPT_EXCEPTION_TYPE_FAULT, false},
-	[17] = {"Alignment Check", "#AC", INTERRUPT_EXCEPTION_TYPE_FAULT, true},
-	[18] = {"Machine Check", "#MC", INTERRUPT_EXCEPTION_TYPE_ABORT, false},
-	[19] = {"SIMD Floating-Point Exception", "#XM/#XF", INTERRUPT_EXCEPTION_TYPE_FAULT, false},
-	[20] = {"Virtualization Exception", "#VE", INTERRUPT_EXCEPTION_TYPE_FAULT, false},
-	[21] = {"Control Protection Exception", "#CP", INTERRUPT_EXCEPTION_TYPE_FAULT, true},
-	[22] = {"Reserved", NULL, INTERRUPT_EXCEPTION_TYPE_RESERVED, false},
-	[23] = {"Reserved", NULL, INTERRUPT_EXCEPTION_TYPE_RESERVED, false},
-	[24] = {"Reserved", NULL, INTERRUPT_EXCEPTION_TYPE_RESERVED, false},
-	[25] = {"Reserved", NULL, INTERRUPT_EXCEPTION_TYPE_RESERVED, false},
-	[26] = {"Reserved", NULL, INTERRUPT_EXCEPTION_TYPE_RESERVED, false},
-	[27] = {"Reserved", NULL, INTERRUPT_EXCEPTION_TYPE_RESERVED, false},
-	[28] = {"Hypervisor Injection Exception", "#HV", INTERRUPT_EXCEPTION_TYPE_FAULT, false},
-	[29] = {"VMM Communication Exception", "#VC", INTERRUPT_EXCEPTION_TYPE_FAULT, true},
-	[30] = {"Security Exception", "#SX", INTERRUPT_EXCEPTION_TYPE_FAULT, true},
-	[31] = {"Reserved", NULL, INTERRUPT_EXCEPTION_TYPE_RESERVED, false}};
-const char *interrupt_fault_names[5] = {"FAULT", "TRAP", "ABORT", "INTERRUPT", "RESERVED"};
 extern void *isr_stub_table[];
 extern psf_data_t *fallback_font;
 extern acpi_fadt_t *global_fadt;
+
+const uint32_t qrcode[29] = {
+	0x1fc7547f, 0x104cc941, 0x1743525d, 0x1750885d,
+	0x175adf5d, 0x10401941, 0x1fd5557f, 0x00041400,
+	0x18e96818, 0x1f2a66b6, 0x02646c10, 0x01981288,
+	0x0a7a7161, 0x191abf73, 0x1450659c, 0x0ca72635,
+	0x05dc4aac, 0x18223277, 0x1a4aa619, 0x16030540,
+	0x14f46bf7, 0x001eed18, 0x1fdcf75c, 0x10514311,
+	0x174d93fb, 0x1746738f, 0x174caffe, 0x1052006d,
+	0x1fdbba74};
 
 void interrupts_panic(requests_framebuffer_t *fb, char *message) {
 	__asm__ __volatile__("cli");
@@ -118,7 +64,7 @@ void interrupts_panic(requests_framebuffer_t *fb, char *message) {
 
 	for (int yi = 0; yi < 29; yi++) {
 		for (int xi = 0; xi < 29; xi++) {
-			if ((qrcode[yi] >> xi) & 1) {
+			if ((qrcode[yi] >> (28 - xi)) & 1) {
 				uint32_t sx = 28 + (xi + 2) * pixel_size;
 				uint32_t sy = y + (yi + 2) * pixel_size;
 

@@ -4,6 +4,7 @@ section .text
 bits 64
 
 gdt_flush:
+	; data segment
 	mov ax, 0x10
 	mov ds, ax
 	mov es, ax
@@ -11,12 +12,9 @@ gdt_flush:
 	mov gs, ax
 	mov ss, ax
 
-	push qword 0x08
-	
-	lea rax, [rel .reload_cs]
+	; code segment
+	pop rdi
+	mov rax, 0x08
 	push rax
-	
+	push rdi
 	retfq
-
-.reload_cs:
-	ret

@@ -2,42 +2,36 @@
 #include <stdint.h>
 
 __attribute__((aligned(8))) gdt_entry_t gdt[6];
-__attribute__((aligned(8))) gdt_ptr_t gp;
+__attribute__((aligned(8))) gdt_pointer_t gdt_ptr;
 
 extern void gdt_flush();
 
-void gdt_set_gate(int num, uint8_t access, uint8_t gran) {
+void gdt_set_gate(int num, uint8_t access, uint8_t granularity) {
 	gdt[num].base_low = 0;
 	gdt[num].base_middle = 0;
 	gdt[num].base_high = 0;
 	gdt[num].limit_low = 0;
 
 	gdt[num].access = access;
-	gdt[num].granularity = gran;
+	gdt[num].granularity = granularity;
 }
 
 void gdt_init(void) {
 	__asm__ volatile("cli");
 
-	gp.limit = (sizeof(gdt_entry_t) * 6) - 1;
-	gp.base = (uint64_t) &gdt;
+	gdt_ptr.limit = sizeof(gdt_entry_t)* 6 - 1;
+	gdt_ptr.base = (uint64_t) &gdt;
 
-	gdt_set_gate(0, 0, 0);
+	// null descriptor
+	gdt_set_gate(0, 0b00000000, 0b00000000);
 
-	// Code segments use Long Mode flag (Bit 5 = 0x20)
-	gdt_set_gate(1, 0x9A, 0x20); // Kernel CS
+	// code segment descriptor
+	gdt_set_gate(1, 0b10011010, 0b00100000);
 
-	// Data/Stack segments use 32-bit Size flag (Bit 6 = 0x40)
-	gdt_set_gate(2, 0x92, 0x40); // Kernel DS
-	gdt_set_gate(3, 0xF2, 0x40); // User DS
+	// data segment descriptor
+	gdt_set_gate(2, 0b10010010, 0b00000000);
 
-	// Code segments use Long Mode flag
-	gdt_set_gate(4, 0xFA, 0x20); // User CS
-
-	// Dummy bootloader segment
-	gdt_set_gate(5, 0x9A, 0x20);
-
-	__asm__ volatile("lgdt %0" : : "m"(gp));
+	__asm__ volatile("lgdt %0" : : "m"(gdt_ptr));
 
 	gdt_flush();
 }
