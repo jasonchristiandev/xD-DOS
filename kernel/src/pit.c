@@ -1,21 +1,26 @@
 #include "xddos/pit.h"
 #include "xddos/asm.h"
 
-void pit_sleep_ms(uint32_t ms) {
-	for (uint32_t i = 0; i < ms; i++) {
-		outb(PIT_COMMAND, 0xB2);
+#define PIT_CHANNEL_2 0x42
+#define PIT_COMMAND 0x43
+#define PIT_PORT_B 0x61
 
-		// Set count to 1193 for approx 1ms
-		outb(PIT_CHANNEL_2, 0xA9);
-		outb(PIT_CHANNEL_2, 0x04);
+void pit_sleep_ms(uint64_t ms) {
+	for (uint64_t i = 0; i < ms; i++) {
+		// 10  channel 2
+		// 11  low high
+		// 001 hardware retriggerable one shot
+		// 0   binary mode
+		outb(PIT_COMMAND, 0b10110010);
 
-		// Start countdown
+		outb(PIT_CHANNEL_2, 0xA9); // 1000 pit cycle approx 1193 ms
+		outb(PIT_CHANNEL_2, 0x04); // 1193 = 0x04A9
+
 		uint8_t port_b = inb(PIT_PORT_B);
-		outb(PIT_PORT_B, port_b | 1);
+		outb(PIT_PORT_B, port_b | 1); // enable gate
 
-		while ((inb(PIT_PORT_B) & 0x20) == 0);
+		while ((inb(PIT_PORT_B) & 0b10000) == 0); // bit 5 = status
 
-		// Stop
-		outb(PIT_PORT_B, inb(PIT_PORT_B) & ~1);
+		outb(PIT_PORT_B, inb(PIT_PORT_B) & ~1); // disable gate
 	}
 }
