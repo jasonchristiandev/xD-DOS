@@ -100,8 +100,8 @@ void interrupts_panic(requests_framebuffer_t *fb, char *message) {
 	graphics_psf_put_text(fb, fallback_font, ":( xD-DOS KERNEL PANIC!", 8, 8, 0xFFFFFF, 0x000000);
 	graphics_psf_put_char(fb, fallback_font, '>', 8, 32, 0xFFFFFF, 0x000000);
 	graphics_psf_put_text(fb, fallback_font, message, 28, 32, 0xFFFFFF, 0x000000);
-	char *msg1 = "Unexpected kernel exception? Please report this issue at:\r\nhttps://github.com/jasonchristiandev/xD-DOS/issues";
-	char *msg2 = "or through the below QR code:";
+	char *msg1 = "Unexpected kernel exception? Please report this issue at\r\nhttps://github.com/jasonchristiandev/xD-DOS/issues";
+	char *msg2 = "or through the QR code below.";
 	LOG_ERROR("INTERRUPTS", msg1);
 
 	uint32_t y = 56;
