@@ -1,0 +1,4 @@
+Kernel Heap Start: 0xFFFFFA0000000000
+            End:   0xFFFFFB0000000000
+Kernel Stack: 0xFFFFFC0000000000
+Kernel Code: 0xFFFFFFFF80000000

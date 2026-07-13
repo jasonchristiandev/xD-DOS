@@ -63,17 +63,16 @@ xddos_vmm_init_result_t xddos_vmm_init() {
 
 	// create stack
 	LOG_DEBUG("VMM", "Creating stack...");
-	const uint64_t base = 0xFFFFFFFF90000000;
 	for (uint8_t i = 0; i < 8; i++) {
-		xddos_vmm_map_table(base + i * PAGE_SIZE, (uint64_t) xddos_pmm_alloc_page(), XDDOS_PTE_PRESENT | XDDOS_PTE_READWRITE);
+		xddos_vmm_map_table(STACK_BASE + i * PAGE_SIZE, (uint64_t) xddos_pmm_alloc_page(), XDDOS_PTE_PRESENT | XDDOS_PTE_READWRITE);
 	}
-	xddos_vmm_map_table(base + 8 * PAGE_SIZE, (uint64_t) xddos_pmm_alloc_page(), XDDOS_PTE_PRESENT | XDDOS_PTE_READWRITE); // to prevent silent error
+	xddos_vmm_map_table(STACK_BASE + 8 * PAGE_SIZE, (uint64_t) xddos_pmm_alloc_page(), XDDOS_PTE_PRESENT | XDDOS_PTE_READWRITE); // to prevent silent error
 
 	LOG_DEBUG("VMM", "Switching context...");
 	__asm__ volatile("mov %0, %%cr3" ::"r"((uint64_t) xddos_pml4 - hhdm_offset) : "memory");
 
 	LOG_DEBUG("VMM", "Switching stack...");
-	uint64_t rsp = base + (8 * PAGE_SIZE);
+	uint64_t rsp = STACK_BASE + (8 * PAGE_SIZE);
 	extern void xddos_vmm_switch_stack(uint64_t rsp, void (*entry_point)());
 	xddos_vmm_switch_stack(rsp, kernel_main);
 

@@ -56,7 +56,7 @@ xddos_pmm_init_result_t xddos_pmm_init() {
 
 	// lock regions
 	LOG_DEBUG("PMM", "Locking reserved regions...");
-	xddos_pmm_lock_region(0, PAGE_SIZE);
+	xddos_pmm_lock_region((uint64_t)NULL, PAGE_SIZE);
 	for (uint64_t i = 0; i < memmap->count; i++) {
 		xddos_memmap_entry_t *entry = memmap->entries[i];
 		if (entry->type != XD_DOS_MEMMAP_USABLE) {

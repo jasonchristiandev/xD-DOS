@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#define STACK_BASE 0xFFFFFC0000000000
+
 typedef enum : uint16_t {
 	XDDOS_PTE_PRESENT = 1 << 0,
 	XDDOS_PTE_READWRITE = 1 << 1,
