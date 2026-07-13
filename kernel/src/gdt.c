@@ -1,4 +1,5 @@
 #include "xddos/gdt.h"
+#include "xddos/logging.h"
 #include <stdint.h>
 
 __attribute__((aligned(8))) gdt_entry_t gdt[6];
@@ -31,7 +32,11 @@ void gdt_init(void) {
 	// data segment descriptor
 	gdt_set_gate(2, 0b10010010, 0b00000000);
 
+	LOG_DEBUG("GDT", "Loading GDT...");
 	__asm__ volatile("lgdt %0" : : "m"(gdt_ptr));
-
+	
+	LOG_DEBUG("GDT", "Flushing GDT...");
 	gdt_flush();
+	
+	LOG_DEBUG("GDT", "Done init.");
 }
