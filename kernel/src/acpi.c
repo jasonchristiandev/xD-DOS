@@ -15,4 +15,6 @@ bool acpi_init() {
 	} else {
 		return false;
 	}
+
+	return false;
 }

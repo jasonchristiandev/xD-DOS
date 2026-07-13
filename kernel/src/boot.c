@@ -23,11 +23,12 @@ void boot_main() {
 
 	fb = fbs->framebuffers[0];
 
+	// init serial
 	serial_init();
 
 	LOG_INFO("KERNEL", "Extended Drive - Disk Operating System (xD-DOS) Starting...");
 
-	// HHDM
+	// init hhdm
 	requests_hhdm_t *hhdm = request_hhdm();
 	if (hhdm == NULL) {
 		LOG_ERROR("PMM", "HHDM request responded with NULL!");
@@ -36,19 +37,19 @@ void boot_main() {
 	}
 	hhdm_offset = hhdm->offset;
 
-	// Init fallback font
+	// init fallback font
 	LOG_DEBUG("KERNEL", "Initializing fallback font...");
 	fallback_font = psf_init();
 
-	// Init GDT
+	// init gdt
 	LOG_DEBUG("KERNEL", "Initializing GDT (Global Descriptor Table)...");
 	gdt_init();
 
-	// Interrupts
+	// init idt
 	LOG_DEBUG("KERNEL", "Initializing IDT (Interrupt Descriptor Table)...");
 	interrupts_init();
 
-	// PMM init
+	// init pmm
 	LOG_DEBUG("KERNEL", "Physical Memory Manager initializing...");
 	pmm_init_result_t pmm_result = pmm_init();
 	if (pmm_result == PMM_INIT_NULL_RESPONSE) {
@@ -65,7 +66,7 @@ void boot_main() {
 		return;
 	}
 
-	// VMM init
+	// init pmm
 	LOG_DEBUG("KERNEL", "Virtual Memory Manager initializing...");
 	vmm_init_result_t vmm_result = vmm_init();
 	if (vmm_result == VMM_INIT_NULL_RESPONSE) {
@@ -82,5 +83,5 @@ void boot_main() {
 		return;
 	}
 
-	// jump to kernel_main
+	// jump to kernel_main (hopefully)
 }
