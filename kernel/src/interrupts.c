@@ -4,6 +4,7 @@
 #include "xddos/graphics.h"
 #include "xddos/kstdio.h"
 #include "xddos/logging.h"
+#include "xddos/main.h"
 #include "xddos/pit.h"
 #include "xddos/requests.h"
 #include <stdbool.h>
@@ -18,11 +19,10 @@
 #define ICW1_ICW4 0x01
 #define ICW4_8086 0x01
 
-__attribute__((aligned(0x10))) static interrupts_idtentry_t idt[IDT_ENTRY_NUM];
-static interrupts_idtr_t idtr;
+__attribute__((aligned(0x10))) static interrupts_idt_entry_t idt[IDT_ENTRY_NUM];
+static interrupts_idt_pointer_t idtr;
 static bool vectors[IDT_ENTRY_NUM];
 extern void *isr_stub_table[];
-extern psf_data_t *fallback_font;
 extern acpi_fadt_t *global_fadt;
 
 const uint32_t qrcode[29] = {
@@ -93,7 +93,7 @@ void interrupts_panic(requests_framebuffer_t *fb, char *message) {
 
 char msg[2048];
 
-void interrupts_exception_handler(interrupts_regstate_t *state) {
+void interrupts_exception_handler(interrupts_register_state_t *state) {
 	if (state->vector_number >= 32) {
 		if (state->vector_number >= 40) outb(PIC2_COMMAND, 0x20);
 		outb(PIC1_COMMAND, 0x20);
@@ -126,7 +126,7 @@ void interrupts_exception_handler(interrupts_regstate_t *state) {
 }
 
 void interrupts_set_descriptor(uint8_t vector, void *isr, uint8_t flags) {
-	interrupts_idtentry_t *descriptor = &idt[vector];
+	interrupts_idt_entry_t *descriptor = &idt[vector];
 
 	descriptor->isr_low = (uint64_t) isr & 0xFFFF;
 	descriptor->selector = GDT_OFFSET_KERNEL_CODE;
@@ -140,7 +140,7 @@ void interrupts_set_descriptor(uint8_t vector, void *isr, uint8_t flags) {
 void interrupts_init() {
 	LOG_DEBUG("INTERRUPTS", "Creating interrupt descriptor table...");
 	idtr.base = (uintptr_t) &idt[0];
-	idtr.limit = (uint16_t) sizeof(interrupts_idtentry_t) * IDT_ENTRY_NUM - 1;
+	idtr.limit = (uint16_t) sizeof(interrupts_idt_entry_t) * IDT_ENTRY_NUM - 1;
 
 	for (uint8_t vector = 0; vector < 48; vector++) {
 		interrupts_set_descriptor(vector, isr_stub_table[vector], 0x8E);

@@ -11,7 +11,6 @@ typedef struct {
 	uint64_t entries[512];
 } __attribute__((packed)) vmm_page_table_t;
 
-extern uint64_t hhdm_offset;
 vmm_page_table_t *pml4;
 
 static void alloc_entry(vmm_page_table_t *table, uint16_t idx) {

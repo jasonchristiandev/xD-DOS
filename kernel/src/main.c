@@ -4,14 +4,9 @@
 #include "xddos/kstdio.h"
 #include "xddos/logging.h"
 #include "xddos/pit.h"
-#include "xddos/psf.h"
 #include "xddos/vma.h"
 #include <stdint.h>
 #include <string.h>
-
-extern uint64_t hhdm_offset;
-extern psf_data_t *fallback_font;
-extern requests_framebuffer_t *fb;
 
 void kernel_main() {
 	LOG_DEBUG("VMM", "Done init.");

@@ -6,6 +6,7 @@
 #include "xddos/requests.h"
 #include "xddos/serial.h"
 #include "xddos/vmm.h"
+#include "xddos/main.h"
 #include <stddef.h>
 
 uint64_t hhdm_offset;

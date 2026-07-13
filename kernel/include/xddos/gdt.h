@@ -4,8 +4,8 @@
 #include <stdint.h>
 
 typedef struct {
-	uint16_t limit_low; // no use
-	uint16_t base_low; // no use
+	uint16_t limit_low;	 // no use
+	uint16_t base_low;	 // no use
 	uint8_t base_middle; // no use
 	uint8_t access;
 	uint8_t granularity;
