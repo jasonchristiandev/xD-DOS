@@ -24,6 +24,7 @@ xD-DOS is an operating system inspired by **DOS**. xD-DOS is merely a fun projec
 * isr.s
 * psf.c/h
 * syscallhandler.c/h
+* graphics.c/h
 
 ## Getting Started
 

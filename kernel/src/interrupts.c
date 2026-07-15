@@ -99,22 +99,26 @@ void interrupts_exception_handler(interrupts_register_state_t *state) {
 
 	uint64_t cr2;
 	__asm__ volatile("mov %%cr2, %0" : "=r"(cr2));
-	interrupts_exception_vector_t exception = interrupt_exception_vectors[state->vector_number];
-	kstdio_snprintf(msg, 256, "Caught exception in kernel level!\r\n"
-							  "  Exception: 0x%x\r\n"
-							  "  Mnemonic: %s\r\n"
-							  "  Type: %s\r\n"
-							  "  Name: %s\r\n"
-							  "  Error Code: 0x%x\r\n"
-							  "  RIP: 0x%llx\r\n"
-							  "  CR2: 0x%llx",
-					state->vector_number,
-					exception.mnemonic,
-					interrupt_fault_names[exception.type],
-					exception.name,
-					state->error_code,
-					state->rip,
-					cr2);
+	if (state->vector_number < 32) {
+		interrupts_exception_vector_t exception = interrupt_exception_vectors[state->vector_number];
+		kstdio_snprintf(msg, 256, "Caught exception in kernel level!\r\n"
+								  "  Exception: 0x%x\r\n"
+								  "  Mnemonic: %s\r\n"
+								  "  Type: %s\r\n"
+								  "  Name: %s\r\n"
+								  "  Error Code: 0x%x\r\n"
+								  "  RIP: 0x%llx\r\n"
+								  "  CR2: 0x%llx",
+						state->vector_number,
+						exception.mnemonic,
+						interrupt_fault_names[exception.type],
+						exception.name,
+						state->error_code,
+						state->rip,
+						cr2);
+	} else {
+		return;
+	}
 	LOG_ERROR("INTERRUPTS", msg);
 
 	requests_framebuffers_t *fbs = request_framebuffers();
