@@ -14,7 +14,6 @@
 #define PIC2_CMD 0xA0
 #define PIC2_DATA 0xA1
 #define PIC_OFFSET 32
-#define IRQ_TO_VECTOR(x) (x) - PIC_OFFSET
 
 __attribute__((aligned(0x10))) static idt_entry_t idt[256];
 static idt_pointer_t idt_ptr;
@@ -72,6 +71,16 @@ void interrupts_init() {
 
 	outb(PIC1_DATA, 0xFF);
 	outb(PIC2_DATA, 0xFF);
+	interrupts_clear_mask(2); // irq2 for slave
+	interrupts_clear_mask(1); // keyboard
+
+	inb(0x60); // clean ps/2 buffer
+
+	// disable apic (temporary)
+	uint32_t low, high;
+	__asm__ volatile("rdmsr" : "=a"(low), "=d"(high) : "c"(0x1B));
+	low &= ~(1 << 11);
+	__asm__ volatile("wrmsr" : : "a"(low), "d"(high), "c"(0x1B));
 
 	__asm__ volatile("lidt %0" : : "m"(idt_ptr));
 	__asm__ volatile("sti");
@@ -84,10 +93,51 @@ void interrupts_eoi(uint8_t irq) {
 	outb(PIC1_CMD, 0x20);
 }
 
+void interrupts_set_mask(uint8_t irq) {
+	uint16_t port;
+	uint8_t value;
+
+	if (irq < 8) {
+		port = PIC1_DATA;
+	} else {
+		port = PIC2_DATA;
+		irq -= 8;
+	}
+	value = inb(port) | (1 << irq);
+	outb(port, value);
+}
+
+void interrupts_clear_mask(uint8_t irq) {
+	uint16_t port;
+	uint8_t value;
+
+	if (irq < 8) {
+		port = PIC1_DATA;
+	} else {
+		port = PIC2_DATA;
+		irq -= 8;
+	}
+	value = inb(port) & ~(1 << irq);
+	outb(port, value);
+}
+
 char msg[2048];
-void interrupts_exception_handler(interrupts_regstate_t *state) {
+void interrupts_handler(interrupts_regstate_t *state) {
 	if (state->vector >= 32) {
-		interrupts_eoi(IRQ_TO_VECTOR(state->vector));
+		// skip spurious interrupts
+		if (state->vector == 39) {
+			outb(PIC1_CMD, 0x0B);
+			uint8_t isr = inb(PIC1_CMD);
+			if (!(isr & (1 << 7))) return;
+		}
+
+		if (state->vector == 33) {
+			uint8_t sc = inb(0x60);
+			kstdio_snprintf(msg, 2048, "sc 0x%x", sc);
+			LOG_INFO("INTERRUPTS", msg);
+		}
+
+		interrupts_eoi(state->vector - PIC_OFFSET);
 		return;
 	}
 

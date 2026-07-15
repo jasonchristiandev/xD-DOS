@@ -64,6 +64,8 @@ static const interrupts_exception_vector_t interrupt_exception_vectors[32] = {
 static const char *interrupt_fault_names[5] = {"FAULT", "TRAP", "ABORT", "INTERRUPT", "RESERVED"};
 
 void interrupts_init();
+void interrupts_set_mask(uint8_t irq);
+void interrupts_clear_mask(uint8_t irq);
 void interrupts_panic(requests_framebuffer_t *fb, char *message);
 
 #endif // !INTERRUPTS_H

@@ -1,5 +1,5 @@
 bits 64
-extern interrupts_exception_handler
+extern interrupts_handler
 
 %assign i 0
 %rep 256
@@ -43,12 +43,12 @@ isr_handler:
 	push r14
 	push r15
 
-	mov rdi, rsp
-
 	mov rbp, rsp
-	and rsp, ~0xF ; alignment stuff that i dont understand
+	sub rsp, 16
+	and rsp, ~0xF
+	mov rdi, rbp
 
-	call interrupts_exception_handler
+	call interrupts_handler
 
 	mov rsp, rbp
 
@@ -69,6 +69,5 @@ isr_handler:
 	pop rdi
 	pop rbp
 
-	add rsp, 16; error code and vector number
-
+	add rsp, 16
 	iretq

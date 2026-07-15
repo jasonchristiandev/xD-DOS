@@ -1,12 +1,7 @@
 #include "xddos/main.h"
-#include "xddos/asm.h"
 #include "xddos/graphics.h"
-#include "xddos/kstdio.h"
 #include "xddos/logging.h"
-#include "xddos/pit.h"
 #include "xddos/vma.h"
-#include <stdint.h>
-#include <string.h>
 
 void kernel_main() {
 	LOG_DEBUG("VMM", "Done init.");
@@ -25,17 +20,5 @@ void kernel_main() {
 	graphics_clear(fb, 0x000000);
 	graphics_psf_put_text(fb, fallback_font, msg, 4, 4, 0xFFFFFF, 0x000000);
 
-	char str[7];
-	while (true) {
-		pit_sleep_ms(1);
-		uint8_t sc = inb(0x60);
-		if (sc == 1) {
-			volatile int x = 1;
-			volatile int y = 0;
-			x /= y;
-		}
-		memset(str, 0, 7);
-		kstdio_snprintf(str, 7, "%d   ", sc);
-		graphics_psf_put_text(fb, fallback_font, str, 4, 52, 0xFFFFFF, 0x000000);
-	}
+	for (;;) {}
 }
