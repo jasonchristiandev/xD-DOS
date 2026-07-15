@@ -3,9 +3,9 @@
 #include <stdint.h>
 
 __attribute__((aligned(8))) gdt_entry_t gdt[6];
-__attribute__((aligned(8))) gdt_pointer_t gdt_ptr;
+gdt_pointer_t gdt_ptr;
 
-extern void gdt_flush();
+extern void gdt_flush(uint64_t gdt_ptr);
 
 void gdt_set_gate(int num, uint8_t access, uint8_t granularity) {
 	gdt[num].base_low = 0;
@@ -32,11 +32,8 @@ void gdt_init(void) {
 	// data segment descriptor
 	gdt_set_gate(2, 0b10010010, 0b00000000);
 
-	LOG_DEBUG("GDT", "Loading GDT...");
-	__asm__ volatile("lgdt %0" : : "m"(gdt_ptr));
-
-	LOG_DEBUG("GDT", "Flushing GDT...");
-	gdt_flush();
+	LOG_DEBUG("GDT", "Loading and flushing GDT...");
+	gdt_flush((uint64_t)(&gdt_ptr));
 
 	LOG_DEBUG("GDT", "Done init.");
 }
