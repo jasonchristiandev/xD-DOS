@@ -20,8 +20,6 @@ xD-DOS is an operating system inspired by **DOS**. xD-DOS is merely a fun projec
 
 ## Vibe-Coded Parts
 * gdt.c/h (mostly rewritten but has leftover ai parts)
-* interrupts.c/h
-* isr.s
 * psf.c/h
 * syscallhandler.c/h
 * graphics.c/h
