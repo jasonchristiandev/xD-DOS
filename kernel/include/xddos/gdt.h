@@ -20,7 +20,7 @@ typedef struct {
 extern gdt_entry_t gdt[6];
 extern gdt_pointer_t gdt_ptr;
 
-void gdt_set_gate(int num, uint8_t access, uint8_t gran);
+void gdt_set_gate(int num, uint8_t access, uint8_t granularity);
 void gdt_init();
 
 #endif // !GDT_H

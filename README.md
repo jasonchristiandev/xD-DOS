@@ -16,11 +16,14 @@ xD-DOS is an operating system inspired by **DOS**. xD-DOS is merely a fun projec
 * ~~Interrupt handling~~
 * ~~Basic input~~
 * ~~GDT~~
-* Task state segment
-* Escape ring 0
-* User memory mapping
-* Load external program (maybe embed into kernel)
-* Syscalls working
+* Rewrite vibe-coded parts to better understand what I'm doing
+
+## Vibe-Coded Parts
+* gdt.c/h (mostly rewritten but has leftover ai parts)
+* interrupts.c/h
+* isr.s
+* psf.c/h
+* syscallhandler.c/h
 
 ## Getting Started
 
