@@ -33,6 +33,27 @@ void set_descriptor(uint8_t vector, void *isr, uint8_t flags) {
 }
 
 void interrupts_init() {
+	// check features
+	if (!cpuid_msr()) {
+		LOG_DEBUG("INTERRUPTS", "This operating system requires MSR! Aborting...");
+		graphics_psf_put_text(fb, fallback_font, "This operating system requires MSR!\r\nAborting...", 8, 8, 0xFFFFFF, 0x000000);
+		hlt();
+	}
+	if (!cpuid_apic()) {
+		LOG_DEBUG("INTERRUPTS", "This operating system requires APIC! Aborting...");
+		graphics_psf_put_text(fb, fallback_font, "This operating system requires APIC!\r\nAborting...", 8, 8, 0xFFFFFF, 0x000000);
+		hlt();
+	}
+
+	// disable 8259 pic
+	outb(PIC1_DATA, 0xFF);
+	outb(PIC2_DATA, 0xFF);
+
+	uint64_t apic_base = rdmsr(0x1B);
+	uint64_t lapic_base = apic_base & 0xFFFFF000;
+
+	inb(0x60);
+
 	idt_ptr.base = (uint64_t) &idt;
 	idt_ptr.limit = sizeof(idt_entry_t) * 256 - 1;
 
@@ -44,20 +65,8 @@ void interrupts_init() {
 		set_descriptor(i, isr_stub_table[i], 0b10001110);
 	}
 
-	if (!cpuid_apic()) {
-		LOG_DEBUG("INTERRUPTS", "This operating system requires APIC! Aborting...");
-		graphics_psf_put_text(fb, fallback_font, "This operating system requires APIC!\r\nAborting...", 8, 8, 0xFFFFFF, 0x000000);
-		for (;;) __asm__ __volatile__("hlt");
-	}
-
-	// disable 8259 pic
-	outb(PIC1_DATA, 0xFF);
-	outb(PIC2_DATA, 0xFF);
-
-	inb(0x60);
-
-	__asm__ volatile("lidt %0" : : "m"(idt_ptr));
-	__asm__ volatile("sti");
+	__asm__ __volatile__("lidt %0" : : "m"(idt_ptr));
+	__asm__ __volatile__("sti");
 
 	LOG_DEBUG("INTERRUPTS", "Done init.");
 }
@@ -90,7 +99,7 @@ void interrupts_handler(interrupts_regstate_t *state) {
 	}
 
 	uint64_t cr2;
-	__asm__ volatile("mov %%cr2, %0" : "=r"(cr2));
+	__asm__ __volatile__("mov %%cr2, %0" : "=r"(cr2));
 	interrupts_exception_vector_t exception = interrupt_exception_vectors[state->vector];
 	kstdio_snprintf(msg, 2048, "Caught exception in kernel level!\r\n"
 							   "  Exception: 0x%x\r\n"
@@ -110,7 +119,7 @@ void interrupts_handler(interrupts_regstate_t *state) {
 	LOG_ERROR("INTERRUPTS", msg);
 
 	requests_framebuffers_t *fbs = request_framebuffers();
-	if (fbs == NULL || fbs->count < 1) __asm__ volatile("hlt");
+	if (fbs == NULL || fbs->count < 1) hlt();
 	requests_framebuffer_t *fb = fbs->framebuffers[0];
 	interrupts_panic(fb, msg);
 }
@@ -127,9 +136,7 @@ const uint32_t qrcode[29] = {
 
 void interrupts_panic(requests_framebuffer_t *fb, char *message) {
 	__asm__ __volatile__("cli");
-	if (fallback_font == NULL) {
-		__asm__ __volatile__("hlt");
-	}
+	if (fallback_font == NULL) hlt();
 	graphics_clear(fb, 0x000000);
 	pit_sleep_ms(200);
 
@@ -165,5 +172,5 @@ void interrupts_panic(requests_framebuffer_t *fb, char *message) {
 
 	y += 33 * pixel_size + 8;
 
-	for (;;) __asm__ __volatile__("hlt");
+	hlt();
 }

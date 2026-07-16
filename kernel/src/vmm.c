@@ -70,7 +70,7 @@ vmm_init_result_t vmm_init() {
 	vmm_map_table(STACK_BASE + 8 * PAGE_SIZE, (uint64_t) pmm_alloc_page(), PTE_PRESENT | PTE_READWRITE); // to prevent silent error
 
 	LOG_DEBUG("VMM", "Switching context...");
-	__asm__ volatile("mov %0, %%cr3" ::"r"((uint64_t) pml4 - hhdm_offset) : "memory");
+	__asm__ __volatile__("mov %0, %%cr3" ::"r"((uint64_t) pml4 - hhdm_offset) : "memory");
 
 	LOG_DEBUG("VMM", "Switching stack...");
 	uint64_t rsp = STACK_BASE + (8 * PAGE_SIZE);

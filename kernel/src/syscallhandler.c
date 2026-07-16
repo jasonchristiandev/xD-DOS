@@ -16,22 +16,22 @@ uint8_t syscall_stack[4096];
 
 void syscall_init() {
 	uint32_t low, high;
-	__asm__ volatile("rdmsr" : "=a"(low), "=d"(high) : "c"(MSR_EFER));
+	__asm__ __volatile__("rdmsr" : "=a"(low), "=d"(high) : "c"(MSR_EFER));
 	low |= EFER_SCE;
-	__asm__ volatile("wrmsr" : : "a"(low), "d"(high), "c"(MSR_EFER));
+	__asm__ __volatile__("wrmsr" : : "a"(low), "d"(high), "c"(MSR_EFER));
 
 	extern void syscall_entry(void);
 	uint64_t lstar = (uint64_t) syscall_entry;
-	__asm__ volatile("wrmsr" : : "a"((uint32_t) lstar), "d"((uint32_t) (lstar >> 32)), "c"(MSR_LSTAR));
+	__asm__ __volatile__("wrmsr" : : "a"((uint32_t) lstar), "d"((uint32_t) (lstar >> 32)), "c"(MSR_LSTAR));
 
 	global_kernel_stack = (uint64_t) &syscall_stack[4096];
 
 	low = 0;
 	high = (KERNEL_CS << 0) | (USER_CS << 16);
-	__asm__ volatile("wrmsr" : : "a"(low), "d"(high), "c"(MSR_STAR));
+	__asm__ __volatile__("wrmsr" : : "a"(low), "d"(high), "c"(MSR_STAR));
 
 	uint32_t fmask = 0x200;
-	__asm__ volatile("wrmsr" : : "a"(fmask), "d"(0), "c"(MSR_FMASK));
+	__asm__ __volatile__("wrmsr" : : "a"(fmask), "d"(0), "c"(MSR_FMASK));
 }
 
 uint64_t syscall_handler(uint64_t id, uint64_t arg1, uint64_t arg2, uint64_t arg3) {

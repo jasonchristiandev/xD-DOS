@@ -1,10 +1,20 @@
 #include "xddos/main.h"
+#include "xddos/gdt.h"
 #include "xddos/graphics.h"
+#include "xddos/interrupts.h"
 #include "xddos/logging.h"
 #include "xddos/vma.h"
 
 void kernel_main() {
 	LOG_DEBUG("VMM", "Done init.");
+
+	// init gdt
+	LOG_DEBUG("KERNEL", "Initializing GDT (Global Descriptor Table)...");
+	gdt_init();
+
+	// init interrupts
+	LOG_DEBUG("KERNEL", "Initializing interrupts");
+	interrupts_init();
 
 	// init vma
 	LOG_DEBUG("KERNEL", "Virtual Memory Allocator initializing...");

@@ -18,7 +18,7 @@ void gdt_set_gate(int num, uint8_t access, uint8_t granularity) {
 }
 
 void gdt_init(void) {
-	__asm__ volatile("cli");
+	__asm__ __volatile__("cli");
 
 	gdt_ptr.limit = sizeof(gdt_entry_t) * 6 - 1;
 	gdt_ptr.base = (uint64_t) &gdt;
@@ -33,7 +33,7 @@ void gdt_init(void) {
 	gdt_set_gate(2, 0b10010010, 0b00000000);
 
 	LOG_DEBUG("GDT", "Loading and flushing GDT...");
-	gdt_flush((uint64_t)(&gdt_ptr));
+	gdt_flush((uint64_t) (&gdt_ptr));
 
 	LOG_DEBUG("GDT", "Done init.");
 }

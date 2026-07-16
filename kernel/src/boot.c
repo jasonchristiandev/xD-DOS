@@ -1,12 +1,12 @@
-#include "xddos/gdt.h"
+#include "xddos/asm.h"
 #include "xddos/interrupts.h"
 #include "xddos/logging.h"
+#include "xddos/main.h"
 #include "xddos/pmm.h"
 #include "xddos/psf.h"
 #include "xddos/requests.h"
 #include "xddos/serial.h"
 #include "xddos/vmm.h"
-#include "xddos/main.h"
 #include <stddef.h>
 
 uint64_t hhdm_offset;
@@ -14,13 +14,13 @@ requests_framebuffer_t *fb;
 psf_data_t *fallback_font;
 
 void boot_main() {
-	__asm__ volatile("cli");
+	__asm__ __volatile__("cli");
 	if (request_base_revision_supported() == 0) {
-		__asm__ volatile("hlt");
+		hlt();
 	}
 
 	requests_framebuffers_t *fbs = request_framebuffers();
-	if (fbs == NULL || fbs->count < 1) __asm__ volatile("hlt");
+	if (fbs == NULL || fbs->count < 1) hlt();
 
 	fb = fbs->framebuffers[0];
 
@@ -41,14 +41,6 @@ void boot_main() {
 	// init fallback font
 	LOG_DEBUG("KERNEL", "Initializing fallback font...");
 	fallback_font = psf_init();
-
-	// init gdt
-	LOG_DEBUG("KERNEL", "Initializing GDT (Global Descriptor Table)...");
-	gdt_init();
-
-	// init idt
-	LOG_DEBUG("KERNEL", "Initializing interrupts");
-	interrupts_init();
 
 	// init pmm
 	LOG_DEBUG("KERNEL", "Physical Memory Manager initializing...");
