@@ -111,13 +111,7 @@ uint8_t *pmm_alloc_page() {
 
 void pmm_free_page(uint8_t *page) {
 	if (page == NULL) return;
-
 	uint64_t idx = (uint64_t) page / PAGE_SIZE;
-
-	if (idx >= page_count) {
-		LOG_ERROR("PMM", "Attempted to free out of bound page!", page);
-		return;
-	}
-
+	if (idx >= page_count) return;
 	bitmap[idx / 8] &= ~(1 << (idx % 8));
 }

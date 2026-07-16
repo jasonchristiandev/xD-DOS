@@ -14,10 +14,7 @@ requests_framebuffer_t *fb;
 psf_data_t *fallback_font;
 
 void boot_main() {
-	__asm__ __volatile__("cli");
-	if (request_base_revision_supported() == 0) {
-		hlt();
-	}
+	if (request_base_revision_supported() == 0) hlt();
 
 	requests_framebuffers_t *fbs = request_framebuffers();
 	if (fbs == NULL || fbs->count < 1) hlt();
@@ -32,9 +29,7 @@ void boot_main() {
 	// init hhdm
 	requests_hhdm_t *hhdm = request_hhdm();
 	if (hhdm == NULL) {
-		LOG_ERROR("PMM", "HHDM request responded with NULL!");
-		interrupts_panic(fb, "HHDM request responded with NULL!\r\nPlease refer to serial console for more information.");
-		return;
+		interrupts_fail("HHDM request responded with NULL!", 1, "HHDM_NULL");
 	}
 	hhdm_offset = hhdm->offset;
 
@@ -45,35 +40,27 @@ void boot_main() {
 	// init pmm
 	LOG_DEBUG("KERNEL", "Physical Memory Manager initializing...");
 	pmm_init_result_t pmm_result = pmm_init();
-	if (pmm_result == PMM_INIT_NULL_RESPONSE) {
-		LOG_ERROR("KERNEL", "Failed to initialize Physical Memory Manager! Error code 0x%x (Memory Map or HHDM Not Ready).", pmm_result);
-		interrupts_panic(fb, "Failed to initialize Physical Memory Manager!\r\nPlease refer to serial console for more information.");
-		return;
-	} else if (pmm_result == PMM_INIT_OUT_OF_SPACE) {
-		LOG_ERROR("KERNEL", "Failed to initialize Physical Memory Manager! Error code 0x%x (No Memory Available for Bitmap).", pmm_result);
-		interrupts_panic(fb, "Failed to initialize Physical Memory Manager!\r\nPlease refer to serial console for more information.");
-		return;
-	} else if (pmm_result > 0) {
-		LOG_ERROR("KERNEL", "Failed to initialize Physical Memory Manager! Error code 0x%x (Unknown).", pmm_result);
-		interrupts_panic(fb, "Failed to initialize Physical Memory Manager!\r\nPlease refer to serial console for more information.");
-		return;
+	char *pmm_result_name[3] = {
+		[PMM_INIT_OK] = "OK",
+		[PMM_INIT_NULL_RESPONSE] = "NULL_RESPONSE",
+		[PMM_INIT_OUT_OF_SPACE] = "OUT_OF_SPACE"};
+	if (pmm_result != 0) {
+		char *name = "UNKNOWN";
+		if (pmm_result < 3) name = pmm_result_name[pmm_result];
+		interrupts_fail("PMM_INIT bad return!", pmm_result, name);
 	}
 
-	// init pmm
+	// init vmm
 	LOG_DEBUG("KERNEL", "Virtual Memory Manager initializing...");
 	vmm_init_result_t vmm_result = vmm_init();
-	if (vmm_result == VMM_INIT_NULL_RESPONSE) {
-		LOG_ERROR("KERNEL", "Failed to initialize Virtual Memory Manager! Error code 0x%x (HHDM or Executable Address or Executable File Not Ready).", vmm_result);
-		interrupts_panic(fb, "Failed to initialize Virtual Memory Manager!\r\nPlease refer to serial console for more information.");
-		return;
-	} else if (vmm_result == VMM_INIT_OUT_OF_MEMORY) {
-		LOG_ERROR("KERNEL", "Failed to initialize Virtual Memory Manager! Error code 0x%x (Out of Memory).", vmm_result);
-		interrupts_panic(fb, "Failed to initialize Virtual Memory Manager!\r\nPlease refer to serial console for more information.");
-		return;
-	} else if (vmm_result > 0) {
-		LOG_ERROR("KERNEL", "Failed to initialize Virtual Memory Manager! Error code 0x%x (Unknown).", vmm_result);
-		interrupts_panic(fb, "Failed to initialize Virtual Memory Manager!\r\nPlease refer to serial console for more information.");
-		return;
+	char *vmm_result_name[3] = {
+		[VMM_INIT_OK] = "OK",
+		[VMM_INIT_NULL_RESPONSE] = "NULL_RESPONSE",
+		[VMM_INIT_OUT_OF_MEMORY] = "OUT_OF_SPACE"};
+	if (vmm_result != 0) {
+		char *name = "UNKNOWN";
+		if (vmm_result < 3) name = vmm_result_name[vmm_result];
+		interrupts_fail("VMM_INIT bad return!", vmm_result, name);
 	}
 
 	// jump to kernel_main (hopefully)

@@ -5,6 +5,12 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+typedef enum : uint8_t {
+	INTERRUPTS_INIT_OK = 0,
+	INTERRUPTS_INIT_MSR_NOT_SUPPORTED = 1,
+	INTERRUPTS_INIT_APIC_NOT_SUPPORTED = 2
+} interrupts_init_result_t;
+
 typedef struct {
 	uint64_t r15, r14, r13, r12, r11, r10, r9, r8;
 	uint64_t rax, rbx, rcx, rdx, rsi, rdi, rbp;
@@ -63,9 +69,8 @@ static const interrupts_exception_vector_t interrupt_exception_vectors[32] = {
 	[31] = {"Reserved", "-", INTERRUPT_EXCEPTION_TYPE_RESERVED, false}};
 static const char *interrupt_fault_names[5] = {"FAULT", "TRAP", "ABORT", "INTERRUPT", "RESERVED"};
 
-void interrupts_init();
-void interrupts_set_mask(uint8_t irq);
-void interrupts_clear_mask(uint8_t irq);
+interrupts_init_result_t interrupts_init();
 void interrupts_panic(requests_framebuffer_t *fb, char *message);
+void interrupts_fail(char *msg1, uint32_t error, char *msg2);
 
 #endif // !INTERRUPTS_H

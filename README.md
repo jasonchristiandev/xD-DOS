@@ -28,6 +28,7 @@ xD-DOS is an operating system inspired by **DOS**. xD-DOS is merely a fun projec
 ### Prerequisites
 * make
 * qemu-system-x86_64 (optional for emulating)
+* edk2-ovmf (optional for emulating)
 
 ### Installation / Compilation
 1. **Clone the repository**:
@@ -44,7 +45,9 @@ make -j$(nproc) DEBUG=1
 
 3. **Run the OS using qemu-system-x86_64 (optional)**:
 ```bash
-make -j$(nproc) clean # optional for clearing cache
+cp /usr/share/OVMF/OVMF_CODE_4M.fd ./OVMF_CODE.fd # one time setup, path may differ
+cp /usr/share/OVMF/OVMF_VARS_4M.fd ./OVMF_VARS.fd
+
 make -j$(nproc) run
 ```
 

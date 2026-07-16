@@ -45,18 +45,10 @@ void lapic_write(uint32_t reg, uint32_t val) {
 	*addr = val;
 }
 
-void interrupts_init() {
+interrupts_init_result_t interrupts_init() {
 	// check features
-	if (!cpuid_msr()) {
-		LOG_DEBUG("INTERRUPTS", "This operating system requires MSR! Aborting...");
-		graphics_psf_put_text(fb, fallback_font, "This operating system requires MSR!\r\nAborting...", 8, 8, 0xFFFFFF, 0x000000);
-		hlt();
-	}
-	if (!cpuid_apic()) {
-		LOG_DEBUG("INTERRUPTS", "This operating system requires APIC! Aborting...");
-		graphics_psf_put_text(fb, fallback_font, "This operating system requires APIC!\r\nAborting...", 8, 8, 0xFFFFFF, 0x000000);
-		hlt();
-	}
+	if (!cpuid_msr()) return INTERRUPTS_INIT_MSR_NOT_SUPPORTED;
+	if (!cpuid_apic()) return INTERRUPTS_INIT_APIC_NOT_SUPPORTED;
 
 	idt_ptr.base = (uint64_t) &idt;
 	idt_ptr.limit = sizeof(idt_entry_t) * 256 - 1;
@@ -88,6 +80,8 @@ void interrupts_init() {
 	inb(0x60);
 
 	LOG_DEBUG("INTERRUPTS", "Done init.");
+
+	return INTERRUPTS_INIT_OK;
 }
 
 void interrupts_eoi() {
@@ -186,4 +180,11 @@ void interrupts_panic(requests_framebuffer_t *fb, char *message) {
 	y += 33 * pixel_size + 8;
 
 	hlt();
+}
+
+void interrupts_fail(char *msg1, uint32_t error, char *msg2) {
+	kstdio_snprintf(msg, 2048, "%s 0x%x (%s)", msg1, error, msg2);
+	LOG_ERROR("KERNEL", msg);
+	kstdio_snprintf(msg, 2048, "%s\r\n0x%x (%s)", msg1, error, msg2);
+	interrupts_panic(fb, msg);
 }

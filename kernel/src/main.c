@@ -8,13 +8,35 @@
 void kernel_main() {
 	LOG_DEBUG("VMM", "Done init.");
 
+	// init acpi
+	acpi_init_result_t acpi_result = acpi_init();
+	char *acpi_result_name[4] = {
+		[ACPI_INIT_OK] = "OK",
+		[ACPI_INIT_NULL_RESPONSE] = "NULL_RESPONSE",
+		[ACPI_INIT_CHECKSUM_FAIL] = "CHECKSUM_FAIL",
+		[ACPI_INIT_XSDT_NOT_FOUND] = "XSDT_NOT_FOUND"};
+	if (acpi_result != 0) {
+		char *name = "UNKNOWN";
+		if (acpi_result < 4) name = acpi_result_name[acpi_result];
+		interrupts_fail("ACPI_INIT bad return!", acpi_result, name);
+	}
+
 	// init gdt
 	LOG_DEBUG("KERNEL", "Initializing GDT (Global Descriptor Table)...");
 	gdt_init();
 
 	// init interrupts
 	LOG_DEBUG("KERNEL", "Initializing interrupts");
-	interrupts_init();
+	interrupts_init_result_t interrupts_result = interrupts_init();
+	char *interrupts_result_name[3] = {
+		[INTERRUPTS_INIT_OK] = "OK",
+		[INTERRUPTS_INIT_MSR_NOT_SUPPORTED] = "MSR_NOT_SUPPORTED",
+		[INTERRUPTS_INIT_APIC_NOT_SUPPORTED] = "APIC_NOT_SUPPORTED"};
+	if (interrupts_result != 0) {
+		char *name = "UNKNOWN";
+		if (interrupts_result < 3) name = interrupts_result_name[interrupts_result];
+		interrupts_fail("ACPI_INIT bad return!", interrupts_result, name);
+	}
 
 	// init vma
 	LOG_DEBUG("KERNEL", "Virtual Memory Allocator initializing...");

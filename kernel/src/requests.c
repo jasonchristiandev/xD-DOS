@@ -59,7 +59,7 @@ pmm_memmap_t *request_memmap() {
 	if (response == NULL) return NULL;
 	static pmm_memmap_t res;
 	res.count = response->entry_count;
-	res.entries = (pmm_memmap_entry_t**)response->entries;
+	res.entries = (pmm_memmap_entry_t **) response->entries;
 	return &res;
 }
 

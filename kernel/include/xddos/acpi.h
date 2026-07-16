@@ -3,6 +3,13 @@
 
 #include <stdbool.h>
 
+typedef enum : uint8_t {
+	ACPI_INIT_OK = 0,
+	ACPI_INIT_NULL_RESPONSE = 1,
+	ACPI_INIT_CHECKSUM_FAIL = 2,
+	ACPI_INIT_XSDT_NOT_FOUND = 3
+} acpi_init_result_t;
+
 // https://uefi.org/sites/default/files/resources/ACPI_6_3_final_Jan30.pdf page 118
 typedef struct {
 	char signature[8]; // must be exactly "RSD PTR "
