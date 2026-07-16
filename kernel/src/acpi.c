@@ -36,8 +36,8 @@ acpi_init_result_t acpi_init() {
 }
 
 acpi_io_apic_entry_t *acpi_search_io_apic_entry() {
-	uint8_t *cur = (uint8_t *) &madt->feh;
-	uint8_t *end = ((uint8_t *) madt) + madt->header.length;
+	uint8_t *cur = (uint8_t *) ((uint64_t) madt + sizeof(acpi_madt_t));
+	uint8_t *end = (uint8_t *) ((uint64_t) madt + madt->header.length);
 
 	while (cur < end) {
 		acpi_madt_entry_t *entry = (acpi_madt_entry_t *) cur;

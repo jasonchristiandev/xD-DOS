@@ -51,7 +51,6 @@ typedef struct {
 	acpi_descheader_t header; // APIC
 	uint32_t lic_ptr;
 	uint32_t flags;
-	uint16_t feh; // first entry header
 } __attribute__((packed)) acpi_madt_t;
 
 typedef struct {
@@ -107,7 +106,9 @@ typedef struct {
 
 extern acpi_rsdp_t *rsdp;
 extern acpi_xsdt_t *xsdt;
+extern acpi_madt_t *madt;
 
-bool acpi_init();
+acpi_init_result_t acpi_init();
+acpi_io_apic_entry_t *acpi_search_io_apic_entry();
 
 #endif // !ACPI_H

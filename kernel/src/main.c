@@ -30,14 +30,15 @@ void kernel_main() {
 	// init interrupts
 	LOG_DEBUG("KERNEL", "Initializing interrupts");
 	interrupts_init_result_t interrupts_result = interrupts_init();
-	char *interrupts_result_name[3] = {
+	char *interrupts_result_name[4] = {
 		[INTERRUPTS_INIT_OK] = "OK",
 		[INTERRUPTS_INIT_MSR_NOT_SUPPORTED] = "MSR_NOT_SUPPORTED",
-		[INTERRUPTS_INIT_APIC_NOT_SUPPORTED] = "APIC_NOT_SUPPORTED"};
+		[INTERRUPTS_INIT_APIC_NOT_SUPPORTED] = "APIC_NOT_SUPPORTED",
+		[INTERRUPTS_INIT_IO_APIC_NOT_FOUND] = "IO_APIC_NOT_FOUND"};
 	if (interrupts_result != 0) {
 		char *name = "UNKNOWN";
-		if (interrupts_result < 3) name = interrupts_result_name[interrupts_result];
-		interrupts_fail("ACPI_INIT bad return!", interrupts_result, name);
+		if (interrupts_result < 4) name = interrupts_result_name[interrupts_result];
+		interrupts_fail("INTERRUPTS_INIT bad return!", interrupts_result, name);
 	}
 
 	// init vma

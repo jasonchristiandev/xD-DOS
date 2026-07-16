@@ -74,6 +74,12 @@ interrupts_init_result_t interrupts_init() {
 	// set spurious to 0xFF
 	lapic_write(0xF0, lapic_read(0xF0) | 0x100 | 0xFF);
 
+	acpi_io_apic_entry_t *io_apic_entry = acpi_search_io_apic_entry();
+	if (io_apic_entry == NULL) return INTERRUPTS_INIT_IO_APIC_NOT_FOUND;
+	uint32_t io_apic_base = io_apic_entry->io_apic_ptr;
+
+
+
 	__asm__ __volatile__("lidt %0" : : "m"(idt_ptr));
 	__asm__ __volatile__("sti");
 
@@ -184,7 +190,7 @@ void interrupts_panic(requests_framebuffer_t *fb, char *message) {
 
 void interrupts_fail(char *msg1, uint32_t error, char *msg2) {
 	kstdio_snprintf(msg, 2048, "%s 0x%x (%s)", msg1, error, msg2);
-	LOG_ERROR("KERNEL", msg);
+	LOG_ERROR("INTERRUPTS", msg);
 	kstdio_snprintf(msg, 2048, "%s\r\n0x%x (%s)", msg1, error, msg2);
 	interrupts_panic(fb, msg);
 }

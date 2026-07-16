@@ -49,10 +49,6 @@ run: $(ISO_IMAGE)
 	$(QEMU) -cdrom $(ISO_IMAGE) \
 		-drive if=pflash,format=raw,readonly=on,file=./OVMF_CODE.fd \
 		-drive if=pflash,format=raw,readonly=off,file=./OVMF_VARS.fd \
-		-fw_cfg name=opt/org.tianocore/IPv4NetworkStack,string=n \
-		-fw_cfg name=opt/org.tianocore/IPv6NetworkStack,string=n \
-		-device virtio-rng-pci \
-		-fda /dev/null \
 		-m 256M \
 		-M q35,accel=kvm \
 		-cpu host,-svm \
