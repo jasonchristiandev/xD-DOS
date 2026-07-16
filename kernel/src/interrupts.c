@@ -1,5 +1,6 @@
 #include "xddos/interrupts.h"
 #include "xddos/asm.h"
+#include "xddos/cpuid.h"
 #include "xddos/graphics.h"
 #include "xddos/idt.h"
 #include "xddos/kstdio.h"
@@ -43,47 +44,22 @@ void interrupts_init() {
 		set_descriptor(i, isr_stub_table[i], 0b10001110);
 	}
 
-	// icw1
-	// 0x10 init
-	// 0x01 icw4 present
-	outb(PIC1_CMD, 0x11);
-	io_wait();
-	outb(PIC2_CMD, 0x11);
-	io_wait();
+	if (!cpuid_apic()) {
+		LOG_DEBUG("INTERRUPTS", "This operating system requires APIC! Aborting...");
+		graphics_psf_put_text(fb, fallback_font, "This operating system requires APIC!\r\nAborting...", 8, 8, 0xFFFFFF, 0x000000);
+		for (;;) __asm__ __volatile__("hlt");
+	}
 
-	// icw2
-	outb(PIC1_DATA, PIC_OFFSET);
-	io_wait();
-	outb(PIC2_DATA, PIC_OFFSET + 8);
-	io_wait();
-
-	// icw3
-	outb(PIC1_DATA, 1 << 2); // hey pic1, there is slave in irq 2!
-	io_wait();
-	outb(PIC2_DATA, 2); // hey pic2, you are a slave to irq 2!
-	io_wait();
-
-	// icw4
-	outb(PIC1_DATA, 0x01); // 8086/88 mode
-	io_wait();
-	outb(PIC2_DATA, 0x01); // 8086/88 mode
-	io_wait();
-
+	// disable 8259 pic
 	outb(PIC1_DATA, 0xFF);
 	outb(PIC2_DATA, 0xFF);
-	interrupts_clear_mask(2); // irq2 for slave
-	interrupts_clear_mask(1); // keyboard
 
-	inb(0x60); // clean ps/2 buffer
-
-	// disable apic (temporary)
-	uint32_t low, high;
-	__asm__ volatile("rdmsr" : "=a"(low), "=d"(high) : "c"(0x1B));
-	low &= ~(1 << 11);
-	__asm__ volatile("wrmsr" : : "a"(low), "d"(high), "c"(0x1B));
+	inb(0x60);
 
 	__asm__ volatile("lidt %0" : : "m"(idt_ptr));
 	__asm__ volatile("sti");
+
+	LOG_DEBUG("INTERRUPTS", "Done init.");
 }
 
 void interrupts_eoi(uint8_t irq) {
@@ -91,34 +67,6 @@ void interrupts_eoi(uint8_t irq) {
 		outb(PIC2_CMD, 0x20);
 	}
 	outb(PIC1_CMD, 0x20);
-}
-
-void interrupts_set_mask(uint8_t irq) {
-	uint16_t port;
-	uint8_t value;
-
-	if (irq < 8) {
-		port = PIC1_DATA;
-	} else {
-		port = PIC2_DATA;
-		irq -= 8;
-	}
-	value = inb(port) | (1 << irq);
-	outb(port, value);
-}
-
-void interrupts_clear_mask(uint8_t irq) {
-	uint16_t port;
-	uint8_t value;
-
-	if (irq < 8) {
-		port = PIC1_DATA;
-	} else {
-		port = PIC2_DATA;
-		irq -= 8;
-	}
-	value = inb(port) & ~(1 << irq);
-	outb(port, value);
 }
 
 char msg[2048];

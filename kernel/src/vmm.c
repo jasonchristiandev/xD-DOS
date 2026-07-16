@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <string.h>
 
+extern void vmm_switch_stack(uint64_t rsp, void (*entry_point)());
+
 typedef struct {
 	uint64_t entries[512];
 } __attribute__((packed)) vmm_page_table_t;
@@ -72,7 +74,6 @@ vmm_init_result_t vmm_init() {
 
 	LOG_DEBUG("VMM", "Switching stack...");
 	uint64_t rsp = STACK_BASE + (8 * PAGE_SIZE);
-	extern void vmm_switch_stack(uint64_t rsp, void (*entry_point)());
 	vmm_switch_stack(rsp, kernel_main);
 
 	return VMM_INIT_OK;

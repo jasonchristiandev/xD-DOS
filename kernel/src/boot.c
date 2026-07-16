@@ -47,7 +47,7 @@ void boot_main() {
 	gdt_init();
 
 	// init idt
-	LOG_DEBUG("KERNEL", "Initializing IDT (Interrupt Descriptor Table)...");
+	LOG_DEBUG("KERNEL", "Initializing interrupts");
 	interrupts_init();
 
 	// init pmm

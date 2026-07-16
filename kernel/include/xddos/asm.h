@@ -12,5 +12,7 @@ uint16_t inw(uint16_t port);
 void insw(uint16_t port, void *addr, uint32_t count);
 void io_wait();
 void invlpg(uint64_t addr);
+uint64_t rdmsr(uint32_t msr);
+void wrmsr(uint32_t msr, uint64_t value);
 
 #endif // !ASM_H
