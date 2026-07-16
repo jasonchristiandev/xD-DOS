@@ -6,8 +6,10 @@
 typedef enum : uint8_t {
 	ACPI_INIT_OK = 0,
 	ACPI_INIT_NULL_RESPONSE = 1,
-	ACPI_INIT_CHECKSUM_FAIL = 2,
-	ACPI_INIT_XSDT_NOT_FOUND = 3
+	ACPI_INIT_RSDP_CHECKSUM_FAIL = 2,
+	ACPI_INIT_VERSION_NOT_SUPPORTED = 3,
+	ACPI_INIT_XSDT_NOT_FOUND = 4,
+	ACPI_INIT_MADT_NOT_FOUND = 5
 } acpi_init_result_t;
 
 // https://uefi.org/sites/default/files/resources/ACPI_6_3_final_Jan30.pdf page 118
@@ -45,6 +47,27 @@ typedef struct {
 	uint64_t entries[];
 } __attribute__((packed)) acpi_xsdt_t;
 
+typedef struct {
+	acpi_descheader_t header; // APIC
+	uint32_t lic_ptr;
+	uint32_t flags;
+	uint16_t feh; // first entry header
+} __attribute__((packed)) acpi_madt_t;
+
+typedef struct {
+	uint8_t type;
+	uint8_t length;
+} __attribute__((packed)) acpi_madt_entry_t;
+
+typedef struct {
+	uint8_t type;
+	uint8_t length;
+	uint8_t io_apic_id;
+	uint8_t reserved;
+	uint32_t io_apic_ptr;
+	uint32_t gsi_base;
+} __attribute__((packed)) acpi_io_apic_entry_t;
+
 typedef enum : uint8_t {
 	ACPI_PMPROFILE_UNSPECIFIED = 0,
 	ACPI_PMPROFILE_DESKTOP = 1,
@@ -56,14 +79,14 @@ typedef enum : uint8_t {
 	ACPI_PMPROFILE_PERFORMANCESERVER = 7,
 	ACPI_PMPROFILE_TABLET = 8,
 	ACPI_PMPROFILE_RESERVED = 9
-} acpi_pm_profile_t;
+} acpi_pmprofile_t;
 
 typedef struct {
 	acpi_descheader_t header; // FADT
 	uint32_t firmware_ctrl;
 	uint32_t dsdt_ptr;
 	uint8_t reserved_a;
-	acpi_pm_profile_t preferred_pm_profile;
+	acpi_pmprofile_t preferred_pm_profile;
 
 	uint16_t sci_interrupt;
 	uint32_t smi_command_port;
@@ -81,6 +104,9 @@ typedef struct {
 
 	// more fields later when the os need it
 } __attribute__((packed)) acpi_fadt_t;
+
+extern acpi_rsdp_t *rsdp;
+extern acpi_xsdt_t *xsdt;
 
 bool acpi_init();
 

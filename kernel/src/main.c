@@ -10,14 +10,16 @@ void kernel_main() {
 
 	// init acpi
 	acpi_init_result_t acpi_result = acpi_init();
-	char *acpi_result_name[4] = {
+	char *acpi_result_name[6] = {
 		[ACPI_INIT_OK] = "OK",
 		[ACPI_INIT_NULL_RESPONSE] = "NULL_RESPONSE",
-		[ACPI_INIT_CHECKSUM_FAIL] = "CHECKSUM_FAIL",
-		[ACPI_INIT_XSDT_NOT_FOUND] = "XSDT_NOT_FOUND"};
+		[ACPI_INIT_RSDP_CHECKSUM_FAIL] = "CHECKSUM_FAIL",
+		[ACPI_INIT_VERSION_NOT_SUPPORTED] = "VERSION_NOT_SUPPORTED",
+		[ACPI_INIT_XSDT_NOT_FOUND] = "XSDT_NOT_FOUND",
+		[ACPI_INIT_MADT_NOT_FOUND] = "MADT_NOT_FOUND"};
 	if (acpi_result != 0) {
 		char *name = "UNKNOWN";
-		if (acpi_result < 4) name = acpi_result_name[acpi_result];
+		if (acpi_result < 5) name = acpi_result_name[acpi_result];
 		interrupts_fail("ACPI_INIT bad return!", acpi_result, name);
 	}
 

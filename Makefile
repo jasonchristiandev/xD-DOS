@@ -49,14 +49,18 @@ run: $(ISO_IMAGE)
 	$(QEMU) -cdrom $(ISO_IMAGE) \
 		-drive if=pflash,format=raw,readonly=on,file=./OVMF_CODE.fd \
 		-drive if=pflash,format=raw,readonly=off,file=./OVMF_VARS.fd \
+		-fw_cfg name=opt/org.tianocore/IPv4NetworkStack,string=n \
+		-fw_cfg name=opt/org.tianocore/IPv6NetworkStack,string=n \
+		-device virtio-rng-pci \
+		-fda /dev/null \
 		-m 256M \
-		-M q35 \
+		-M q35,accel=kvm \
+		-cpu host,-svm \
 		-serial mon:stdio \
 		-vga none \
 		-device VGA,xres=640,yres=480 \
 		-d int,cpu_reset \
 		-D qemu.log \
-		-global isa-debugcon.iobase=0x402 -debugcon file:ovmf_debug.log \
 	| sed -u -e '/BdsDxe/d' -e 's/\x1b\[001;001H//g' | tee serial.log
 
 check-target:
