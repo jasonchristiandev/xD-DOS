@@ -10,16 +10,17 @@ void kernel_main() {
 
 	// init acpi
 	acpi_init_result_t acpi_result = acpi_init();
-	char *acpi_result_name[6] = {
+	char *acpi_result_name[7] = {
 		[ACPI_INIT_OK] = "OK",
 		[ACPI_INIT_NULL_RESPONSE] = "NULL_RESPONSE",
 		[ACPI_INIT_RSDP_CHECKSUM_FAIL] = "CHECKSUM_FAIL",
 		[ACPI_INIT_VERSION_NOT_SUPPORTED] = "VERSION_NOT_SUPPORTED",
 		[ACPI_INIT_XSDT_NOT_FOUND] = "XSDT_NOT_FOUND",
-		[ACPI_INIT_MADT_NOT_FOUND] = "MADT_NOT_FOUND"};
+		[ACPI_INIT_MADT_NOT_FOUND] = "MADT_NOT_FOUND",
+		[ACPI_INIT_IO_APIC_ENTRY_NOT_FOUND] = "IO_APIC_ENTRY_NOT_FOUND"};
 	if (acpi_result != 0) {
 		char *name = "UNKNOWN";
-		if (acpi_result < 5) name = acpi_result_name[acpi_result];
+		if (acpi_result < 7) name = acpi_result_name[acpi_result];
 		interrupts_fail("ACPI_INIT bad return!", acpi_result, name);
 	}
 
@@ -30,14 +31,13 @@ void kernel_main() {
 	// init interrupts
 	LOG_DEBUG("KERNEL", "Initializing interrupts");
 	interrupts_init_result_t interrupts_result = interrupts_init();
-	char *interrupts_result_name[4] = {
+	char *interrupts_result_name[3] = {
 		[INTERRUPTS_INIT_OK] = "OK",
 		[INTERRUPTS_INIT_MSR_NOT_SUPPORTED] = "MSR_NOT_SUPPORTED",
-		[INTERRUPTS_INIT_APIC_NOT_SUPPORTED] = "APIC_NOT_SUPPORTED",
-		[INTERRUPTS_INIT_IO_APIC_NOT_FOUND] = "IO_APIC_NOT_FOUND"};
+		[INTERRUPTS_INIT_APIC_NOT_SUPPORTED] = "APIC_NOT_SUPPORTED"};
 	if (interrupts_result != 0) {
 		char *name = "UNKNOWN";
-		if (interrupts_result < 4) name = interrupts_result_name[interrupts_result];
+		if (interrupts_result < 3) name = interrupts_result_name[interrupts_result];
 		interrupts_fail("INTERRUPTS_INIT bad return!", interrupts_result, name);
 	}
 

@@ -9,7 +9,8 @@ typedef enum : uint8_t {
 	ACPI_INIT_RSDP_CHECKSUM_FAIL = 2,
 	ACPI_INIT_VERSION_NOT_SUPPORTED = 3,
 	ACPI_INIT_XSDT_NOT_FOUND = 4,
-	ACPI_INIT_MADT_NOT_FOUND = 5
+	ACPI_INIT_MADT_NOT_FOUND = 5,
+	ACPI_INIT_IO_APIC_ENTRY_NOT_FOUND = 6
 } acpi_init_result_t;
 
 // https://uefi.org/sites/default/files/resources/ACPI_6_3_final_Jan30.pdf page 118
@@ -67,6 +68,15 @@ typedef struct {
 	uint32_t gsi_base;
 } __attribute__((packed)) acpi_io_apic_entry_t;
 
+typedef struct {
+	uint8_t type;
+	uint8_t length;
+	uint8_t bus;
+	uint8_t source;
+	uint32_t gsi;
+	uint16_t flags;
+} __attribute__((packed)) acpi_iso_entry_t;
+
 typedef enum : uint8_t {
 	ACPI_PMPROFILE_UNSPECIFIED = 0,
 	ACPI_PMPROFILE_DESKTOP = 1,
@@ -104,9 +114,11 @@ typedef struct {
 	// more fields later when the os need it
 } __attribute__((packed)) acpi_fadt_t;
 
-extern acpi_rsdp_t *rsdp;
-extern acpi_xsdt_t *xsdt;
-extern acpi_madt_t *madt;
+extern acpi_rsdp_t *acpi_rsdp;
+extern acpi_xsdt_t *acpi_xsdt;
+extern acpi_madt_t *acpi_madt;
+extern acpi_io_apic_entry_t *acpi_io_apic_entry;
+extern uint32_t irq_to_gsi[16];
 
 acpi_init_result_t acpi_init();
 acpi_io_apic_entry_t *acpi_search_io_apic_entry();

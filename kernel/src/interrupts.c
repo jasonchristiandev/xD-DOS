@@ -8,7 +8,6 @@
 #include "xddos/main.h"
 #include "xddos/pit.h"
 #include "xddos/requests.h"
-#include "xddos/vmm.h"
 #include <stdbool.h>
 
 #define PIC1_CMD 0x20
@@ -22,6 +21,7 @@ static idt_pointer_t idt_ptr;
 extern void *isr_stub_table[];
 uint64_t apic_base;
 uint64_t lapic_base;
+uint64_t io_apic_base;
 
 void set_descriptor(uint8_t vector, void *isr, uint8_t flags) {
 	idt_entry_t *descriptor = &idt[vector];
@@ -45,11 +45,26 @@ void lapic_write(uint32_t reg, uint32_t val) {
 	*addr = val;
 }
 
+void io_apic_write(uint8_t reg, uint32_t value) {
+	volatile uint32_t *regsel = (volatile uint32_t *) io_apic_base;
+	volatile uint32_t *iowin = (volatile uint32_t *) (io_apic_base + 16);
+
+	*regsel = reg;
+	*iowin = value;
+}
+
+void io_apic_reroute(uint8_t irq, uint32_t high, uint8_t vector, bool mask) {
+	uint8_t reg = 0x10 + (irq_to_gsi[irq] << 1);
+	io_apic_write(reg, vector | (mask << 16));
+	io_apic_write(reg + 1, high);
+}
+
 interrupts_init_result_t interrupts_init() {
 	// check features
 	if (!cpuid_msr()) return INTERRUPTS_INIT_MSR_NOT_SUPPORTED;
 	if (!cpuid_apic()) return INTERRUPTS_INIT_APIC_NOT_SUPPORTED;
 
+	LOG_DEBUG("INTERRUPTS", "Setting descriptors...");
 	idt_ptr.base = (uint64_t) &idt;
 	idt_ptr.limit = sizeof(idt_entry_t) * 256 - 1;
 
@@ -61,24 +76,22 @@ interrupts_init_result_t interrupts_init() {
 		set_descriptor(i, isr_stub_table[i], 0b10001110);
 	}
 
+	LOG_DEBUG("INTERRUPTS", "Enabling APIC...");
+
 	// disable 8259 pic
 	outb(PIC1_DATA, 0xFF);
 	outb(PIC2_DATA, 0xFF);
 
-	apic_base = rdmsr(0x1B);
-	lapic_base = apic_base & 0xFFFFF000;
-
-	vmm_map_table(lapic_base, lapic_base, PTE_PRESENT | PTE_READWRITE | PTE_CACHEDISABLE | PTE_WRITETHROUGH);
+	apic_base = rdmsr(0x1B) + hhdm_offset;
+	lapic_base = apic_base & 0xFFFFFFFFFFFFF000;
 
 	// enable lapic
 	// set spurious to 0xFF
 	lapic_write(0xF0, lapic_read(0xF0) | 0x100 | 0xFF);
 
-	acpi_io_apic_entry_t *io_apic_entry = acpi_search_io_apic_entry();
-	if (io_apic_entry == NULL) return INTERRUPTS_INIT_IO_APIC_NOT_FOUND;
-	uint32_t io_apic_base = io_apic_entry->io_apic_ptr;
+	io_apic_base = acpi_io_apic_entry->io_apic_ptr + hhdm_offset;
 
-
+	io_apic_reroute(1, 0, 33, 0); // unmask keyboard
 
 	__asm__ __volatile__("lidt %0" : : "m"(idt_ptr));
 	__asm__ __volatile__("sti");
