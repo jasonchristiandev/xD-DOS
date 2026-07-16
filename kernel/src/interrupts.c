@@ -8,6 +8,7 @@
 #include "xddos/main.h"
 #include "xddos/pit.h"
 #include "xddos/requests.h"
+#include "xddos/vmm.h"
 #include <stdbool.h>
 
 #define PIC1_CMD 0x20
@@ -19,6 +20,8 @@
 __attribute__((aligned(0x10))) static idt_entry_t idt[256];
 static idt_pointer_t idt_ptr;
 extern void *isr_stub_table[];
+uint64_t apic_base;
+uint64_t lapic_base;
 
 void set_descriptor(uint8_t vector, void *isr, uint8_t flags) {
 	idt_entry_t *descriptor = &idt[vector];
@@ -30,6 +33,16 @@ void set_descriptor(uint8_t vector, void *isr, uint8_t flags) {
 	descriptor->isr_mid = (uint64_t) isr >> 16;
 	descriptor->isr_high = (uint64_t) isr >> 32;
 	descriptor->reserved = 0;
+}
+
+uint32_t lapic_read(uint32_t reg) {
+	volatile uint32_t *addr = (volatile uint32_t *) (lapic_base + reg);
+	return *addr;
+}
+
+void lapic_write(uint32_t reg, uint32_t val) {
+	volatile uint32_t *addr = (volatile uint32_t *) (lapic_base + reg);
+	*addr = val;
 }
 
 void interrupts_init() {
@@ -45,15 +58,6 @@ void interrupts_init() {
 		hlt();
 	}
 
-	// disable 8259 pic
-	outb(PIC1_DATA, 0xFF);
-	outb(PIC2_DATA, 0xFF);
-
-	uint64_t apic_base = rdmsr(0x1B);
-	uint64_t lapic_base = apic_base & 0xFFFFF000;
-
-	inb(0x60);
-
 	idt_ptr.base = (uint64_t) &idt;
 	idt_ptr.limit = sizeof(idt_entry_t) * 256 - 1;
 
@@ -65,36 +69,45 @@ void interrupts_init() {
 		set_descriptor(i, isr_stub_table[i], 0b10001110);
 	}
 
+	// disable 8259 pic
+	outb(PIC1_DATA, 0xFF);
+	outb(PIC2_DATA, 0xFF);
+
+	apic_base = rdmsr(0x1B);
+	lapic_base = apic_base & 0xFFFFF000;
+
+	vmm_map_table(lapic_base, lapic_base, PTE_PRESENT | PTE_READWRITE | PTE_CACHEDISABLE | PTE_WRITETHROUGH);
+
+	// enable lapic
+	// set spurious to 0xFF
+	lapic_write(0xF0, lapic_read(0xF0) | 0x100 | 0xFF);
+
 	__asm__ __volatile__("lidt %0" : : "m"(idt_ptr));
 	__asm__ __volatile__("sti");
+
+	inb(0x60);
 
 	LOG_DEBUG("INTERRUPTS", "Done init.");
 }
 
-void interrupts_eoi(uint8_t irq) {
-	if (irq >= 8) {
-		outb(PIC2_CMD, 0x20);
-	}
-	outb(PIC1_CMD, 0x20);
+void interrupts_eoi() {
+	lapic_write(0xB0, 0);
 }
 
 char msg[2048];
 void interrupts_handler(interrupts_regstate_t *state) {
 	if (state->vector >= 32) {
 		// skip spurious interrupts
-		if (state->vector == 39) {
-			outb(PIC1_CMD, 0x0B);
-			uint8_t isr = inb(PIC1_CMD);
-			if (!(isr & (1 << 7))) return;
-		}
+		if (state->vector == 0xFF) return;
 
+		// ps/2 keyboard
 		if (state->vector == 33) {
 			uint8_t sc = inb(0x60);
 			kstdio_snprintf(msg, 2048, "sc 0x%x", sc);
 			LOG_INFO("INTERRUPTS", msg);
 		}
 
-		interrupts_eoi(state->vector - PIC_OFFSET);
+		interrupts_eoi();
 		return;
 	}
 
