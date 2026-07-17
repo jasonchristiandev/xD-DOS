@@ -1,4 +1,5 @@
 #include "xddos/asm.h"
+#include "xddos/graphics.h"
 #include "xddos/interrupts.h"
 #include "xddos/logging.h"
 #include "xddos/main.h"
@@ -11,19 +12,27 @@
 uint64_t hhdm_offset;
 
 void boot_main() {
-	if (request_base_revision_supported() == 0) hlt();
-
 	// init serial
 	serial_init();
 
 	LOG_INFO("KERNEL", "Extended Drive - Disk Operating System (xD-DOS) Starting...");
 
+	// framebuffer
+	requests_framebuffers_t *fbs = request_framebuffers();
+	if (fbs != NULL || fbs->count >= 1) hlt();
+	fb = fbs->framebuffers[0];
+
+	// init fallback font
+	LOG_DEBUG("KERNEL", "Initializing fallback font...");
+	fallback_font = psf_init();
+
 	// init hhdm
-	requests_hhdm_t *hhdm = request_hhdm();
-	if (hhdm == NULL) {
-		interrupts_fail("HHDM request responded with NULL!", 1, "HHDM_NULL");
-	}
-	hhdm_offset = hhdm->offset;
+	// requests_hhdm_t *hhdm = request_hhdm();
+	// if (hhdm == NULL) {
+	// 	LOG_DEBUG("KERNEL", "Initializing fallback font...");
+	// 	interrupts_fail("HHDM request responded with NULL!", 1, "HHDM_NULL");
+	// }
+	// hhdm_offset = hhdm->offset;
 
 	// init pmm
 	LOG_DEBUG("KERNEL", "Physical Memory Manager initializing...");

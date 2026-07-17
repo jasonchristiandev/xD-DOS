@@ -1,7 +1,7 @@
 ROOT_DIR = $(abspath ..)
 include ../settings.mk
 
-CFLAGS += -I$(LIBC_DIR)/$(INCLUDE_DIR) -I$(LIMINE_PROTOCOL)/include -I$(UACPI_DIR)/include
+CFLAGS += -I$(LIBC_DIR)/$(INCLUDE_DIR)
 
 SRCS = $(wildcard $(SRC_DIR)/*.c)
 ASMS = $(wildcard $(ASM_DIR)/*.s)
@@ -16,7 +16,7 @@ all: $(KERNEL_ELF)
 $(BUILD_DIR):
 	@mkdir -p $(BUILD_DIR)
 
-$(BUILD_DIR)/%.c.o: $(SRC_DIR)/%.c $(LIMINE_H) | $(BUILD_DIR)
+$(BUILD_DIR)/%.c.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
 	@echo " [CC] $<"
 	@$(CC) $(CFLAGS) -c $< -o $@ -DDEBUG=$(DEBUG)
 

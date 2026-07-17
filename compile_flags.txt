@@ -1,4 +1,2 @@
--Ideps/limine-protocol/include
--Ideps/uACPI/include
 -Ikernel/include
 -Ilibc/include

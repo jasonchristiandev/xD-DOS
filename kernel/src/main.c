@@ -15,15 +15,6 @@ void kernel_main() {
 	LOG_DEBUG("KERNEL", "Virtual Memory Allocator initializing...");
 	vma_init();
 
-	// framebuffer
-	requests_framebuffers_t *fbs = request_framebuffers();
-	if (fbs == NULL || fbs->count < 1) hlt();
-	fb = fbs->framebuffers[0];
-
-	// init fallback font
-	LOG_DEBUG("KERNEL", "Initializing fallback font...");
-	fallback_font = psf_init();
-
 	// init acpi
 	LOG_DEBUG("KERNEL", "ACPI initializing...");
 	acpi_init_result_t acpi_result = acpi_init();

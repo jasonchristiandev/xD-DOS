@@ -3,7 +3,6 @@
 
 #include "xddos/acpi.h"
 #include "xddos/pmm.h"
-#include <limine.h>
 #include <stdint.h>
 
 typedef enum : uint8_t {
@@ -30,12 +29,17 @@ typedef struct {
 typedef struct {
 	uint64_t offset;
 } requests_hhdm_t;
-typedef struct limine_framebuffer requests_framebuffer_t;
+typedef struct {
+	void *address;
+	uint64_t width;
+	uint64_t height;
+	uint64_t pitch;
+	uint16_t bpp;
+} requests_framebuffer_t;
 typedef struct {
 	uint64_t count;
 	requests_framebuffer_t **framebuffers;
 } requests_framebuffers_t;
-uint8_t request_base_revision_supported();
 requests_executable_address_t *request_executable_address();
 requests_executable_file_t *request_executable_file();
 acpi_rsdp_t *request_rsdp();

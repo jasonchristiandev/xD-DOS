@@ -157,13 +157,16 @@ const uint32_t qrcode[29] = {
 
 void interrupts_panic(char *message) {
 	__asm__ __volatile__("cli");
-	if (fallback_font == NULL) hlt();
+	LOG_ERROR("INTERRUPTS", "Kernel panic!");
 	graphics_clear(0x000000);
 	pit_sleep_ms(200);
 
-	graphics_psf_put_text(fallback_font, ":( xD-DOS KERNEL PANIC!", 8, 8, 0xFFFFFF, 0x000000);
-	graphics_psf_put_char(fallback_font, '>', 8, 32, 0xFFFFFF, 0x000000);
-	graphics_psf_put_text(fallback_font, message, 28, 32, 0xFFFFFF, 0x000000);
+	if (fallback_font == NULL) {
+		graphics_psf_put_text(fallback_font, ":( xD-DOS KERNEL PANIC!", 8, 8, 0xFFFFFF, 0x000000);
+		graphics_psf_put_char(fallback_font, '>', 8, 32, 0xFFFFFF, 0x000000);
+		graphics_psf_put_text(fallback_font, message, 28, 32, 0xFFFFFF, 0x000000);
+	}
+
 	char *msg1 = "Unexpected kernel exception? Please report this issue at\r\nhttps://github.com/jasonchristiandev/xD-DOS/issues";
 	char *msg2 = "or through the QR code below.";
 	LOG_ERROR("INTERRUPTS", msg1);
@@ -173,8 +176,11 @@ void interrupts_panic(char *message) {
 		if (message[i] == '\n') y += 16;
 	}
 
-	graphics_psf_put_text(fallback_font, msg1, 28, y, 0xFFFFFF, 0x000000);
-	graphics_psf_put_text(fallback_font, msg2, 28, y + 32, 0xFFFFFF, 0x000000);
+	if (fallback_font == NULL) {
+		graphics_psf_put_text(fallback_font, msg1, 28, y, 0xFFFFFF, 0x000000);
+		graphics_psf_put_text(fallback_font, msg2, 28, y + 32, 0xFFFFFF, 0x000000);
+	}
+
 	y += 52;
 
 	const uint8_t pixel_size = 4;
@@ -198,6 +204,7 @@ void interrupts_panic(char *message) {
 
 void interrupts_fail(char *msg1, uint32_t error, char *msg2) {
 	kstdio_snprintf(msg, 2048, "%s 0x%x (%s)", msg1, error, msg2);
+	LOG_ERROR("d", msg);
 	LOG_ERROR("INTERRUPTS", msg);
 	kstdio_snprintf(msg, 2048, "%s\r\n0x%x (%s)", msg1, error, msg2);
 	interrupts_panic(msg);
