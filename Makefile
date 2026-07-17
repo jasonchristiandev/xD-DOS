@@ -6,6 +6,7 @@ all: $(BOOTX64_EFI) $(KERNEL_ELF)
 	@mkdir -p $(DISK_DIR)/boot
 	@mkdir -p $(DISK_DIR)/EFI/BOOT
 	@cp $(KERNEL_ELF) $(DISK_DIR)/boot/
+	@cp $(BOOTX64_EFI) $(DISK_DIR)/EFI/BOOT/BOOTX64.efi
 	
 	@echo " [DISK] Success."
 
