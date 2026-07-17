@@ -1,5 +1,6 @@
 -Ikernel/include
 -Ilibc/include
+-Iboot/include
 -I/usr/include/efi
 -I/usr/include/efi/x86_64
 -fshort-wchar
