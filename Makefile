@@ -12,14 +12,6 @@ all: $(BOOTX64_EFI) $(KERNEL_ELF)
 
 FORCE:
 
-$(GNU_EFI_DIR):
-	@echo " [FETCH] Fetching gnu-efi..."
-	git clone $(GNU_EFI_URL) $(GNU_EFI_DIR)
-
-$(GNU_EFI): $(GNU_EFI_DIR)
-	@echo " [MAKE] Building gnu-efi..."
-	@$(MAKE) -C $(GNU_EFI_DIR) CFLAGS="" CPPFLAGS=""
-
 $(FONTS_DIR):
 	@mkdir -p $(FONTS_DIR)
 
@@ -30,7 +22,7 @@ $(FONT_PSF): $(FONTS_DIR)
 $(KERNEL_ELF): FORCE $(LIBC_A) $(FONT_PSF)
 	@$(MAKE) -C $(KERNEL_DIR)
 
-$(BOOTX64_EFI): FORCE $(GNU_EFI)
+$(BOOTX64_EFI): FORCE
 	@$(MAKE) -C $(BOOTLOADER_DIR)
 
 $(LIBC_A): FORCE
@@ -40,7 +32,7 @@ run: all
 	@rm -f disk/NvVars
 	@sync
 	$(QEMU) -nodefaults \
-		-drive file=$(TARGET_VOLUME),format=raw,media=disk \
+		-drive file=fat:rw:disk,format=raw,media=disk \
 		-bios /usr/share/ovmf/OVMF.fd \
 		-fw_cfg name=opt/org.tianocore/IPv4NetworkStack,string=n \
 		-fw_cfg name=opt/org.tianocore/IPv6NetworkStack,string=n \
@@ -98,4 +90,4 @@ clean:
 	make -C $(BOOTLOADER_DIR) clean
 
 distclean: clean
-	rm -rf $(FONTS_DIR) $(GNU_EFI_DIR)
+	rm -rf $(FONTS_DIR)

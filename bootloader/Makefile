@@ -9,7 +9,6 @@ CFLAGS += -ffreestanding -fno-stack-protector -mno-red-zone -fshort-wchar
 SRCS = $(wildcard $(SRC_DIR)/*.c)
 ASMS = $(wildcard $(ASM_DIR)/*.s)
 OBJS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.c.o, $(SRCS)) $(patsubst $(ASM_DIR)/%.s, $(BUILD_DIR)/%.s.o, $(ASMS))
-LIBS = $(LIBGNUEFI_A) $(LIBEFI_A)
 
 .PHONY: all run clean
 

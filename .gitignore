@@ -7,4 +7,3 @@ fonts
 repomix-output.xml
 repomix.config.json
 OVMF_*.fd
-gnu-efi

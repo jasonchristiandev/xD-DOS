@@ -29,7 +29,6 @@ xD-DOS is an operating system inspired by **DOS**. xD-DOS is merely a fun projec
 * make
 * binutils
 * binutils-mingw-w64 (for bootloader)
-* gnu-efi
 * qemu-system-x86_64 (optional for emulating)
 * edk2-ovmf (optional for emulating)
 
