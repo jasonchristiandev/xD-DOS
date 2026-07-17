@@ -15,15 +15,16 @@ SRC_DIR = src
 ASM_DIR = asm
 INCLUDE_DIR = include
 BUILD_DIR = build
+BOOTLOADER_DIR = $(ROOT_DIR)/bootloader
 KERNEL_DIR = $(ROOT_DIR)/kernel
 LIBC_DIR = $(ROOT_DIR)/libc
-ISO_DIR = $(ROOT_DIR)/iso
+DISK_DIR = $(ROOT_DIR)/disk
 FONTS_DIR = $(ROOT_DIR)/fonts
 TMP_MOUNT_DIR = /mnt/xddos_tmp
 
+BOOTX64_EFI = $(BOOTLOADER_DIR)/$(BUILD_DIR)/BOOTX64.efi
 KERNEL_ELF = $(KERNEL_DIR)/$(BUILD_DIR)/kernel.elf
 LIBC_A = $(LIBC_DIR)/$(BUILD_DIR)/libc.a
-ISO_IMAGE = $(ROOT_DIR)/xD-DOS.iso
 FONT_PSF = $(FONTS_DIR)/font.psf
 LINKER_SCRIPT = linker.lds
 

@@ -1,6 +1,13 @@
 include settings.mk
 
-all: $(FONT_PSF) $(ISO_IMAGE)
+all: $(KERNEL_ELF)
+	@echo " [DISK] Creating boot structure..."
+
+	@mkdir -p $(DISK_DIR)/boot
+	@mkdir -p $(DISK_DIR)/EFI/BOOT
+	@cp $(KERNEL_ELF) $(DISK_DIR)/boot/
+	
+	@echo " [DISK] Success."
 
 FORCE:
 
@@ -17,23 +24,9 @@ $(KERNEL_ELF): FORCE $(LIBC_A) $(FONT_PSF)
 $(LIBC_A): FORCE
 	@$(MAKE) -C $(LIBC_DIR)
 
-$(ISO_IMAGE): $(KERNEL_ELF)
-	@echo " [ISO] Creating $(ISO_IMAGE)..."
-	@mkdir -p $(ISO_DIR)/boot
-	@mkdir -p $(ISO_DIR)/EFI/BOOT
-	
-	@cp $(KERNEL_ELF) $(ISO_DIR)/boot/
-	
-	@xorriso -as mkisofs \
-		-no-emul-boot -boot-load-size 4 -boot-info-table \
-		-efi-boot-part --efi-boot-image --protective-msdos-label \
-		$(ISO_DIR) -o $(ISO_IMAGE)
-
-	@echo " [ISO] $(ISO_IMAGE) success."
-
-run: $(ISO_IMAGE)
-	$(QEMU) -cdrom $(ISO_IMAGE) \
-		-nodefaults \
+run: all
+	$(QEMU) -nodefaults \
+		-drive file=fat:rw:disk,format=raw,media=disk \
 		-drive if=pflash,format=raw,readonly=on,file=./OVMF_CODE.fd \
 		-drive if=pflash,format=raw,readonly=off,file=./OVMF_VARS.fd \
 		-fw_cfg name=opt/org.tianocore/IPv4NetworkStack,string=n \
@@ -46,7 +39,6 @@ run: $(ISO_IMAGE)
 		-serial mon:stdio \
 		-vga none \
 		-device VGA,xres=640,yres=480 \
-		-object input-linux,id=mouse0,evdev=/dev/input/by-path/pci-0000:00:15.3-platform-i2c_designware.1-event-mouse \
 		-d int,cpu_reset \
 		-D qemu.log \
 	| sed -u -e '/BdsDxe/d' -e 's/\x1b\[001;001H//g' | tee serial.log
@@ -61,7 +53,7 @@ endif
 		echo "CRITICAL: Cannot format root partition"; exit 1; \
 	fi
 
-install: $(ISO_IMAGE) check-target
+install: $(KERNEL_ELF) check-target
 	@echo "[INSTALL] Wiping $(TARGET_VOLUME)!"
 	@read -p "[INSTALL] Continue? [y/N]: " confirm && [ "$$confirm" = "y" ]
 	
@@ -88,7 +80,7 @@ endif
 	@echo " [INSTALL] Install success."
 
 clean:
-	rm -rf $(ISO_DIR) qemu.log serial.log $(ISO_IMAGE)
+	rm -rf $(DISK_DIR) qemu.log serial.log
 	make -C $(KERNEL_DIR) clean
 	make -C $(LIBC_DIR) clean
 

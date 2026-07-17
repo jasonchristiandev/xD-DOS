@@ -1,6 +1,5 @@
 build
-iso
-xD-DOS.iso
+disk
 fonts
 *.log
 .vscode
