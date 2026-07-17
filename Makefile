@@ -59,6 +59,7 @@ run: $(ISO_IMAGE)
 		-serial mon:stdio \
 		-vga none \
 		-device VGA,xres=640,yres=480 \
+		-object input-linux,id=mouse0,evdev=/dev/input/by-path/pci-0000:00:15.3-platform-i2c_designware.1-event-mouse \
 		-d int,cpu_reset \
 		-D qemu.log \
 	| sed -u -e '/BdsDxe/d' -e 's/\x1b\[001;001H//g' | tee serial.log

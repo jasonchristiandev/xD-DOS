@@ -53,10 +53,10 @@ void io_apic_write(uint8_t reg, uint32_t value) {
 	*iowin = value;
 }
 
-void io_apic_reroute(uint8_t irq, uint32_t high, uint8_t vector, bool mask) {
+void interrupts_io_apic_irqwrite(uint8_t irq, uint32_t high, uint32_t low) {
 	uint8_t reg = 0x10 + (irq_to_gsi[irq] << 1);
-	io_apic_write(reg, vector | (mask << 16));
 	io_apic_write(reg + 1, high);
+	io_apic_write(reg, low);
 }
 
 interrupts_init_result_t interrupts_init() {
@@ -91,7 +91,7 @@ interrupts_init_result_t interrupts_init() {
 
 	io_apic_base = acpi_io_apic_entry->io_apic_ptr + hhdm_offset;
 
-	io_apic_reroute(1, 0, 33, 0); // unmask keyboard
+	interrupts_io_apic_irqwrite(1, 0, 33); // unmask keyboard
 
 	__asm__ __volatile__("lidt %0" : : "m"(idt_ptr));
 	__asm__ __volatile__("sti");
@@ -118,6 +118,35 @@ void interrupts_handler(interrupts_regstate_t *state) {
 			uint8_t sc = inb(0x60);
 			kstdio_snprintf(msg, 2048, "sc 0x%x", sc);
 			LOG_INFO("INTERRUPTS", msg);
+		}
+
+		// ps/2 mouse
+		if (state->vector == 44) {
+			static uint8_t mouse_cycle = 0;
+			static uint8_t mouse_packet[3];
+
+			uint8_t data = inb(0x60);
+
+			if (mouse_cycle == 0 && !(data & 0x08)) {
+				interrupts_eoi();
+				return;
+			}
+
+			mouse_packet[mouse_cycle++] = data;
+
+			if (mouse_cycle == 3) {
+				mouse_cycle = 0;
+
+				if (!(mouse_packet[0] & 0x40) && !(mouse_packet[0] & 0x80)) {
+					int32_t delta_x = (int8_t) mouse_packet[1];
+					int32_t delta_y = (int8_t) mouse_packet[2];
+
+					mouse_x += delta_x;
+					mouse_y -= delta_y;
+
+					LOG_DEBUG("INTERRUPTS", "x: %d, y: %d", mouse_x, mouse_y);
+				}
+			}
 		}
 
 		interrupts_eoi();
@@ -147,7 +176,7 @@ void interrupts_handler(interrupts_regstate_t *state) {
 	requests_framebuffers_t *fbs = request_framebuffers();
 	if (fbs == NULL || fbs->count < 1) hlt();
 	requests_framebuffer_t *fb = fbs->framebuffers[0];
-	interrupts_panic(fb, msg);
+	interrupts_panic(msg);
 }
 
 const uint32_t qrcode[29] = {
@@ -160,15 +189,15 @@ const uint32_t qrcode[29] = {
 	0x174d93fb, 0x1746738f, 0x174caffe, 0x1052006d,
 	0x1fdbba74};
 
-void interrupts_panic(requests_framebuffer_t *fb, char *message) {
+void interrupts_panic(char *message) {
 	__asm__ __volatile__("cli");
 	if (fallback_font == NULL) hlt();
-	graphics_clear(fb, 0x000000);
+	graphics_clear(0x000000);
 	pit_sleep_ms(200);
 
-	graphics_psf_put_text(fb, fallback_font, ":( xD-DOS KERNEL PANIC!", 8, 8, 0xFFFFFF, 0x000000);
-	graphics_psf_put_char(fb, fallback_font, '>', 8, 32, 0xFFFFFF, 0x000000);
-	graphics_psf_put_text(fb, fallback_font, message, 28, 32, 0xFFFFFF, 0x000000);
+	graphics_psf_put_text(fallback_font, ":( xD-DOS KERNEL PANIC!", 8, 8, 0xFFFFFF, 0x000000);
+	graphics_psf_put_char(fallback_font, '>', 8, 32, 0xFFFFFF, 0x000000);
+	graphics_psf_put_text(fallback_font, message, 28, 32, 0xFFFFFF, 0x000000);
 	char *msg1 = "Unexpected kernel exception? Please report this issue at\r\nhttps://github.com/jasonchristiandev/xD-DOS/issues";
 	char *msg2 = "or through the QR code below.";
 	LOG_ERROR("INTERRUPTS", msg1);
@@ -178,12 +207,12 @@ void interrupts_panic(requests_framebuffer_t *fb, char *message) {
 		if (message[i] == '\n') y += 16;
 	}
 
-	graphics_psf_put_text(fb, fallback_font, msg1, 28, y, 0xFFFFFF, 0x000000);
-	graphics_psf_put_text(fb, fallback_font, msg2, 28, y + 32, 0xFFFFFF, 0x000000);
+	graphics_psf_put_text(fallback_font, msg1, 28, y, 0xFFFFFF, 0x000000);
+	graphics_psf_put_text(fallback_font, msg2, 28, y + 32, 0xFFFFFF, 0x000000);
 	y += 52;
 
 	const uint8_t pixel_size = 4;
-	graphics_rect(fb, 28, y, pixel_size * 33, pixel_size * 33, 0xFFFFFF);
+	graphics_rect(28, y, pixel_size * 33, pixel_size * 33, 0xFFFFFF);
 
 	for (int yi = 0; yi < 29; yi++) {
 		for (int xi = 0; xi < 29; xi++) {
@@ -191,7 +220,7 @@ void interrupts_panic(requests_framebuffer_t *fb, char *message) {
 				uint32_t sx = 28 + (xi + 2) * pixel_size;
 				uint32_t sy = y + (yi + 2) * pixel_size;
 
-				graphics_rect(fb, sx, sy, pixel_size, pixel_size, 0x000000);
+				graphics_rect(sx, sy, pixel_size, pixel_size, 0x000000);
 			}
 		}
 	}
@@ -205,5 +234,5 @@ void interrupts_fail(char *msg1, uint32_t error, char *msg2) {
 	kstdio_snprintf(msg, 2048, "%s 0x%x (%s)", msg1, error, msg2);
 	LOG_ERROR("INTERRUPTS", msg);
 	kstdio_snprintf(msg, 2048, "%s\r\n0x%x (%s)", msg1, error, msg2);
-	interrupts_panic(fb, msg);
+	interrupts_panic(msg);
 }

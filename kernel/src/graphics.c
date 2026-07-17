@@ -1,15 +1,16 @@
 #include "xddos/graphics.h"
 #include "xddos/logging.h"
+#include "xddos/main.h"
 #include "xddos/psf.h"
 #include "xddos/requests.h"
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
-static void psf_put_char(requests_framebuffer_t *fb, uint32_t width, uint32_t height, uint8_t *bitmap, uint32_t cx, uint32_t cy, uint32_t fg, uint32_t bg) {
+static void psf_put_char(uint32_t width, uint32_t height, uint8_t *bitmap, uint32_t cx, uint32_t cy, uint32_t fg, uint32_t bg) {
 	if (cy >= fb->height || cx >= fb->width) return;
 
-	uint32_t *fb_ptr = (uint32_t *) fb->address;
+	uint32_t *fb_ptr = fb->address;
 	uint32_t bytes_per_row = (width + 7) / 8;
 
 	for (uint32_t y = 0; y < height; y++) {
@@ -31,7 +32,7 @@ static void psf_put_char(requests_framebuffer_t *fb, uint32_t width, uint32_t he
 	}
 }
 
-void graphics_psf_put_char(requests_framebuffer_t *fb, psf_data_t *font, char ch, uint32_t x, uint32_t y, uint32_t fg, uint32_t bg) {
+void graphics_psf_put_char(psf_data_t *font, char ch, uint32_t x, uint32_t y, uint32_t fg, uint32_t bg) {
 	if (!fb || !fb->address) {
 		LOG_ERROR("GRAPHICS", "Framebuffer is NULL!");
 		return;
@@ -58,10 +59,10 @@ void graphics_psf_put_char(requests_framebuffer_t *fb, psf_data_t *font, char ch
 	}
 	glyph_bitmap = font->data + (ch * bytes_per_glyph);
 
-	psf_put_char(fb, width, height, glyph_bitmap, x, y, fg, bg);
+	psf_put_char(width, height, glyph_bitmap, x, y, fg, bg);
 }
 
-void graphics_psf_put_text(requests_framebuffer_t *fb, psf_data_t *font, const char *str, uint32_t x, uint32_t y, uint32_t fg, uint32_t bg) {
+void graphics_psf_put_text(psf_data_t *font, const char *str, uint32_t x, uint32_t y, uint32_t fg, uint32_t bg) {
 	if (!fb || !fb->address) {
 		LOG_ERROR("GRAPHICS", "Framebuffer is NULL!");
 		return;
@@ -99,31 +100,33 @@ void graphics_psf_put_text(requests_framebuffer_t *fb, psf_data_t *font, const c
 			if (font->unicode) ch = font->unicode[' '];
 			uint8_t *glyph_bitmap = font->data + (ch * bytes_per_glyph);
 			for (uint8_t j = 0; j < 8; j++) {
-				psf_put_char(fb, width, height, glyph_bitmap, term_x, term_y, fg, bg);
+				psf_put_char(width, height, glyph_bitmap, term_x, term_y, fg, bg);
 				term_x += width;
 			}
 		} else {
-			psf_put_char(fb, width, height, glyph_bitmap, term_x, term_y, fg, bg);
+			psf_put_char(width, height, glyph_bitmap, term_x, term_y, fg, bg);
 			term_x += width;
 		}
 	}
 }
 
-void graphics_clear(requests_framebuffer_t *fb, uint32_t col) {
-	uint32_t *fb_ptr = (uint32_t *) fb->address;
-	uint32_t pixels = fb->height * fb->pitch;
-	memset(fb_ptr, col, pixels);
+void graphics_clear(uint32_t col) {
+	uint32_t *fb_ptr = fb->address;
+	uint32_t total_pixels = fb->width * fb->height;
+	for (uint32_t i = 0; i < total_pixels; i++) {
+		fb_ptr[i] = col;
+	}
 }
 
-void graphics_rect(requests_framebuffer_t *fb, uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t col) {
+void graphics_rect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t col) {
 	if (x >= fb->width || y >= fb->height) return;
 	if (x + w > fb->width) w = fb->width - x;
 	if (h + y > fb->height) h = fb->height - y;
 
-	uint8_t *fb_ptr = (uint8_t *) fb->address;
+	uint8_t *byte_ptr = (uint8_t *) fb->address;
 
 	for (uint32_t j = y; j < y + h; j++) {
-		uint32_t *row_ptr = (uint32_t *) (fb_ptr + (j * fb->pitch));
+		uint32_t *row_ptr = (uint32_t *) (byte_ptr + (j * fb->pitch));
 
 		for (uint32_t i = x; i < x + w; i++) {
 			row_ptr[i] = col;
