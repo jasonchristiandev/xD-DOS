@@ -1,2 +1,4 @@
 -Ikernel/include
 -Ilibc/include
+-I/usr/include/efi
+-I/usr/include/efi/x86_64

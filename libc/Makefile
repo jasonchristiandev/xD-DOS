@@ -2,6 +2,7 @@ ROOT_DIR = $(abspath ..)
 include ../settings.mk
 
 CFLAGS += -I$(KERNEL_DIR)/$(INCLUDE_DIR)
+CFLAGS += -nostdinc
 
 SRCS = $(wildcard $(SRC_DIR)/*.c)
 ASMS = $(wildcard $(ASM_DIR)/*.s)

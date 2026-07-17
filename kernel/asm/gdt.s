@@ -1,3 +1,4 @@
+default rel
 global gdt_flush
 
 section .text

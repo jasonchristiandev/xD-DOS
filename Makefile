@@ -1,6 +1,6 @@
 include settings.mk
 
-all: $(KERNEL_ELF)
+all: $(BOOTX64_EFI) $(KERNEL_ELF)
 	@echo " [DISK] Creating boot structure..."
 
 	@mkdir -p $(DISK_DIR)/boot
@@ -11,6 +11,14 @@ all: $(KERNEL_ELF)
 
 FORCE:
 
+$(GNU_EFI_DIR):
+	@echo " [FETCH] Fetching gnu-efi..."
+	git clone $(GNU_EFI_URL) $(GNU_EFI_DIR)
+
+$(GNU_EFI): $(GNU_EFI_DIR)
+	@echo " [MAKE] Building gnu-efi..."
+	@$(MAKE) -C $(GNU_EFI_DIR) CFLAGS="" CPPFLAGS=""
+
 $(FONTS_DIR):
 	@mkdir -p $(FONTS_DIR)
 
@@ -20,6 +28,9 @@ $(FONT_PSF): $(FONTS_DIR)
 
 $(KERNEL_ELF): FORCE $(LIBC_A) $(FONT_PSF)
 	@$(MAKE) -C $(KERNEL_DIR)
+
+$(BOOTX64_EFI): FORCE $(GNU_EFI)
+	@$(MAKE) -C $(BOOTLOADER_DIR)
 
 $(LIBC_A): FORCE
 	@$(MAKE) -C $(LIBC_DIR)
@@ -83,6 +94,7 @@ clean:
 	rm -rf $(DISK_DIR) qemu.log serial.log
 	make -C $(KERNEL_DIR) clean
 	make -C $(LIBC_DIR) clean
+	make -C $(BOOTLOADER_DIR) clean
 
 distclean: clean
-	rm -rf $(FONTS_DIR)
+	rm -rf $(FONTS_DIR) $(GNU_EFI_DIR)
