@@ -37,19 +37,20 @@ $(LIBC_A): FORCE
 	@$(MAKE) -C $(LIBC_DIR)
 
 run: all
-	$(QEMU) -nodefaults \
-		-drive file=fat:rw:disk,format=raw,media=disk \
-		-drive if=pflash,format=raw,readonly=on,file=./OVMF_CODE.fd \
-		-drive if=pflash,format=raw,readonly=off,file=./OVMF_VARS.fd \
+	@rm -f disk/NvVars
+	@sync
+	$(QEMU) \
+		-drive file=$(TARGET_VOLUME),format=raw,media=disk \
+		-bios /usr/share/ovmf/OVMF.fd \
 		-fw_cfg name=opt/org.tianocore/IPv4NetworkStack,string=n \
 		-fw_cfg name=opt/org.tianocore/IPv6NetworkStack,string=n \
 		-device virtio-rng-pci \
+		-net none \
 		-fda /dev/null \
 		-m 256M \
 		-M q35,accel=kvm \
 		-cpu host,-svm \
 		-serial mon:stdio \
-		-vga none \
 		-device VGA,xres=640,yres=480 \
 		-d int,cpu_reset \
 		-D qemu.log \
@@ -65,11 +66,11 @@ endif
 		echo "CRITICAL: Cannot format root partition"; exit 1; \
 	fi
 
-install: $(KERNEL_ELF) check-target
-	@echo "[INSTALL] Wiping $(TARGET_VOLUME)!"
+install: $(BOOTX64_EFI) $(KERNEL_ELF) check-target
+	@echo " [INSTALL] Wiping $(TARGET_VOLUME)!"
 	@read -p "[INSTALL] Continue? [y/N]: " confirm && [ "$$confirm" = "y" ]
-	
-	@echo "[INSTALL] Formatting $(TARGET_VOLUME)..."
+
+	@echo " [INSTALL] Formatting $(TARGET_VOLUME)..."
 	@sudo umount $(TARGET_VOLUME) || true
 	@sudo dd if=/dev/zero of=$(TARGET_VOLUME) bs=1M status=progress || true
 
@@ -78,15 +79,16 @@ ifndef PARTITION_UUID
 else
 	@sudo mkfs.vfat -i $(PARTITION_UUID) -F 32 -n $(PARTITION_LABEL) $(TARGET_VOLUME)
 endif
-	
-	@echo "[INSTALL] Copying files to $(TARGET_VOLUME)..."
+
+	@echo " [INSTALL] Copying files to $(TARGET_VOLUME)..."
 	@sudo mkdir -p $(TMP_MOUNT_DIR)
 	@sudo mount $(TARGET_VOLUME) $(TMP_MOUNT_DIR)
 	@sudo mkdir -p $(TMP_MOUNT_DIR)/boot
 	@sudo mkdir -p $(TMP_MOUNT_DIR)/EFI/BOOT
-	
+
 	@sudo mkdir -p $(TMP_MOUNT_DIR)/boot
 	@sudo cp $(KERNEL_ELF) $(TMP_MOUNT_DIR)/boot/
+	@sudo cp $(BOOTX64_EFI) $(TMP_MOUNT_DIR)/EFI/BOOT/
 
 	@sudo umount $(TMP_MOUNT_DIR)
 	@echo " [INSTALL] Install success."

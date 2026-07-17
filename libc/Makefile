@@ -17,7 +17,7 @@ $(BUILD_DIR):
 
 $(BUILD_DIR)/%.c.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
 	@echo " [CC] $<"
-	@$(CC) $(CFLAGS) -c $< -o $@ -DDEBUG=$(DEBUG)
+	@$(CC) $(CFLAGS) -c $< -o $@ -DVERBOSE=$(VERBOSE)
 
 $(BUILD_DIR)/%.s.o: $(ASM_DIR)/%.s | $(BUILD_DIR)
 	@echo " [ASM] $<"

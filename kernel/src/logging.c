@@ -63,7 +63,7 @@ void LOG_ERROR(const char *name, const char *format, ...) {
 	va_end(args);
 }
 
-#if DEBUG == 1
+#if VERBOSE == 1
 void LOG_DEBUG(const char *name, const char *format, ...) {
 	va_list args;
 	va_start(args, format);

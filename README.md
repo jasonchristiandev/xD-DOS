@@ -40,14 +40,12 @@ git clone --recursive https://github.com/jasonchristiandev/xD-DOS.git
 ```bash
 cd xD-DOS
 make -j$(nproc) # or
-make -j$(nproc) DEBUG=1
+make -j$(nproc) VERBOSE=1
 ```
 
 3. **Run the OS using qemu-system-x86_64 (optional)**:
 ```bash
-cp /usr/share/OVMF/OVMF_CODE_4M.fd ./OVMF_CODE.fd # one time setup, path may differ
-cp /usr/share/OVMF/OVMF_VARS_4M.fd ./OVMF_VARS.fd
-
+cp /usr/share/OVMF/OVMF.fd ./OVMF.fd # one time setup, path may differ
 make -j$(nproc) run
 ```
 

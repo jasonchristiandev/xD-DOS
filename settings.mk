@@ -1,6 +1,6 @@
 export
 
-DEBUG ?= 0
+VERBOSE ?= 0
 
 CC ?= gcc
 ASM ?= nasm
@@ -23,7 +23,7 @@ GNU_EFI_DIR = $(ROOT_DIR)/gnu-efi
 FONTS_DIR = $(ROOT_DIR)/fonts
 TMP_MOUNT_DIR = /mnt/xddos_tmp
 
-BOOTX64_EFI = $(BOOTLOADER_DIR)/$(BUILD_DIR)/BOOTX64.efi
+BOOTX64_EFI = $(BOOTLOADER_DIR)/$(BUILD_DIR)/BOOTX64.EFI
 KERNEL_ELF = $(KERNEL_DIR)/$(BUILD_DIR)/kernel.elf
 LIBC_A = $(LIBC_DIR)/$(BUILD_DIR)/libc.a
 CRT0_EFI_X86_64_O = $(GNU_EFI_DIR)/x86_64/gnuefi/crt0-efi-x86_64.o
@@ -46,4 +46,4 @@ CFLAGS = -fno-stack-protector -ffreestanding -mno-red-zone \
 		 -Wno-compare-distinct-pointer-types -Wno-enum-conversion \
 		 -Wno-variadic-macros -Wno-enum-compare -std=c11 -O2 \
 		 -fno-strict-aliasing -mno-mmx -mno-sse -mno-sse2 -MMD -MP \
-		 -fPIC -fshort-wchar -I$(INCLUDE_DIR)
+		 -I$(INCLUDE_DIR)
