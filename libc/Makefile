@@ -2,7 +2,7 @@ ROOT_DIR = $(abspath ..)
 include ../settings.mk
 
 CFLAGS += -I$(KERNEL_DIR)/$(INCLUDE_DIR)
-CFLAGS += -nostdinc
+CFLAGS += -nostdinc -mno-mmx -mno-sse -mno-sse2 -MMD -MP
 
 SRCS = $(wildcard $(SRC_DIR)/*.c)
 ASMS = $(wildcard $(ASM_DIR)/*.s)
@@ -17,7 +17,7 @@ $(BUILD_DIR):
 
 $(BUILD_DIR)/%.c.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
 	@echo " [CC] $<"
-	@$(CC) $(CFLAGS) -c $< -o $@ -DVERBOSE=$(VERBOSE)
+	@$(CC) $(CFLAGS) -c $< -o $@ -DDEBUG=$(VERBOSE)
 
 $(BUILD_DIR)/%.s.o: $(ASM_DIR)/%.s | $(BUILD_DIR)
 	@echo " [ASM] $<"

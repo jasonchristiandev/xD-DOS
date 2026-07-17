@@ -39,14 +39,12 @@ $(LIBC_A): FORCE
 run: all
 	@rm -f disk/NvVars
 	@sync
-	$(QEMU) \
+	$(QEMU) -nodefaults \
 		-drive file=$(TARGET_VOLUME),format=raw,media=disk \
 		-bios /usr/share/ovmf/OVMF.fd \
 		-fw_cfg name=opt/org.tianocore/IPv4NetworkStack,string=n \
 		-fw_cfg name=opt/org.tianocore/IPv6NetworkStack,string=n \
 		-device virtio-rng-pci \
-		-net none \
-		-fda /dev/null \
 		-m 256M \
 		-M q35,accel=kvm \
 		-cpu host,-svm \

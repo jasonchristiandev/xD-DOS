@@ -1,10 +1,10 @@
 ROOT_DIR = $(abspath ..)
 include ../settings.mk
 
-CFLAGS += -fshort-wchar
-CFLAGS += -I/usr/include/efi
-CFLAGS += -I/usr/include/efi/x86_64
-CFLAGS += -fPIC
+CC = x86_64-w64-mingw32-gcc
+
+CFLAGS += -I/usr/include/efi -I/usr/include/efi/x86_64
+CFLAGS += -ffreestanding -fno-stack-protector -mno-red-zone -fshort-wchar
 
 SRCS = $(wildcard $(SRC_DIR)/*.c)
 ASMS = $(wildcard $(ASM_DIR)/*.s)
@@ -20,22 +20,15 @@ $(BUILD_DIR):
 
 $(BUILD_DIR)/%.c.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
 	@echo " [CC] $<"
-	@$(CC) $(CFLAGS) -c $< -o $@ -DVERBOSE=$(VERBOSE)
+	@$(CC) $(CFLAGS) -c $< -o $@ -DDEBUG=$(VERBOSE)
 
 $(BUILD_DIR)/%.s.o: $(ASM_DIR)/%.s | $(BUILD_DIR)
 	@echo " [ASM] $<"
-	@$(ASM) -f elf64 $< -o $@
+	@$(ASM) -f win64 $< -o $@
 
-$(BOOTX64_EFI): $(OBJS) $(LIBS) | $(BUILD_DIR)
+$(BOOTX64_EFI): $(OBJS) | $(BUILD_DIR)
 	@echo " [LD] Linking..."
-	@echo "     $(OBJS)"
-	@$(LD) -nostdlib -znocombreloc -T $(ELF_X86_64_EFI_LDS) -shared \
-		-Bsymbolic -entry=_start -z max-page-size=0x1000 \
-		$(CRT0_EFI_X86_64_O) $(OBJS) $(LIBS) -o $(BUILD_DIR)/bootloader.so
-	@$(OBJCOPY) -j .text -j .sdata -j .data -j .rodata -j .dynamic \
-		-j .dynsym -j .rel -j .rela -j .reloc \
-		-I elf64-x86-64 \
-		-O pei-x86-64 --subsystem=10 $(BUILD_DIR)/bootloader.so $(BOOTX64_EFI)
+	@$(CC) -nostdlib -Wl,-subsystem,10 -e efi_main $(OBJS) -o $(BOOTX64_EFI)
 
 clean:
 	rm -rf $(BUILD_DIR)

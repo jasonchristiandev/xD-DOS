@@ -45,5 +45,4 @@ CFLAGS = -fno-stack-protector -ffreestanding -mno-red-zone \
 		 -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast \
 		 -Wno-compare-distinct-pointer-types -Wno-enum-conversion \
 		 -Wno-variadic-macros -Wno-enum-compare -std=c11 -O2 \
-		 -fno-strict-aliasing -mno-mmx -mno-sse -mno-sse2 -MMD -MP \
-		 -I$(INCLUDE_DIR)
+		 -fno-strict-aliasing -I$(INCLUDE_DIR)
