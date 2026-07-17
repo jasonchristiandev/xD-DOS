@@ -36,6 +36,8 @@ typedef struct {
 	uint8_t *data;
 } psf_data_t;
 
+extern psf_data_t *fallback_font;
+
 psf_data_t *psf_init();
 
 #endif // !FONT_H

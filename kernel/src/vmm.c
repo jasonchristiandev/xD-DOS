@@ -13,7 +13,7 @@ typedef struct {
 	uint64_t entries[512];
 } __attribute__((packed)) vmm_page_table_t;
 
-vmm_page_table_t *pml4;
+vmm_page_table_t *vmm_pml4;
 
 static void alloc_entry(vmm_page_table_t *table, uint16_t idx) {
 	uint64_t phys = (uint64_t) pmm_alloc_page();
@@ -43,9 +43,9 @@ vmm_init_result_t vmm_init() {
 	if (page == NULL) {
 		return VMM_INIT_OUT_OF_MEMORY;
 	}
-	pml4 = (vmm_page_table_t *) (page + hhdm_offset);
+	vmm_pml4 = (vmm_page_table_t *) (page + hhdm_offset);
 
-	memset(pml4, 0, PAGE_SIZE);
+	memset(vmm_pml4, 0, PAGE_SIZE);
 
 	LOG_DEBUG("VMM", "Mapping reserved regions...");
 	for (uint64_t i = 0; i < 0x100000000ULL; i += 0x200000) {
@@ -60,17 +60,17 @@ vmm_init_result_t vmm_init() {
 		uint64_t virt = (uint64_t) exeaddr->virt + j;
 		vmm_map_table(virt, phys, PTE_READWRITE);
 	}
-	vmm_map_table((uint64_t) pml4 - hhdm_offset, (uint64_t) pml4 - hhdm_offset, PTE_PRESENT | PTE_READWRITE);
+	vmm_map_table((uint64_t) vmm_pml4 - hhdm_offset, (uint64_t) vmm_pml4 - hhdm_offset, PTE_READWRITE);
 
 	// create stack
 	LOG_DEBUG("VMM", "Creating stack...");
 	for (uint8_t i = 0; i < 8; i++) {
-		vmm_map_table(STACK_BASE + i * PAGE_SIZE, (uint64_t) pmm_alloc_page(), PTE_PRESENT | PTE_READWRITE);
+		vmm_map_table(STACK_BASE + i * PAGE_SIZE, (uint64_t) pmm_alloc_page(), PTE_READWRITE);
 	}
-	vmm_map_table(STACK_BASE + 8 * PAGE_SIZE, (uint64_t) pmm_alloc_page(), PTE_PRESENT | PTE_READWRITE); // to prevent silent error
+	vmm_map_table(STACK_BASE + 8 * PAGE_SIZE, (uint64_t) pmm_alloc_page(), PTE_READWRITE); // to prevent silent error
 
 	LOG_DEBUG("VMM", "Switching context...");
-	__asm__ __volatile__("mov %0, %%cr3" ::"r"((uint64_t) pml4 - hhdm_offset) : "memory");
+	__asm__ __volatile__("mov %0, %%cr3" ::"r"((uint64_t) vmm_pml4 - hhdm_offset) : "memory");
 
 	LOG_DEBUG("VMM", "Switching stack...");
 	uint64_t rsp = STACK_BASE + (8 * PAGE_SIZE);
@@ -87,7 +87,7 @@ void vmm_map_table(uint64_t virt, uint64_t phys, uint64_t flags) {
 	uint16_t pde_i = (virt >> 21) & 0b111111111;
 	uint16_t pte_i = (virt >> 12) & 0b111111111;
 
-	vmm_page_table_t *table = pml4;
+	vmm_page_table_t *table = vmm_pml4;
 	uint64_t entry;
 
 	// pml4 to pdpt
@@ -115,6 +115,7 @@ void vmm_map_table(uint64_t virt, uint64_t phys, uint64_t flags) {
 	table->entries[pte_i] = phys | flags | PTE_PRESENT;
 
 	invlpg((uint64_t) virt);
+	__asm__ __volatile__("mov %%cr3, %%rax\n\tmov %%rax, %%cr3" ::: "rax", "memory");
 }
 
 void vmm_map_table_huge(uint64_t virt, uint64_t phys, uint64_t flags) {
@@ -124,7 +125,7 @@ void vmm_map_table_huge(uint64_t virt, uint64_t phys, uint64_t flags) {
 	uint16_t pdpte_i = (virt >> 30) & 0b111111111;
 	uint16_t pde_i = (virt >> 21) & 0b111111111;
 
-	vmm_page_table_t *table = pml4;
+	vmm_page_table_t *table = vmm_pml4;
 	uint64_t entry;
 
 	// pml4 to pdpt
@@ -145,4 +146,5 @@ void vmm_map_table_huge(uint64_t virt, uint64_t phys, uint64_t flags) {
 	table->entries[pde_i] = (phys & 0x000FFFFFFFFFF000) | flags | PTE_PRESENT | PTE_PAGESIZE;
 
 	invlpg((uint64_t) virt);
+	__asm__ __volatile__("mov %%cr3, %%rax\n\tmov %%rax, %%cr3" ::: "rax", "memory");
 }

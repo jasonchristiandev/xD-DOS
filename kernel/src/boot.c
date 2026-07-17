@@ -3,23 +3,15 @@
 #include "xddos/logging.h"
 #include "xddos/main.h"
 #include "xddos/pmm.h"
-#include "xddos/psf.h"
 #include "xddos/requests.h"
 #include "xddos/serial.h"
 #include "xddos/vmm.h"
 #include <stddef.h>
 
 uint64_t hhdm_offset;
-requests_framebuffer_t *fb;
-psf_data_t *fallback_font;
 
 void boot_main() {
 	if (request_base_revision_supported() == 0) hlt();
-
-	requests_framebuffers_t *fbs = request_framebuffers();
-	if (fbs == NULL || fbs->count < 1) hlt();
-
-	fb = fbs->framebuffers[0];
 
 	// init serial
 	serial_init();
@@ -32,10 +24,6 @@ void boot_main() {
 		interrupts_fail("HHDM request responded with NULL!", 1, "HHDM_NULL");
 	}
 	hhdm_offset = hhdm->offset;
-
-	// init fallback font
-	LOG_DEBUG("KERNEL", "Initializing fallback font...");
-	fallback_font = psf_init();
 
 	// init pmm
 	LOG_DEBUG("KERNEL", "Physical Memory Manager initializing...");

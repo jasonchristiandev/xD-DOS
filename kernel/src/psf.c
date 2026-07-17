@@ -1,10 +1,11 @@
 #include "xddos/psf.h"
 #include "xddos/logging.h"
+#include "xddos/main.h"
 #include "xddos/requests.h"
 #include <limits.h>
 #include <string.h>
 
-extern uint64_t hhdm_offset;
+psf_data_t *fallback_font;
 
 static void psf1_init(psf_data_t *data, uint8_t *virt_start, uint8_t *virt_end) {
 	psf1_header_t *header = (psf1_header_t *) virt_start;

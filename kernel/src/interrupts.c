@@ -7,14 +7,12 @@
 #include "xddos/logging.h"
 #include "xddos/main.h"
 #include "xddos/pit.h"
-#include "xddos/requests.h"
 #include <stdbool.h>
 
 #define PIC1_CMD 0x20
 #define PIC1_DATA 0x21
 #define PIC2_CMD 0xA0
 #define PIC2_DATA 0xA1
-#define PIC_OFFSET 32
 
 __attribute__((aligned(0x10))) static idt_entry_t idt[256];
 static idt_pointer_t idt_ptr;
@@ -120,35 +118,6 @@ void interrupts_handler(interrupts_regstate_t *state) {
 			LOG_INFO("INTERRUPTS", msg);
 		}
 
-		// ps/2 mouse
-		if (state->vector == 44) {
-			static uint8_t mouse_cycle = 0;
-			static uint8_t mouse_packet[3];
-
-			uint8_t data = inb(0x60);
-
-			if (mouse_cycle == 0 && !(data & 0x08)) {
-				interrupts_eoi();
-				return;
-			}
-
-			mouse_packet[mouse_cycle++] = data;
-
-			if (mouse_cycle == 3) {
-				mouse_cycle = 0;
-
-				if (!(mouse_packet[0] & 0x40) && !(mouse_packet[0] & 0x80)) {
-					int32_t delta_x = (int8_t) mouse_packet[1];
-					int32_t delta_y = (int8_t) mouse_packet[2];
-
-					mouse_x += delta_x;
-					mouse_y -= delta_y;
-
-					LOG_DEBUG("INTERRUPTS", "x: %d, y: %d", mouse_x, mouse_y);
-				}
-			}
-		}
-
 		interrupts_eoi();
 		return;
 	}
@@ -173,9 +142,6 @@ void interrupts_handler(interrupts_regstate_t *state) {
 					cr2);
 	LOG_ERROR("INTERRUPTS", msg);
 
-	requests_framebuffers_t *fbs = request_framebuffers();
-	if (fbs == NULL || fbs->count < 1) hlt();
-	requests_framebuffer_t *fb = fbs->framebuffers[0];
 	interrupts_panic(msg);
 }
 

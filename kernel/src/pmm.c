@@ -1,5 +1,6 @@
 #include "xddos/pmm.h"
 #include "xddos/logging.h"
+#include "xddos/main.h"
 #include "xddos/requests.h"
 #include <stddef.h>
 #include <stdint.h>
@@ -8,8 +9,6 @@
 static uint8_t *bitmap = NULL;
 static size_t bitmap_size = 0;
 static size_t page_count = 0;
-
-extern uint64_t hhdm_offset;
 
 pmm_init_result_t pmm_init() {
 	// get hhdm offset
@@ -53,6 +52,7 @@ pmm_init_result_t pmm_init() {
 
 	bitmap = (uint8_t *) (max->base + hhdm_offset);
 	memset(bitmap, 0, bitmap_size);
+	pmm_lock_region(max->base, bitmap_size);
 
 	// lock regions
 	LOG_DEBUG("PMM", "Locking reserved regions...");

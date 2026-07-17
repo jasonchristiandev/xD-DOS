@@ -47,6 +47,7 @@ $(ISO_IMAGE): $(KERNEL_ELF) $(LIMINE_CONF) $(LIMINE_DIR)/limine
 
 run: $(ISO_IMAGE)
 	$(QEMU) -cdrom $(ISO_IMAGE) \
+		-nodefaults \
 		-drive if=pflash,format=raw,readonly=on,file=./OVMF_CODE.fd \
 		-drive if=pflash,format=raw,readonly=off,file=./OVMF_VARS.fd \
 		-fw_cfg name=opt/org.tianocore/IPv4NetworkStack,string=n \

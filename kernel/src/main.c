@@ -1,10 +1,9 @@
 #include "xddos/main.h"
+#include "xddos/asm.h"
 #include "xddos/gdt.h"
 #include "xddos/graphics.h"
 #include "xddos/interrupts.h"
 #include "xddos/logging.h"
-#include "xddos/pit.h"
-#include "xddos/ps2.h"
 #include "xddos/vma.h"
 
 int32_t mouse_x = 0, mouse_y = 0;
@@ -12,7 +11,21 @@ int32_t mouse_x = 0, mouse_y = 0;
 void kernel_main() {
 	LOG_DEBUG("VMM", "Done init.");
 
+	// init vma
+	LOG_DEBUG("KERNEL", "Virtual Memory Allocator initializing...");
+	vma_init();
+
+	// framebuffer
+	requests_framebuffers_t *fbs = request_framebuffers();
+	if (fbs == NULL || fbs->count < 1) hlt();
+	fb = fbs->framebuffers[0];
+
+	// init fallback font
+	LOG_DEBUG("KERNEL", "Initializing fallback font...");
+	fallback_font = psf_init();
+
 	// init acpi
+	LOG_DEBUG("KERNEL", "ACPI initializing...");
 	acpi_init_result_t acpi_result = acpi_init();
 	char *acpi_result_name[7] = {
 		[ACPI_INIT_OK] = "OK",
@@ -45,25 +58,14 @@ void kernel_main() {
 		interrupts_fail("INTERRUPTS_INIT bad return!", interrupts_result, name);
 	}
 
-	// __asm__ __volatile__("int $0");
-
-	// init ps/2
-	ps2_mouse_init(0);
-
-	// init vma
-	LOG_DEBUG("KERNEL", "Virtual Memory Allocator initializing...");
-	vma_init();
-
 	// init syscall
 	// LOG_DEBUG("KERNEL", "Initializing syscalls...");
 	// syscall_init();
 
 	// simple mouse demo
 	const char *msg = "xD-DOS (Extended Drive - Disk Operating System)\r\n> https://github.com/jasonchristiandev/xD-DOS\r\n> Maintained by Jason Christian.";
-	for (;;) {
-		graphics_clear(0xFFFFFF);
-		graphics_psf_put_text(fallback_font, msg, 4, 4, 0xFFFFFF, 0x000000);
-		graphics_rect(mouse_x, mouse_y, 16, 16, 0xFFFFFF);
-		pit_sleep_ms(16);
-	}
+	graphics_clear(0);
+	graphics_psf_put_text(fallback_font, msg, 4, 4, 0xFFFFFF, 0x000000);
+
+	for (;;) { hlt();}
 }

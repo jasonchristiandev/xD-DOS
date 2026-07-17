@@ -48,6 +48,7 @@ isr_handler:
 	and rsp, ~0xF
 	mov rdi, rbp
 
+	cld
 	call interrupts_handler
 
 	mov rsp, rbp
