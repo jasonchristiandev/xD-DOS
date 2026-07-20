@@ -28,27 +28,12 @@ typedef struct {
 	void *address;
 	uint64_t size;
 } requests_executable_file_t;
-typedef struct {
-	uint64_t offset;
-} requests_hhdm_t;
-// typedef struct {
-// 	void *address;
-// 	uint64_t width;
-// 	uint64_t height;
-// 	uint64_t pitch;
-// 	uint16_t bpp;
-// } requests_framebuffer_t;
-// typedef struct {
-// 	uint64_t count;
-// 	requests_framebuffer_t **framebuffers;
-// } requests_framebuffers_t;
 typedef boot_framebuffer_t requests_framebuffer_t;
 typedef boot_framebuffers_t requests_framebuffers_t;
 requests_executable_address_t *request_executable_address();
 requests_executable_file_t *request_executable_file();
 acpi_rsdp_t *request_rsdp();
 pmm_memmap_t *request_memmap();
-requests_hhdm_t *request_hhdm();
 requests_framebuffers_t *request_framebuffers();
 
 #endif // !REQUESTS_H

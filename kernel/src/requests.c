@@ -32,18 +32,9 @@ acpi_rsdp_t *request_rsdp() {
 }
 
 pmm_memmap_t *request_memmap() {
-	// struct limine_memmap_response *response = memmap_request.response;
-	// if (response == NULL) return NULL;
-	// static pmm_memmap_t res;
-	// res.count = response->entry_count;
-	// res.entries = (pmm_memmap_entry_t **) response->entries;
-	// return &res;
-	return NULL;
-}
-
-requests_hhdm_t *request_hhdm() {
-	static requests_hhdm_t res;
-	res.offset = boot_info->hhdm;
+	static pmm_memmap_t res;
+	res.count = boot_info->memmap->count;
+	res.entries = (pmm_memmap_entry_t **) boot_info->memmap->entries;
 	return &res;
 }
 

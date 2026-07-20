@@ -23,6 +23,7 @@ void boot_main(boot_info_t *info) {
 	LOG_INFO("KERNEL", msg);
 
 	// framebuffer
+	LOG_INFO("KERNEL", "rfb");
 	requests_framebuffers_t *fbs = request_framebuffers();
 	if (fbs == NULL || fbs->count < 1) {
 		interrupts_fail("No framebuffer!", 1, "KERNEL");

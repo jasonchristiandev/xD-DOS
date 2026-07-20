@@ -11,7 +11,6 @@ static size_t bitmap_size = 0;
 static size_t page_count = 0;
 
 pmm_init_result_t pmm_init() {
-	// get hhdm offset
 	pmm_memmap_t *memmap = request_memmap();
 	if (memmap == NULL) {
 		LOG_ERROR("PMM", "Memory map request responded with NULL!");
