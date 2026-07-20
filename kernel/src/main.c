@@ -6,8 +6,6 @@
 #include "xddos/logging.h"
 #include "xddos/vma.h"
 
-int32_t mouse_x = 0, mouse_y = 0;
-
 void kernel_main() {
 	LOG_DEBUG("VMM", "Done init.");
 
@@ -58,5 +56,5 @@ void kernel_main() {
 	graphics_clear(0);
 	graphics_psf_put_text(fallback_font, msg, 4, 4, 0xFFFFFF, 0x000000);
 
-	for (;;) { hlt();}
+	for (;;) { hlt(); }
 }

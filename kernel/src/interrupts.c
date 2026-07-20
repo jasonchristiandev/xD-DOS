@@ -80,14 +80,14 @@ interrupts_init_result_t interrupts_init() {
 	outb(PIC1_DATA, 0xFF);
 	outb(PIC2_DATA, 0xFF);
 
-	apic_base = rdmsr(0x1B) + hhdm_offset;
+	apic_base = rdmsr(0x1B) + HHDM_OFFSET;
 	lapic_base = apic_base & 0xFFFFFFFFFFFFF000;
 
 	// enable lapic
 	// set spurious to 0xFF
 	lapic_write(0xF0, lapic_read(0xF0) | 0x100 | 0xFF);
 
-	io_apic_base = acpi_io_apic_entry->io_apic_ptr + hhdm_offset;
+	io_apic_base = acpi_io_apic_entry->io_apic_ptr + HHDM_OFFSET;
 
 	interrupts_io_apic_irqwrite(1, 0, 33); // unmask keyboard
 
@@ -158,10 +158,12 @@ const uint32_t qrcode[29] = {
 void interrupts_panic(char *message) {
 	__asm__ __volatile__("cli");
 	LOG_ERROR("INTERRUPTS", "Kernel panic!");
-	graphics_clear(0x000000);
+	if (fb != NULL) {
+		graphics_clear(0x000000);
+	}
 	pit_sleep_ms(200);
 
-	if (fallback_font == NULL) {
+	if (fb != NULL && fallback_font != NULL) {
 		graphics_psf_put_text(fallback_font, ":( xD-DOS KERNEL PANIC!", 8, 8, 0xFFFFFF, 0x000000);
 		graphics_psf_put_char(fallback_font, '>', 8, 32, 0xFFFFFF, 0x000000);
 		graphics_psf_put_text(fallback_font, message, 28, 32, 0xFFFFFF, 0x000000);
@@ -176,7 +178,7 @@ void interrupts_panic(char *message) {
 		if (message[i] == '\n') y += 16;
 	}
 
-	if (fallback_font == NULL) {
+	if (fb != NULL && fallback_font != NULL) {
 		graphics_psf_put_text(fallback_font, msg1, 28, y, 0xFFFFFF, 0x000000);
 		graphics_psf_put_text(fallback_font, msg2, 28, y + 32, 0xFFFFFF, 0x000000);
 	}
@@ -184,7 +186,7 @@ void interrupts_panic(char *message) {
 	y += 52;
 
 	const uint8_t pixel_size = 4;
-	graphics_rect(28, y, pixel_size * 33, pixel_size * 33, 0xFFFFFF);
+	if (fb != NULL) graphics_rect(28, y, pixel_size * 33, pixel_size * 33, 0xFFFFFF);
 
 	for (int yi = 0; yi < 29; yi++) {
 		for (int xi = 0; xi < 29; xi++) {
@@ -192,7 +194,7 @@ void interrupts_panic(char *message) {
 				uint32_t sx = 28 + (xi + 2) * pixel_size;
 				uint32_t sy = y + (yi + 2) * pixel_size;
 
-				graphics_rect(sx, sy, pixel_size, pixel_size, 0x000000);
+				if (fb != NULL) graphics_rect(sx, sy, pixel_size, pixel_size, 0x000000);
 			}
 		}
 	}
@@ -204,7 +206,6 @@ void interrupts_panic(char *message) {
 
 void interrupts_fail(char *msg1, uint32_t error, char *msg2) {
 	kstdio_snprintf(msg, 2048, "%s 0x%x (%s)", msg1, error, msg2);
-	LOG_ERROR("d", msg);
 	LOG_ERROR("INTERRUPTS", msg);
 	kstdio_snprintf(msg, 2048, "%s\r\n0x%x (%s)", msg1, error, msg2);
 	interrupts_panic(msg);

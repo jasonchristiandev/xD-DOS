@@ -1,7 +1,7 @@
 ROOT_DIR = $(abspath ..)
 include ../settings.mk
 
-CFLAGS += -I$(LIBC_DIR)/$(INCLUDE_DIR)
+CFLAGS += -I$(LIBC_DIR)/$(INCLUDE_DIR) -I$(BOOTLOADER_DIR)/protocol
 CFLAGS += -nostdinc -mno-mmx -mno-sse -mno-sse2 -MMD -MP
 
 SRCS = $(wildcard $(SRC_DIR)/*.c)
@@ -19,6 +19,7 @@ $(BUILD_DIR):
 
 $(BUILD_DIR)/%.c.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
 	@echo " [CC] $<"
+	echo "$(CFLAGS)"
 	@$(CC) $(CFLAGS) -c $< -o $@ -DDEBUG=$(VERBOSE)
 
 $(BUILD_DIR)/%.s.o: $(ASM_DIR)/%.s | $(BUILD_DIR)

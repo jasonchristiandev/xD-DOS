@@ -50,7 +50,7 @@ pmm_init_result_t pmm_init() {
 		return PMM_INIT_OUT_OF_SPACE;
 	}
 
-	bitmap = (uint8_t *) (max->base + hhdm_offset);
+	bitmap = (uint8_t *) (max->base + HHDM_OFFSET);
 	memset(bitmap, 0, bitmap_size);
 	pmm_lock_region(max->base, bitmap_size);
 

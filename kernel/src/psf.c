@@ -112,7 +112,7 @@ psf_data_t *psf_init() {
 
 	uint64_t font_virt = (uint64_t) &_binary_font_psf_start;
 	uint64_t font_phys_addr = exeaddr->phys + (font_virt - exeaddr->virt);
-	uint8_t *virt_start = (uint8_t *) (font_phys_addr + hhdm_offset);
+	uint8_t *virt_start = (uint8_t *) (font_phys_addr + HHDM_OFFSET);
 	uint8_t *virt_end = virt_start + ((uint64_t) &_binary_font_psf_end - (uint64_t) &_binary_font_psf_start);
 
 	uint32_t magic = *(uint32_t *) virt_start;

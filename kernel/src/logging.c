@@ -1,6 +1,7 @@
 #include "xddos/logging.h"
 #include "xddos/kstdio.h"
-#define NAME_MAX_LENGTH 10
+
+#define NAME_MAX_LENGTH 12
 
 static char *truncate(const char *name) {
 	static char res[NAME_MAX_LENGTH + 3];

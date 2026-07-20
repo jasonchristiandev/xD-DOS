@@ -17,7 +17,7 @@ acpi_init_result_t acpi_init() {
 	if (acpi_rsdp->revision < 2) return ACPI_INIT_VERSION_NOT_SUPPORTED;
 
 	// xsdt
-	acpi_xsdt = (acpi_xsdt_t *) (acpi_rsdp->xsdt_ptr + hhdm_offset);
+	acpi_xsdt = (acpi_xsdt_t *) (acpi_rsdp->xsdt_ptr + HHDM_OFFSET);
 	if (acpi_xsdt == NULL || memcmp(acpi_xsdt->header.signature, "XSDT", 4) != 0) {
 		return ACPI_INIT_XSDT_NOT_FOUND;
 	}
@@ -27,7 +27,7 @@ acpi_init_result_t acpi_init() {
 	// madt
 	acpi_madt = NULL;
 	for (int i = 0; i < entries; i++) {
-		acpi_descheader_t *h = (acpi_descheader_t *) (acpi_xsdt->entries[i] + hhdm_offset);
+		acpi_descheader_t *h = (acpi_descheader_t *) (acpi_xsdt->entries[i] + HHDM_OFFSET);
 		if (!strncmp(h->signature, "APIC", 4)) acpi_madt = (acpi_madt_t *) h;
 	}
 	if (acpi_madt == NULL) return ACPI_INIT_MADT_NOT_FOUND;

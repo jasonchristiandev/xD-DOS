@@ -2,6 +2,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+boot_info_t *boot_info;
+
 requests_executable_address_t *request_executable_address() {
 	// struct limine_executable_address_response *response = executable_address_request.response;
 	// if (response == NULL) return NULL;
@@ -40,20 +42,11 @@ pmm_memmap_t *request_memmap() {
 }
 
 requests_hhdm_t *request_hhdm() {
-	// struct limine_hhdm_response *response = hhdm_request.response;
-	// if (response == NULL) return NULL;
-	// static requests_hhdm_t res;
-	// res.offset = response->offset;
-	// return &res;
-	return NULL;
+	static requests_hhdm_t res;
+	res.offset = boot_info->hhdm;
+	return &res;
 }
 
 requests_framebuffers_t *request_framebuffers() {
-	// struct limine_framebuffer_response *response = framebuffer_request.response;
-	// if (response == NULL) return NULL;
-	// static requests_framebuffers_t res;
-	// res.count = response->framebuffer_count;
-	// res.framebuffers = response->framebuffers;
-	// return &res;
-	return NULL;
+	return boot_info->framebuffers;
 }

@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <string.h>
 
-requests_framebuffer_t *fb;
+requests_framebuffer_t *fb = NULL;
 
 static void psf_put_char(uint32_t width, uint32_t height, uint8_t *bitmap, uint32_t cx, uint32_t cy, uint32_t fg, uint32_t bg) {
 	if (cy >= fb->height || cx >= fb->width) return;

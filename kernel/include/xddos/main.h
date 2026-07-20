@@ -1,9 +1,7 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#include <stdint.h>
-
-extern uint64_t hhdm_offset;
+#define HHDM_OFFSET 0xFFFF800000000000ULL
 void kernel_main();
 
 #endif // !MAIN_H
