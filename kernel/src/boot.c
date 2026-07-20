@@ -1,5 +1,6 @@
 #include "xddos/graphics.h"
 #include "xddos/interrupts.h"
+#include "xddos/kstdio.h"
 #include "xddos/logging.h"
 #include "xddos/pmm.h"
 #include "xddos/requests.h"
@@ -7,13 +8,19 @@
 #include "xddos/vmm.h"
 #include <stddef.h>
 
+#ifndef COMMIT_HASH
+#define COMMIT_HASH "unknown"
+#endif // !COMMIT_HASH
+
 void boot_main(boot_info_t *info) {
 	boot_info = info;
 
 	// init serial
 	serial_init();
 
-	LOG_INFO("KERNEL", "Extended Drive - Disk Operating System (xD-DOS) Starting...");
+	char msg[128];
+	kstdio_snprintf(msg, 128, "xD-DOS (%s) Starting...", COMMIT_HASH);
+	LOG_INFO("KERNEL", msg);
 
 	// framebuffer
 	requests_framebuffers_t *fbs = request_framebuffers();

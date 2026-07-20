@@ -33,9 +33,12 @@ FONT_URL = https://raw.githubusercontent.com/ercanersoy/PSF-Fonts/master/$(FONT_
 
 PARTITION_LABEL = XDDOS
 
+HASH = $(shell git -C $(CURDIR) rev-parse --short HEAD)
+TAG = $(shell git -C $(CURDIR) describe --tags --exact-match 2>/dev/null)
+COMMIT_HASH = $(if $(TAG),$(TAG),commit-$(HASH))
 CFLAGS = -fno-stack-protector -ffreestanding -mno-red-zone \
 		 -fms-extensions -nostdlib -Wall -Wextra \
 		 -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast \
 		 -Wno-compare-distinct-pointer-types -Wno-enum-conversion \
 		 -Wno-variadic-macros -Wno-enum-compare -std=c11 -O2 \
-		 -fno-strict-aliasing -I$(INCLUDE_DIR)
+		 -fno-strict-aliasing -I$(INCLUDE_DIR) -DCOMMIT_HASH='"$(COMMIT_HASH)"'
