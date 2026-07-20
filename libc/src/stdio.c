@@ -1,13 +1,13 @@
-#include "xddos/syscallnums.h"
+// #include "xddos/syscallnums.h"
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <syscall.h>
+// #include <syscall.h>
 
 int putchar(char ch) {
-	return syscall(SYSCALL_WRITE, 0, ch, 0) ? ch : '\0';
+	// return syscall(SYSCALL_WRITE, 0, ch, 0) ? ch : '\0';
 }
 
 static void itoa(uint64_t n, char *str, uint8_t base, uint8_t signed_val) {
