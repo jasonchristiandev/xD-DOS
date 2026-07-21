@@ -3,7 +3,7 @@
 
 #include "xddos/acpi.h"
 #include "xddos/pmm.h"
-#include "xddos_boot/bootinfo.h"
+#include "xddos_boot/protocol.h"
 #include <stdint.h>
 
 extern boot_info_t *boot_info;

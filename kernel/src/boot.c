@@ -14,7 +14,7 @@
 
 void boot_main(boot_info_t *info) {
 	boot_info = info;
-
+	
 	// init serial
 	serial_init();
 
