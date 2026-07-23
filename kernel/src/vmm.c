@@ -40,47 +40,6 @@ vmm_init_result_t vmm_init() {
 	// allocate page table
 	LOG_DEBUG("VMM", "Allocating PML4...");
 	void *page = pmm_alloc_page();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-														d
 	if (page == NULL) {
 		return VMM_INIT_OUT_OF_MEMORY;
 	}
