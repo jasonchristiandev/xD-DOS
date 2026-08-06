@@ -26,8 +26,14 @@ typedef enum : uint8_t {
 	VMM_INIT_OUT_OF_MEMORY = 2,
 } vmm_init_result_t;
 
+typedef struct {
+	uint64_t entries[512];
+} __attribute__((packed)) vmm_page_table_t;
+
 vmm_init_result_t vmm_init();
 void vmm_map_table(uint64_t virt, uint64_t phys, uint64_t flags);
 void vmm_map_table_huge(uint64_t virt, uint64_t phys, uint64_t flags);
+
+extern vmm_page_table_t *vmm_pml4;
 
 #endif // !VMM_H
