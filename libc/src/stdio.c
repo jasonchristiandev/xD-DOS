@@ -8,6 +8,7 @@
 
 int putchar(char ch) {
 	// return syscall(SYSCALL_WRITE, 0, ch, 0) ? ch : '\0';
+	return ch;
 }
 
 static void itoa(uint64_t n, char *str, uint8_t base, uint8_t signed_val) {
