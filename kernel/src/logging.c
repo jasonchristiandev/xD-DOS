@@ -1,42 +1,59 @@
 #include "xddos/logging.h"
+#include "xddos/define.h"
 #include "xddos/kstdio.h"
 
 #define NAME_MAX_LENGTH 12
+#define LOG_BUF_SIZE 256
 
-static char *truncate(const char *name) {
-	static char res[NAME_MAX_LENGTH + 3];
+void format_name(const char *name, char *out, size_t size) {
+	if (size < 4) return;
 
-	res[0] = '<';
+	out[0] = '<';
+	size_t i = 1;
 
-	int i;
-	for (i = 0; name[i] != '\0'; i++) {
-		if (i == NAME_MAX_LENGTH) {
-			for (int j = NAME_MAX_LENGTH; j > NAME_MAX_LENGTH - 3; j--) res[j] = '.';
-			break;
+	size_t len = 0;
+	while (name[len] != '\0') len++;
+
+	if (len > NAME_MAX_LENGTH) {
+		for (size_t j = 0; j < NAME_MAX_LENGTH - 3; j++) {
+			out[i++] = name[j];
 		}
-		res[i + 1] = name[i];
+		out[i++] = '.';
+		out[i++] = '.';
+		out[i++] = '.';
+	} else {
+		for (size_t j = 0; j < len; j++) {
+			out[i++] = name[j];
+		}
 	}
-	res[++i] = '>';
-	for (i++; i < NAME_MAX_LENGTH + 3; i++) {
-		res[i] = ' ';
-	}
-	res[NAME_MAX_LENGTH + 3 - 1] = '\0';
 
-	return res;
+	out[i++] = '>';
+
+	while (i < NAME_MAX_LENGTH + 2 && i < size - 1) {
+		out[i++] = ' ';
+	}
+
+	out[i] = '\0';
 }
 
-static void internal_log_write(const char *prefix, const char *name, const char *format, va_list args) {
-	char log_buf[512];
+void write(const char *prefix, const char *name, const char *format, va_list args) {
+	char buf[LOG_BUF_SIZE];
+	char formatted[NAME_MAX_LENGTH + 3];
 
-	kstdio_vsnprintf(log_buf, sizeof(log_buf), format, args);
-	kstdio_printf("%s %s ", prefix, truncate(name));
+	format_name(name, formatted, sizeof(formatted));
+	kstdio_vsnprintf(buf, sizeof(buf), format, args);
 
-	for (size_t i = 0; log_buf[i] != '\0'; i++) {
-		if (log_buf[i] == '\n') {
-			kstdio_putchar('\n');
-			if (log_buf[i + 1] != '\0') kstdio_printf("%s %s ", prefix, truncate(name));
+	kstdio_printf("%s %s ", prefix, formatted);
+
+	for (size_t i = 0; buf[i] != '\0'; i++) {
+		if (buf[i] == '\r') continue;
+
+		if (buf[i] == '\n') {
+			if (buf[i + 1] != '\0') {
+				kstdio_printf("\r\n%s %s ", prefix, formatted);
+			}
 		} else {
-			kstdio_putchar(log_buf[i]);
+			kstdio_putchar(buf[i]);
 		}
 	}
 
@@ -46,34 +63,27 @@ static void internal_log_write(const char *prefix, const char *name, const char 
 void LOG_INFO(const char *name, const char *format, ...) {
 	va_list args;
 	va_start(args, format);
-	internal_log_write("[INFO]   ", name, format, args);
+	write("[INFO]   ", name, format, args);
 	va_end(args);
 }
 
 void LOG_WARNING(const char *name, const char *format, ...) {
 	va_list args;
 	va_start(args, format);
-	internal_log_write("[WARNING]", name, format, args);
+	write("[WARNING]", name, format, args);
 	va_end(args);
 }
 
 void LOG_ERROR(const char *name, const char *format, ...) {
 	va_list args;
 	va_start(args, format);
-	internal_log_write("[ERROR]  ", name, format, args);
+	write("[ERROR]  ", name, format, args);
 	va_end(args);
 }
 
-#if VERBOSE == 1
-void LOG_DEBUG(const char *name, const char *format, ...) {
+NO_OPTIMIZE void LOG_DEBUG(const char *name, const char *format, ...) {
 	va_list args;
 	va_start(args, format);
-	internal_log_write("[DEBUG]  ", name, format, args);
+	if (VERBOSE) write("[DEBUG]  ", name, format, args);
 	va_end(args);
 }
-#else
-void LOG_DEBUG(const char *name, const char *format, ...) {
-	(void) name;
-	(void) format;
-}
-#endif

@@ -19,26 +19,26 @@ void boot_main(boot_info_t *info) {
 
 	LOG_INFO("KERNEL", "xD-DOS (%s) Starting...", COMMIT_HASH);
 	LOG_DEBUG("KERNEL", "BOOT INFO:");
-	LOG_DEBUG("KERNEL", "    HHDM: 0x%llx", boot_info->hhdm);
-	LOG_DEBUG("KERNEL", "    Memmap (0x%llx):", boot_info->memmap);
-	LOG_DEBUG("KERNEL", "        Count: %d", boot_info->memmap->count);
-	LOG_DEBUG("KERNEL", "        Entries (0x%llx)", boot_info->memmap->entries);
-	LOG_DEBUG("KERNEL", "    Executable File Info (0x%llx):", boot_info->exefile);
-	LOG_DEBUG("KERNEL", "        Address: 0x%llx", boot_info->exefile->address);
-	LOG_DEBUG("KERNEL", "        Size: 0x%x", boot_info->exefile->size);
-	LOG_DEBUG("KERNEL", "    Executable Address Info (0x%llx):", boot_info->exeaddr);
-	LOG_DEBUG("KERNEL", "        Physical: 0x%llx", boot_info->exeaddr->phys);
-	LOG_DEBUG("KERNEL", "        Virtual: 0x%llx", boot_info->exeaddr->virt);
-	LOG_DEBUG("KERNEL", "    Framebuffers (0x%llx):", boot_info->framebuffers);
-	LOG_DEBUG("KERNEL", "        Count: %d", boot_info->framebuffers->count);
-	LOG_DEBUG("KERNEL", "        Entries (0x%llx):", boot_info->framebuffers->entries);
+	LOG_DEBUG("KERNEL", "> HHDM: 0x%llx", boot_info->hhdm);
+	LOG_DEBUG("KERNEL", "> Memmap (0x%llx):", boot_info->memmap);
+	LOG_DEBUG("KERNEL", "> > Count: %d", boot_info->memmap->count);
+	LOG_DEBUG("KERNEL", "> > Entries (0x%llx)", boot_info->memmap->entries);
+	LOG_DEBUG("KERNEL", "> Executable File Info (0x%llx):", boot_info->exefile);
+	LOG_DEBUG("KERNEL", "> > Address: 0x%llx", boot_info->exefile->address);
+	LOG_DEBUG("KERNEL", "> > Size: 0x%x", boot_info->exefile->size);
+	LOG_DEBUG("KERNEL", "> Executable Address Info (0x%llx):", boot_info->exeaddr);
+	LOG_DEBUG("KERNEL", "> > Physical: 0x%llx", boot_info->exeaddr->phys);
+	LOG_DEBUG("KERNEL", "> > Virtual: 0x%llx", boot_info->exeaddr->virt);
+	LOG_DEBUG("KERNEL", "> Framebuffers (0x%llx):", boot_info->framebuffers);
+	LOG_DEBUG("KERNEL", "> > Count: %d", boot_info->framebuffers->count);
+	LOG_DEBUG("KERNEL", "> > Entries (0x%llx):", boot_info->framebuffers->entries);
 	for (uint64_t i = 0; i < boot_info->framebuffers->count; i++) {
-		LOG_DEBUG("KERNEL", "            Entry %d (0x%llx):", i, boot_info->framebuffers->entries[i]);
-		LOG_DEBUG("KERNEL", "                Address: 0x%llx", boot_info->framebuffers->entries[i]->address);
-		LOG_DEBUG("KERNEL", "                Bit/Pixel: 0x%x", boot_info->framebuffers->entries[i]->bpp);
-		LOG_DEBUG("KERNEL", "                Size: 0x%x", boot_info->framebuffers->entries[i]->size);
-		LOG_DEBUG("KERNEL", "                Pitch: 0x%x", boot_info->framebuffers->entries[i]->pitch);
-		LOG_DEBUG("KERNEL", "                Resolution: %dx%d", boot_info->framebuffers->entries[i]->width, boot_info->framebuffers->entries[i]->height);
+		LOG_DEBUG("KERNEL", "> > > Entry %d (0x%llx):", i, boot_info->framebuffers->entries[i]);
+		LOG_DEBUG("KERNEL", "> > > > Address: 0x%llx", boot_info->framebuffers->entries[i]->address);
+		LOG_DEBUG("KERNEL", "> > > > Bit/Pixel: 0x%x", boot_info->framebuffers->entries[i]->bpp);
+		LOG_DEBUG("KERNEL", "> > > > Size: 0x%x", boot_info->framebuffers->entries[i]->size);
+		LOG_DEBUG("KERNEL", "> > > > Pitch: 0x%x", boot_info->framebuffers->entries[i]->pitch);
+		LOG_DEBUG("KERNEL", "> > > > Resolution: %dx%d", boot_info->framebuffers->entries[i]->width, boot_info->framebuffers->entries[i]->height);
 	}
 
 	// framebuffer
