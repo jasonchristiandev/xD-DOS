@@ -1,40 +1,50 @@
 OUTPUT_FORMAT(elf64-x86-64)
-ENTRY(boot_main)
+ENTRY(_start)
 
 PHDRS
 {
-	text PT_LOAD;
-	rodata PT_LOAD;
-	data PT_LOAD;
+	boot PT_LOAD FLAGS(7);
+	text PT_LOAD FLAGS(5);
+	rodata PT_LOAD FLAGS(4);
+	data PT_LOAD FLAGS(6);
 }
 
 SECTIONS
 {
-	. = 0xffffffff80000000;
+	. = 1M;
+
+	.boot : {
+		KEEP(*(.multiboot2))
+		*(.boot_text)
+		*(.boot_data)
+		*(.boot_bss)
+	} :boot
+
+	. = 0xFFFFFFFF80000000 + SIZEOF(.boot);
 
 	. = ALIGN(CONSTANT(MAXPAGESIZE));
 
-	.text : {
+	.text : AT(ADDR(.text) - 0xFFFFFFFF80000000 + 1M) {
 		*(.text .text.*)
 	} :text
 
 	. = ALIGN(CONSTANT(MAXPAGESIZE));
 
-	.rodata : {
+	.rodata : AT(ADDR(.rodata) - 0xFFFFFFFF80000000 + 1M) {
 		*(.rodata .rodata.*)
 	} :rodata
 
-	.note.gnu.build-id : {
+	.note.gnu.build-id : AT(ADDR(.note.gnu.build-id) - 0xFFFFFFFF80000000 + 1M) {
 		*(.note.gnu.build-id)
 	} :rodata
 
 	. = ALIGN(CONSTANT(MAXPAGESIZE));
 
-	.data : {
+	.data : AT(ADDR(.data) - 0xFFFFFFFF80000000 + 1M) {
 		*(.data .data.*)
 	} :data
 
-	.bss : {
+	.bss : AT(ADDR(.bss) - 0xFFFFFFFF80000000 + 1M) {
 		*(.bss .bss.*)
 		*(COMMON)
 	} :data

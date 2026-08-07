@@ -1,7 +1,7 @@
 ROOT_DIR = $(abspath ..)
 include ../settings.mk
 
-CFLAGS += -I$(LIBC_DIR)/$(INCLUDE_DIR) -I$(BOOTLOADER_DIR)/protocol
+CFLAGS += -I$(LIBC_DIR)/$(INCLUDE_DIR)
 CFLAGS += -nostdinc -mno-mmx -mno-sse -mno-sse2 -MMD -MP
 
 SRCS = $(wildcard $(SRC_DIR)/*.c)
@@ -41,7 +41,7 @@ $(BUILD_DIR)/font_data.o: $(FONT_PSF) | $(BUILD_DIR)
 $(KERNEL_ELF): $(OBJS) $(LIBS) $(LINKER_SCRIPT) | $(BUILD_DIR)
 	@echo " [LD] Linking..."
 	@echo "     $(OBJS)"
-	@$(LD) -T $(LINKER_SCRIPT) $(OBJS) $(LIBS) -o $(KERNEL_ELF)
+	@$(LD) -T $(LINKER_SCRIPT) $(OBJS) $(LIBS) -o $(KERNEL_ELF) --no-warn-rwx-segments
 
 clean:
 	rm -rf $(BUILD_DIR)

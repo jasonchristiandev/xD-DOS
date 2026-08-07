@@ -1,3 +1,4 @@
+#include "xddos/asm.h"
 #include "xddos/graphics.h"
 #include "xddos/interrupts.h"
 #include "xddos/logging.h"
@@ -11,9 +12,8 @@
 #define COMMIT_HASH "unknown"
 #endif // !COMMIT_HASH
 
-void boot_main(boot_info_t *info) {
-	boot_info = info;
-
+void boot_main(uint64_t header) {
+	for (;;) hlt();
 	// init serial
 	serial_init();
 

@@ -15,18 +15,17 @@ SRC_DIR = src
 ASM_DIR = asm
 INCLUDE_DIR = include
 BUILD_DIR = build
-BOOTLOADER_DIR = $(ROOT_DIR)/boot
 KERNEL_DIR = $(ROOT_DIR)/kernel
 LIBC_DIR = $(ROOT_DIR)/libc
-DISK_DIR = $(ROOT_DIR)/disk
 FONTS_DIR = $(ROOT_DIR)/fonts
 TMP_MOUNT_DIR = /mnt/xddos_tmp
 
-BOOTX64_EFI = $(BOOTLOADER_DIR)/$(BUILD_DIR)/BOOTX64.EFI
 KERNEL_ELF = $(KERNEL_DIR)/$(BUILD_DIR)/kernel.elf
 LIBC_A = $(LIBC_DIR)/$(BUILD_DIR)/libc.a
+ISO_IMAGE := $(ROOT_DIR)/$(BUILD_DIR)/xddos.iso
 FONT_PSF = $(FONTS_DIR)/font.psf
 LINKER_SCRIPT = linker.lds
+GRUB_CFG = $(ROOT_DIR)/grub.cfg
 
 FONT_NAME = cp850-8x16.psf
 FONT_URL = https://raw.githubusercontent.com/ercanersoy/PSF-Fonts/master/$(FONT_NAME)

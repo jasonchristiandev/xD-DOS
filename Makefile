@@ -1,14 +1,12 @@
 include settings.mk
 
-all: $(BOOTX64_EFI) $(KERNEL_ELF)
-	@echo " [DISK] Creating boot structure..."
-
-	@mkdir -p $(DISK_DIR)/boot
-	@mkdir -p $(DISK_DIR)/EFI/BOOT
-	@cp $(KERNEL_ELF) $(DISK_DIR)/boot/
-	@cp $(BOOTX64_EFI) $(DISK_DIR)/EFI/BOOT/BOOTX64.efi
-	
-	@echo " [DISK] Success."
+all: $(KERNEL_ELF)
+	@echo " [ISO] Creating Multiboot2 ISO structure..."
+	@mkdir -p $(BUILD_DIR)
+	@mkdir -p $(BUILD_DIR)/disk/boot/grub
+	@cp $(KERNEL_ELF) $(BUILD_DIR)/disk/boot/
+	@cp $(GRUB_CFG) $(BUILD_DIR)/disk/boot/grub/grub.cfg
+	@grub-mkrescue -o $(ISO_IMAGE) $(BUILD_DIR)/disk
 
 FORCE:
 
@@ -22,9 +20,6 @@ $(FONT_PSF): $(FONTS_DIR)
 $(KERNEL_ELF): FORCE $(LIBC_A) $(FONT_PSF)
 	@$(MAKE) -C $(KERNEL_DIR)
 
-$(BOOTX64_EFI): FORCE
-	@$(MAKE) -C $(BOOTLOADER_DIR)
-
 $(LIBC_A): FORCE
 	@$(MAKE) -C $(LIBC_DIR)
 
@@ -32,7 +27,7 @@ run: all
 	@rm -f disk/NvVars
 	@sync
 	$(QEMU) -nodefaults \
-		-drive file=fat:rw:disk,format=raw,media=disk \
+		-cdrom $(ISO_IMAGE) \
 		-bios /usr/share/ovmf/OVMF.fd \
 		-fw_cfg name=opt/org.tianocore/IPv4NetworkStack,string=n \
 		-fw_cfg name=opt/org.tianocore/IPv6NetworkStack,string=n \
@@ -56,7 +51,7 @@ endif
 		echo "CRITICAL: Cannot format root partition"; exit 1; \
 	fi
 
-install: $(BOOTX64_EFI) $(KERNEL_ELF) check-target
+install: $(KERNEL_ELF) check-target
 	@echo " [INSTALL] Wiping $(TARGET_VOLUME)!"
 	@read -p "[INSTALL] Continue? [y/N]: " confirm && [ "$$confirm" = "y" ]
 
@@ -84,10 +79,9 @@ endif
 	@echo " [INSTALL] Install success."
 
 clean:
-	rm -rf $(DISK_DIR) qemu.log serial.log
+	rm -rf $(BUILD_DIR) qemu.log serial.log
 	make -C $(KERNEL_DIR) clean
 	make -C $(LIBC_DIR) clean
-	make -C $(BOOTLOADER_DIR) clean
 
 distclean: clean
 	rm -rf $(FONTS_DIR)
