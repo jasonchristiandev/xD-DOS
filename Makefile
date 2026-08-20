@@ -1,7 +1,7 @@
 include settings.mk
 
 all: $(KERNEL_ELF)
-	@echo " [ISO] Creating Multiboot2 ISO structure..."
+	@echo " [ISO] Creating ISO structure..."
 	@mkdir -p $(BUILD_DIR)
 	@mkdir -p $(BUILD_DIR)/disk/boot/grub
 	@cp $(KERNEL_ELF) $(BUILD_DIR)/disk/boot/
@@ -71,7 +71,6 @@ endif
 	@sudo mkdir -p $(TMP_MOUNT_DIR)/boot
 	@sudo mkdir -p $(TMP_MOUNT_DIR)/EFI/BOOT
 
-	@sudo mkdir -p $(TMP_MOUNT_DIR)/boot
 	@sudo cp $(KERNEL_ELF) $(TMP_MOUNT_DIR)/boot/
 	@sudo cp $(BOOTX64_EFI) $(TMP_MOUNT_DIR)/EFI/BOOT/
 

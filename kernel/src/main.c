@@ -5,7 +5,6 @@
 #include "xddos/interrupts.h"
 #include "xddos/logging.h"
 #include "xddos/vma.h"
-#include "xddos/vmm.h"
 
 void kernel_main() {
 	LOG_DEBUG("VMM", "Done init.");

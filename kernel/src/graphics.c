@@ -9,6 +9,7 @@
 requests_framebuffer_t *fb = NULL;
 
 static void psf_put_char(uint32_t width, uint32_t height, uint8_t *bitmap, uint32_t cx, uint32_t cy, uint32_t fg, uint32_t bg) {
+	if (fb == NULL || fb->address == NULL) return;
 	if (cy >= fb->height || cx >= fb->width) return;
 
 	uint32_t *fb_ptr = fb->address;
@@ -34,10 +35,7 @@ static void psf_put_char(uint32_t width, uint32_t height, uint8_t *bitmap, uint3
 }
 
 void graphics_psf_put_char(psf_data_t *font, char ch, uint32_t x, uint32_t y, uint32_t fg, uint32_t bg) {
-	if (!fb || !fb->address) {
-		LOG_ERROR("GRAPHICS", "Framebuffer is NULL!");
-		return;
-	}
+	if (fb == NULL || fb->address == NULL) return;
 
 	if (font->unicode) ch = font->unicode[(uint8_t) ch];
 
@@ -112,6 +110,7 @@ void graphics_psf_put_text(psf_data_t *font, const char *str, uint32_t x, uint32
 }
 
 void graphics_clear(uint32_t col) {
+	if (fb == NULL || fb->address == NULL) return;
 	uint32_t *fb_ptr = fb->address;
 	uint32_t total_pixels = fb->width * fb->height;
 	for (uint32_t i = 0; i < total_pixels; i++) {
@@ -120,6 +119,7 @@ void graphics_clear(uint32_t col) {
 }
 
 void graphics_rect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t col) {
+	if (fb == NULL || fb->address == NULL) return;
 	if (x >= fb->width || y >= fb->height) return;
 	if (x + w > fb->width) w = fb->width - x;
 	if (h + y > fb->height) h = fb->height - y;

@@ -9,6 +9,7 @@ mbheader_start:
 	dd -(MULTIBOOT2_HEADER_MAGIC + MULTIBOOT_ARCHITECTURE_I386 + (mbheader_end - mbheader_start))
 
 	; framebuffer
+	align 8
 	dw 5 ; type 5
 	dw 1 ; flag 1 (optional)
 	dd 24 ; 24 bytes
@@ -18,6 +19,7 @@ mbheader_start:
 	dd 0 ; reserved
 
 	; end
+	align 8
 	dw 0 ; type 0
 	dw 0 ; flag 0
 	dd 8 ; 8 bytes
@@ -48,7 +50,7 @@ gdt_end:
 
 gdt_ptr:
 	dw gdt_end - gdt_start - 1
-	dd gdt_start
+	dq gdt_start
 
 section .boot_text alloc exec align=16
 [BITS 32]
@@ -90,9 +92,9 @@ _start:
 	mov eax, pml4
 	mov cr3, eax
 
-	; enable PAE
+	; enable PAE, OSFXSR, and OSXMMEXCPT
 	mov eax, cr4
-	or eax, 0x20
+	or eax, 0x620
 	mov cr4, eax
 
 	; enable long mode
@@ -125,8 +127,17 @@ longentry:
 	mov rsp, stack_top
 	and rsp, -16
 
-	mov edi, esi
+	mov ecx, esi
 
+	mov dx, 0x3F8
+	mov al, 'O'
+	out dx, al
+	mov al, 'K'
+	out dx, al
+	mov al, 0x0A
+	out dx, al
+
+	sub rsp, 32 ; for ms abi
 	extern boot_main
 	mov rax, boot_main
 	call rax

@@ -13,7 +13,7 @@
 #endif // !COMMIT_HASH
 
 void boot_main(uint64_t header) {
-	for (;;) hlt();
+	// for (;;) hlt();
 	// init serial
 	serial_init();
 
@@ -43,10 +43,7 @@ void boot_main(uint64_t header) {
 
 	// framebuffer
 	requests_framebuffers_t *fbs = request_framebuffers();
-	if (fbs == NULL || fbs->count < 1) {
-		interrupts_fail("No framebuffer!", 1, "KERNEL");
-	}
-	fb = fbs->entries[0];
+	if (fbs != NULL || fbs->count >= 1) fb = fbs->entries[0];
 
 	// init fallback font
 	LOG_DEBUG("KERNEL", "Initializing fallback font...");

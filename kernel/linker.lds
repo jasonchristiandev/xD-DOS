@@ -20,31 +20,31 @@ SECTIONS
 		*(.boot_bss)
 	} :boot
 
-	. = 0xFFFFFFFF80000000 + SIZEOF(.boot);
+	. += 0xFFFFFFFF80000000;
 
 	. = ALIGN(CONSTANT(MAXPAGESIZE));
 
-	.text : AT(ADDR(.text) - 0xFFFFFFFF80000000 + 1M) {
+	.text : AT(ADDR(.text) - 0xFFFFFFFF80000000) {
 		*(.text .text.*)
 	} :text
 
 	. = ALIGN(CONSTANT(MAXPAGESIZE));
 
-	.rodata : AT(ADDR(.rodata) - 0xFFFFFFFF80000000 + 1M) {
+	.rodata : AT(ADDR(.rodata) - 0xFFFFFFFF80000000) {
 		*(.rodata .rodata.*)
 	} :rodata
 
-	.note.gnu.build-id : AT(ADDR(.note.gnu.build-id) - 0xFFFFFFFF80000000 + 1M) {
+	.note.gnu.build-id : AT(ADDR(.note.gnu.build-id) - 0xFFFFFFFF80000000) {
 		*(.note.gnu.build-id)
 	} :rodata
 
 	. = ALIGN(CONSTANT(MAXPAGESIZE));
 
-	.data : AT(ADDR(.data) - 0xFFFFFFFF80000000 + 1M) {
+	.data : AT(ADDR(.data) - 0xFFFFFFFF80000000) {
 		*(.data .data.*)
 	} :data
 
-	.bss : AT(ADDR(.bss) - 0xFFFFFFFF80000000 + 1M) {
+	.bss : AT(ADDR(.bss) - 0xFFFFFFFF80000000) {
 		*(.bss .bss.*)
 		*(COMMON)
 	} :data
