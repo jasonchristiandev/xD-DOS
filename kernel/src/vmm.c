@@ -14,8 +14,7 @@ bool pml4_built = false;
 
 void alloc_entry(vmm_page_table_t *table, uint16_t idx) {
 	uint64_t phys = (uint64_t) pmm_alloc_page();
-	vmm_page_table_t *virt = (vmm_page_table_t *) (phys + HHDM_OFFSET);
-	memset(virt, 0, PAGE_SIZE);
+	memset((void *) phys, 0, PAGE_SIZE);
 	pmm_lock_region(phys, PAGE_SIZE);
 
 	table->entries[idx] = phys | PTE_PRESENT | PTE_READWRITE;
@@ -40,17 +39,16 @@ vmm_init_result_t vmm_init() {
 	if (page == NULL) {
 		return VMM_INIT_OUT_OF_MEMORY;
 	}
-	vmm_pml4 = (vmm_page_table_t *) (page + HHDM_OFFSET);
+	vmm_pml4 = (vmm_page_table_t *) page;
 
-	for (uint64_t i = (uint64_t) vmm_pml4; i < (uint64_t) vmm_pml4 + PAGE_SIZE; i++) {
-		(*((uint8_t *) i)) = 0;
-	}
-	// memset(vmm_pml4, 0, PAGE_SIZE);
+	memset(vmm_pml4, 0, PAGE_SIZE);
 
 	LOG_DEBUG("VMM", "Mapping reserved regions...");
+	LOG_DEBUG("VMM", "Huge 1");
 	for (uint64_t i = 0; i < 0x100000000ULL; i += 0x200000) {
 		vmm_map_table_huge(i, i, PTE_READWRITE);
 	}
+	LOG_DEBUG("VMM", "Huge 2");
 	for (uint64_t i = 0; i < 0x100000000ULL; i += 0x200000) {
 		vmm_map_table_huge(i + HHDM_OFFSET, i, PTE_READWRITE);
 	}
@@ -65,6 +63,7 @@ vmm_init_result_t vmm_init() {
 	// 	uint64_t virt = (uint64_t) exeaddr->virt + j;
 	// 	vmm_map_table(virt, phys, PTE_READWRITE);
 	// }
+	LOG_DEBUG("VMM", "Normal 1");
 	vmm_map_table((uint64_t) vmm_pml4 - HHDM_OFFSET, (uint64_t) vmm_pml4 - HHDM_OFFSET, PTE_READWRITE);
 
 	// create stack

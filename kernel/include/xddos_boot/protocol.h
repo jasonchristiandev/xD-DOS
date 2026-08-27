@@ -77,7 +77,6 @@ typedef struct {
 // boot_info
 typedef struct {
 	boot_memmap_t *memmap;
-	uint64_t hhdm;
 	boot_framebuffers_t *framebuffers;
 	boot_executable_address_t *exeaddr;
 	boot_executable_file_t *exefile;

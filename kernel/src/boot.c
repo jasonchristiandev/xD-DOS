@@ -23,7 +23,6 @@ void boot_main(uint32_t magic, uint8_t *mb_tags) {
 	}
 
 	// boot info
-	boot_info.hhdm = 0xFFFFFFFF80000000ULL;
 	uint32_t mb_tags_size = *((uint32_t *) mb_tags);
 
 	uint8_t *curr = (uint8_t *) mb_tags + 8;
@@ -64,11 +63,7 @@ void boot_main(uint32_t magic, uint8_t *mb_tags) {
 						mmentry->base = entry->addr;
 						mmentry->length = entry->len;
 						if (entry->addr < 0x1000) { // avoid null (0x0-0x1000)
-							if (entry->len <= 0x1000) {
-								memmap_idx--;
-							}
-							mmentry->base += 0x1000;
-							mmentry->length -= 0x1000;
+							memmap_idx--;
 						}
 						memmap_idx++;
 					}

@@ -40,11 +40,11 @@ stack_top:
 ; 4 kb for page table
 align 4096
 pml4:
-	resb 4096
+	resq 512
 pdpt:
-	resb 4096
+	resq 512
 pd:
-	resb 4096
+	resq 512
 
 section .boot_data alloc write align=8
 align 8
@@ -78,23 +78,28 @@ _start:
 
 	; pml4 -> pdpt
 	mov eax, pdpt
-	or eax, 0x3
+	or eax, 0x3 ; present, read/write
 	mov [pml4], eax
 	mov [pml4 + 511 * 8], eax
 
 	; pdpt -> pd
 	mov eax, pd
-	or eax, 0x3
+	or eax, 0x3 ; present, read/write
 	mov [pdpt], eax
 	mov [pdpt + 510 * 8], eax
 
-	; huge page for pd (0 mb - 2 mb)
+	; huge page pds
+	mov ecx, 512 ; 512 pds
 	mov eax, 0x00000083
-	mov [pd], eax
+	mov edi, pd
 
-	; huge page for pd (2 mb - 4 mb)
-	mov eax, 0x00200083
-	mov [pd + 8], eax
+.map_pd:
+	mov [edi], eax
+	mov dword [edi + 4], 0
+	add eax, 0x200000
+	add edi, 8
+	dec ecx
+	jnz .map_pd
 
 	; load to cr3
 	mov eax, pml4

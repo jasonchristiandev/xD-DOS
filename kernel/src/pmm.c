@@ -1,6 +1,5 @@
 #include "xddos/pmm.h"
 #include "xddos/logging.h"
-#include "xddos/main.h"
 #include "xddos/requests.h"
 #include <stddef.h>
 #include <stdint.h>
@@ -23,7 +22,7 @@ pmm_init_result_t pmm_init() {
 	LOG_DEBUG("PMM", "Finding spot for bitmap...");
 	for (uint64_t i = 0; i < memmap->count; i++) {
 		boot_memmap_entry_t *entry = &(memmap->entries[i]);
-		if (entry->type != BOOT_MEMMAP_USABLE || entry->length == 0 || entry->base < 0x100000) continue;
+		if (entry->type != BOOT_MEMMAP_USABLE || entry->length == 0 || entry->base < 0x100000 || entry->base + entry->length > 0x40000000) continue;
 		LOG_INFO("PMM", "Entry %u: 0x%llx - 0x%llx (%llu KB)", i, entry->base, entry->base + entry->length - 1, entry->length / 1024);
 
 		uint64_t top = entry->base + entry->length;
@@ -50,19 +49,20 @@ pmm_init_result_t pmm_init() {
 		return PMM_INIT_OUT_OF_SPACE;
 	}
 
-	bitmap = (uint8_t *) (max->base + HHDM_OFFSET);
-	memset(bitmap, 0, bitmap_size);
-	pmm_lock_region(max->base, bitmap_size);
+	bitmap = (uint8_t *) max->base;
+	memset(bitmap, 0xFF, bitmap_size);
 
-	// lock regions
-	LOG_DEBUG("PMM", "Locking reserved regions...");
-	pmm_lock_region((uint64_t) NULL, PAGE_SIZE);
+	// free regions
+	LOG_DEBUG("PMM", "Freeing usable regions...");
 	for (uint64_t i = 0; i < memmap->count; i++) {
 		boot_memmap_entry_t entry = memmap->entries[i];
-		if (entry.type != MEMMAP_USABLE) {
-			pmm_lock_region(entry.base, entry.length);
+		if (entry.type == BOOT_MEMMAP_USABLE && entry.base > 0x100000) {
+			pmm_free_region(entry.base, entry.length);
 		}
 	}
+
+	pmm_lock_region((uint64_t) NULL, PAGE_SIZE);
+	pmm_lock_region((uint64_t) bitmap, bitmap_size);
 
 	LOG_DEBUG("PMM", "Done init.");
 
@@ -100,6 +100,26 @@ uint8_t *pmm_alloc_page() {
 
 			uint64_t idx = i * 8 + bit;
 			if (idx >= page_count) return NULL; // tried to use memory out of bounds aka out of memory
+			bitmap[i] |= (1 << bit);
+
+			return (uint8_t *) (idx * PAGE_SIZE);
+		}
+	}
+
+	return NULL; // no memory available aka out of memory
+}
+
+uint8_t *pmm_alloc_page_max(size_t max_addr) {
+	uint64_t max_idx = max_addr / PAGE_SIZE;
+
+	for (uint64_t i = 0; i < bitmap_size; i++) {
+		if (bitmap[i] == 0b11111111) continue; // if byte is full then skip
+
+		for (uint8_t bit = 0; bit < 8; bit++) {
+			if ((bitmap[i] & (1 << bit)) != 0) continue; // if bit is full then skip
+
+			uint64_t idx = i * 8 + bit;
+			if (idx >= page_count || idx >= max_idx) return NULL; // tried to use memory out of bounds aka out of memory
 			bitmap[i] |= (1 << bit);
 
 			return (uint8_t *) (idx * PAGE_SIZE);
