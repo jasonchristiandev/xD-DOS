@@ -1,4 +1,3 @@
-#include "xddos/asm.h"
 #include "xddos/graphics.h"
 #include "xddos/interrupts.h"
 #include "xddos/logging.h"
@@ -13,6 +12,7 @@
 #endif // !COMMIT_HASH
 
 void boot_main(uint64_t header) {
+	(void)header;
 	// for (;;) hlt();
 	// init serial
 	serial_init();

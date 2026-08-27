@@ -11,7 +11,7 @@ mbheader_start:
 	; framebuffer
 	align 8
 	dw 5 ; type 5
-	dw 1 ; flag 1 (optional)
+	dw 1 ; optional
 	dd 24 ; 24 bytes
 	dd 1024 ; width
 	dd 768 ; height
@@ -128,14 +128,6 @@ longentry:
 	and rsp, -16
 
 	mov ecx, esi
-
-	mov dx, 0x3F8
-	mov al, 'O'
-	out dx, al
-	mov al, 'K'
-	out dx, al
-	mov al, 0x0A
-	out dx, al
 
 	sub rsp, 32 ; for ms abi
 	extern boot_main

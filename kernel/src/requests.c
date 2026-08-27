@@ -4,13 +4,6 @@
 
 boot_info_t *boot_info;
 
-requests_executable_address_t *request_executable_address() {
-	static requests_executable_address_t res;
-	res.phys = boot_info->exeaddr->phys;
-	res.virt = boot_info->exeaddr->virt;
-	return &res;
-}
-
 requests_executable_file_t *request_executable_file() {
 	static requests_executable_file_t res;
 	res.address = boot_info->exefile->address;

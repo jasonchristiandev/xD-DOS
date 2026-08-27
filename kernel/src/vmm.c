@@ -23,11 +23,11 @@ void alloc_entry(vmm_page_table_t *table, uint16_t idx) {
 
 vmm_init_result_t vmm_init() {
 	// reuqests
-	requests_executable_address_t *exeaddr = request_executable_address();
-	if (exeaddr == NULL) {
-		LOG_ERROR("VMM", "Executable address request responded with NULL!");
-		return VMM_INIT_NULL_RESPONSE;
-	}
+	// requests_executable_address_t *exeaddr = request_executable_address();
+	// if (exeaddr == NULL) {
+	// 	LOG_ERROR("VMM", "Executable address request responded with NULL!");
+	// 	return VMM_INIT_NULL_RESPONSE;
+	// }
 	requests_executable_file_t *exefile = request_executable_file();
 	if (exefile == NULL) {
 		LOG_ERROR("VMM", "Executable file request responded with NULL!");
@@ -54,17 +54,17 @@ vmm_init_result_t vmm_init() {
 	for (uint64_t i = 0; i < 0x100000000ULL; i += 0x200000) {
 		vmm_map_table_huge(i + HHDM_OFFSET, i, PTE_READWRITE);
 	}
-	// for (uint64_t j = 0; j < exefile->size; j += PAGE_SIZE) {
-	for (uint64_t j = 0; j < 0x400000; j += PAGE_SIZE) { // 4mb
-		uint64_t addr = (uint64_t) exeaddr->phys + j;
-		vmm_map_table(addr, addr, PTE_READWRITE);
-	}
-	// for (uint64_t j = 0; j < exefile->size; j += PAGE_SIZE) {
-	for (uint64_t j = 0; j < 0x200000; j += PAGE_SIZE) {
-		uint64_t phys = (uint64_t) exeaddr->phys + j;
-		uint64_t virt = (uint64_t) exeaddr->virt + j;
-		vmm_map_table(virt, phys, PTE_READWRITE);
-	}
+	// // for (uint64_t j = 0; j < exefile->size; j += PAGE_SIZE) {
+	// for (uint64_t j = 0; j < 0x400000; j += PAGE_SIZE) { // 4mb
+	// 	uint64_t addr = (uint64_t) exeaddr->phys + j;
+	// 	vmm_map_table(addr, addr, PTE_READWRITE);
+	// }
+	// // for (uint64_t j = 0; j < exefile->size; j += PAGE_SIZE) {
+	// for (uint64_t j = 0; j < 0x200000; j += PAGE_SIZE) {
+	// 	uint64_t phys = (uint64_t) exeaddr->phys + j;
+	// 	uint64_t virt = (uint64_t) exeaddr->virt + j;
+	// 	vmm_map_table(virt, phys, PTE_READWRITE);
+	// }
 	vmm_map_table((uint64_t) vmm_pml4 - HHDM_OFFSET, (uint64_t) vmm_pml4 - HHDM_OFFSET, PTE_READWRITE);
 
 	// create stack

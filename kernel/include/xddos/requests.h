@@ -21,16 +21,11 @@ typedef enum : uint8_t {
 } requests_memmap_flag_t;
 
 typedef struct {
-	uint64_t phys;
-	uint64_t virt;
-} requests_executable_address_t;
-typedef struct {
 	void *address;
 	uint64_t size;
 } requests_executable_file_t;
 typedef boot_framebuffer_t requests_framebuffer_t;
 typedef boot_framebuffers_t requests_framebuffers_t;
-requests_executable_address_t *request_executable_address();
 requests_executable_file_t *request_executable_file();
 acpi_rsdp_t *request_rsdp();
 pmm_memmap_t *request_memmap();
