@@ -11,16 +11,6 @@ typedef enum : uint8_t {
 	PMM_INIT_OUT_OF_SPACE = 2
 } pmm_init_result_t;
 
-typedef struct {
-	uint64_t base;
-	uint64_t length;
-	uint64_t type;
-} pmm_memmap_entry_t;
-typedef struct {
-	uint64_t count;
-	pmm_memmap_entry_t **entries;
-} pmm_memmap_t;
-
 pmm_init_result_t pmm_init();
 void pmm_free_region(uint64_t base, uint64_t count);
 void pmm_lock_region(uint64_t base, uint64_t count);

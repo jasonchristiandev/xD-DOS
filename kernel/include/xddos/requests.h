@@ -2,7 +2,6 @@
 #define __XDDOS_REQUESTS_H
 
 #include "xddos/acpi.h"
-#include "xddos/pmm.h"
 #include "xddos_boot/protocol.h"
 #include <stdint.h>
 
@@ -28,7 +27,6 @@ typedef boot_framebuffer_t requests_framebuffer_t;
 typedef boot_framebuffers_t requests_framebuffers_t;
 requests_executable_file_t *request_executable_file();
 acpi_rsdp_t *request_rsdp();
-pmm_memmap_t *request_memmap();
 requests_framebuffers_t *request_framebuffers();
 
 #endif // !__XDDOS_REQUESTS_H

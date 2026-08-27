@@ -18,13 +18,6 @@ acpi_rsdp_t *request_rsdp() {
 	return NULL;
 }
 
-pmm_memmap_t *request_memmap() {
-	static pmm_memmap_t res;
-	res.count = boot_info.memmap->count;
-	res.entries = (pmm_memmap_entry_t **) boot_info.memmap->entries;
-	return &res;
-}
-
 requests_framebuffers_t *request_framebuffers() {
 	return boot_info.framebuffers;
 }

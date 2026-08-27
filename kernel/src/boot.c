@@ -13,7 +13,7 @@
 #define COMMIT_HASH "unknown"
 #endif // !COMMIT_HASH
 
-void boot_main(uint32_t magic, multiboot_tag_t *mb_tags) {
+void boot_main(uint32_t magic, uint8_t *mb_tags) {
 	// init serial
 	serial_init();
 
@@ -22,33 +22,81 @@ void boot_main(uint32_t magic, multiboot_tag_t *mb_tags) {
 		hlt();
 	}
 
-	// multiboot2 header and boot info test
-	LOG_INFO("KERNEL", "header: 0x%llx", mb_tags);
-
+	// boot info
 	boot_info.hhdm = 0xFFFFFFFF80000000ULL;
+	uint32_t mb_tags_size = *((uint32_t *) mb_tags);
 
-	LOG_INFO("KERNEL", "xD-DOS (%s) Starting...", COMMIT_HASH);
-	LOG_DEBUG("KERNEL", "BOOT INFO:");
-	LOG_DEBUG("KERNEL", "> HHDM: 0x%llx", boot_info.hhdm);
-	LOG_DEBUG("KERNEL", "> Memory Map (0x%llx):", boot_info.memmap);
-	LOG_DEBUG("KERNEL", "> > Count: %d", boot_info.memmap->count);
-	LOG_DEBUG("KERNEL", "> > Entries: 0x%llx", boot_info.memmap->entries);
-	LOG_DEBUG("KERNEL", "> Executable File Info (0x%llx):", boot_info.exefile);
-	LOG_DEBUG("KERNEL", "> > Address: 0x%llx", boot_info.exefile->address);
-	LOG_DEBUG("KERNEL", "> > Size: 0x%x", boot_info.exefile->size);
-	LOG_DEBUG("KERNEL", "> Executable Address Info (0x%llx):", boot_info.exeaddr);
-	LOG_DEBUG("KERNEL", "> > Physical: 0x%llx", boot_info.exeaddr->phys);
-	LOG_DEBUG("KERNEL", "> > Virtual: 0x%llx", boot_info.exeaddr->virt);
-	LOG_DEBUG("KERNEL", "> Framebuffers (0x%llx):", boot_info.framebuffers);
-	LOG_DEBUG("KERNEL", "> > Count: %d", boot_info.framebuffers->count);
-	LOG_DEBUG("KERNEL", "> > Entries (0x%llx):", boot_info.framebuffers->entries);
-	for (uint64_t i = 0; i < boot_info.framebuffers->count; i++) {
-		LOG_DEBUG("KERNEL", "> > > Entry %d (0x%llx):", i, boot_info.framebuffers->entries[i]);
-		LOG_DEBUG("KERNEL", "> > > > Address: 0x%llx", boot_info.framebuffers->entries[i]->address);
-		LOG_DEBUG("KERNEL", "> > > > Bit/Pixel: 0x%x", boot_info.framebuffers->entries[i]->bpp);
-		LOG_DEBUG("KERNEL", "> > > > Size: 0x%x", boot_info.framebuffers->entries[i]->size);
-		LOG_DEBUG("KERNEL", "> > > > Pitch: 0x%x", boot_info.framebuffers->entries[i]->pitch);
-		LOG_DEBUG("KERNEL", "> > > > Resolution: %dx%d", boot_info.framebuffers->entries[i]->width, boot_info.framebuffers->entries[i]->height);
+	uint8_t *curr = (uint8_t *) mb_tags + 8;
+	uint8_t *end = (uint8_t *) mb_tags + mb_tags_size;
+	bool ended = false;
+
+	while (curr < end) {
+		multiboot_tag_t *base_tag = (multiboot_tag_t *) curr;
+
+		if (base_tag->size < 8) {
+			LOG_ERROR("KERNEL", "Multiboot2 boot information corrupt!\r\nCorrupt tag with invalid size %u!", base_tag->size);
+			break;
+		}
+
+		if (base_tag->type == 0) {
+			ended = true;
+			break;
+		}
+
+		switch (base_tag->type) {
+			case MULTIBOOT_TAG_TYPE_MMAP:
+				static boot_memmap_t memmap;
+				boot_info.memmap = &memmap;
+
+				multiboot_tag_mmap_t *tag = (multiboot_tag_mmap_t *) base_tag;
+				uint32_t count = (tag->size - 16) / sizeof(multiboot_mmap_entry_t);
+				multiboot_mmap_entry_t *entries = tag->entries;
+
+				uint64_t memmap_idx = 0;
+
+				for (uint32_t i = 0; i < count; i++) {
+					if (memmap_idx >= MAX_MEMMAP_ENTRIES) break;
+					multiboot_mmap_entry_t *entry = (multiboot_mmap_entry_t *) entries;
+
+					if (entry->type == MULTIBOOT_MEMORY_AVAILABLE) {
+						boot_memmap_entry_t *mmentry = &memmap.entries[memmap_idx];
+						mmentry->type = BOOT_MEMMAP_USABLE;
+						mmentry->base = entry->addr;
+						mmentry->length = entry->len;
+						if (entry->addr < 0x1000) { // avoid null (0x0-0x1000)
+							if (entry->len <= 0x1000) {
+								memmap_idx--;
+							}
+							mmentry->base += 0x1000;
+							mmentry->length -= 0x1000;
+						}
+						memmap_idx++;
+					}
+
+					entries = (multiboot_mmap_entry_t *) ((uint8_t *) entries + tag->entry_size);
+				}
+				memmap.count = memmap_idx;
+				if (memmap.count > MAX_MEMMAP_ENTRIES) memmap.count = MAX_MEMMAP_ENTRIES;
+
+				break;
+			case MULTIBOOT_TAG_TYPE_FRAMEBUFFER:
+				break;
+			case MULTIBOOT_TAG_TYPE_SMBIOS:
+				break;
+			case MULTIBOOT_TAG_TYPE_ACPI_NEW:
+				break;
+			case MULTIBOOT_TAG_TYPE_LOAD_BASE_ADDR:
+				break;
+			default:
+				LOG_WARNING("KERNEL", "Unknown/unimplemented Multiboot2 tag %u", base_tag->type);
+				break;
+		}
+
+		curr += (base_tag->size + 7) & ~7;
+	}
+	if (!ended) {
+		LOG_ERROR("KERNEL", "Multiboot2 boot information corrupt!\r\nBoot information not ended with end tag.");
+		hlt();
 	}
 
 	// framebuffer

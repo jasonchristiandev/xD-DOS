@@ -11,19 +11,20 @@ static size_t bitmap_size = 0;
 static size_t page_count = 0;
 
 pmm_init_result_t pmm_init() {
-	pmm_memmap_t *memmap = request_memmap();
+	boot_memmap_t *memmap = boot_info.memmap;
 	if (memmap == NULL) {
 		LOG_ERROR("PMM", "Memory map request responded with NULL!");
 		return PMM_INIT_NULL_RESPONSE;
 	}
 
 	// find best spot for bitmap
-	pmm_memmap_entry_t *max = NULL;
+	boot_memmap_entry_t *max = NULL;
 	uint64_t max_addr = 0;
 	LOG_DEBUG("PMM", "Finding spot for bitmap...");
 	for (uint64_t i = 0; i < memmap->count; i++) {
-		pmm_memmap_entry_t *entry = memmap->entries[i];
-		if (entry->type != MEMMAP_USABLE) continue;
+		boot_memmap_entry_t *entry = &(memmap->entries[i]);
+		if (entry->type != BOOT_MEMMAP_USABLE || entry->length == 0 || entry->base < 0x100000) continue;
+		LOG_INFO("PMM", "Entry %u: 0x%llx - 0x%llx (%llu KB)", i, entry->base, entry->base + entry->length - 1, entry->length / 1024);
 
 		uint64_t top = entry->base + entry->length;
 		if (top > max_addr) {
@@ -38,14 +39,14 @@ pmm_init_result_t pmm_init() {
 		LOG_ERROR("PMM", "No memory chunk available for bitmap!");
 		return PMM_INIT_OUT_OF_SPACE;
 	}
-	LOG_DEBUG("PMM", "Found memory chunk for bitmap at 0x%llx.", max);
+	LOG_DEBUG("PMM", "Found memory chunk for bitmap at 0x%llx.", max->base);
 
 	page_count = max_addr / PAGE_SIZE;
 	bitmap_size = page_count / 8; // one byte maps 8 pages
 	if (page_count % 8 != 0) bitmap_size++;
 
 	if (max->length < bitmap_size) {
-		LOG_ERROR("PMM", "Not enough space to fit bitmap! (0x%llx)", max);
+		LOG_ERROR("PMM", "Not enough space to fit bitmap! (0x%llx, required %llu got %llu)", max, bitmap_size, max->length);
 		return PMM_INIT_OUT_OF_SPACE;
 	}
 
@@ -57,9 +58,9 @@ pmm_init_result_t pmm_init() {
 	LOG_DEBUG("PMM", "Locking reserved regions...");
 	pmm_lock_region((uint64_t) NULL, PAGE_SIZE);
 	for (uint64_t i = 0; i < memmap->count; i++) {
-		pmm_memmap_entry_t *entry = memmap->entries[i];
-		if (entry->type != MEMMAP_USABLE) {
-			pmm_lock_region(entry->base, entry->length);
+		boot_memmap_entry_t entry = memmap->entries[i];
+		if (entry.type != MEMMAP_USABLE) {
+			pmm_lock_region(entry.base, entry.length);
 		}
 	}
 

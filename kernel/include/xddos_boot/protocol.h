@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#define MAX_MEMMAP_ENTRIES 256
+
 // memmap
 typedef enum : uint64_t {
 	BOOT_MEMMAP_USABLE = 0,
@@ -24,7 +26,7 @@ typedef struct {
 
 typedef struct {
 	uint64_t count;
-	boot_memmap_entry_t **entries;
+	boot_memmap_entry_t entries[MAX_MEMMAP_ENTRIES];
 } boot_memmap_t;
 
 // framebuffer
