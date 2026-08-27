@@ -5,6 +5,12 @@
 #define NAME_MAX_LENGTH 12
 #define LOG_BUF_SIZE 256
 
+#define COLOR_RESET "\033[0m"
+#define COLOR_RED "\033[31m"
+#define COLOR_YELLOW "\033[33m"
+#define COLOR_GREEN "\033[32m"
+#define COLOR_BLUE "\033[34m"
+
 void format_name(const char *name, char *out, size_t size) {
 	if (size < 4) return;
 
@@ -45,45 +51,50 @@ void write(const char *prefix, const char *name, const char *format, va_list arg
 
 	kstdio_printf("%s %s ", prefix, formatted);
 
+	size_t indent = 9 + 1 + (NAME_MAX_LENGTH + 2) + 1;
+
 	for (size_t i = 0; buf[i] != '\0'; i++) {
 		if (buf[i] == '\r') continue;
 
 		if (buf[i] == '\n') {
 			if (buf[i + 1] != '\0') {
-				kstdio_printf("\r\n%s %s ", prefix, formatted);
+				kstdio_printf(COLOR_RESET "\r\n");
+				for (size_t s = 0; s < indent; s++) {
+					kstdio_putchar(' ');
+				}
 			}
 		} else {
 			kstdio_putchar(buf[i]);
 		}
 	}
 
-	kstdio_printf("\r\n");
+	kstdio_printf(COLOR_RESET "\r\n");
 }
 
 void LOG_INFO(const char *name, const char *format, ...) {
 	va_list args;
 	va_start(args, format);
-	write("[INFO]   ", name, format, args);
+	write(COLOR_GREEN "[INFO]   " COLOR_RESET, name, format, args);
 	va_end(args);
 }
 
 void LOG_WARNING(const char *name, const char *format, ...) {
 	va_list args;
 	va_start(args, format);
-	write("[WARNING]", name, format, args);
+	write(COLOR_YELLOW "[WARNING]" COLOR_RESET, name, format, args);
 	va_end(args);
 }
 
 void LOG_ERROR(const char *name, const char *format, ...) {
 	va_list args;
 	va_start(args, format);
-	write("[ERROR]  ", name, format, args);
+	write(COLOR_RED "[ERROR]  " COLOR_RESET, name, format, args);
 	va_end(args);
 }
 
 NO_OPTIMIZE void LOG_DEBUG(const char *name, const char *format, ...) {
 	va_list args;
 	va_start(args, format);
-	if (VERBOSE) write("[DEBUG]  ", name, format, args);
+	if (VERBOSE) write(COLOR_BLUE "[DEBUG]  " COLOR_RESET, name, format, args);
 	va_end(args);
 }
