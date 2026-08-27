@@ -2,12 +2,12 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-boot_info_t *boot_info;
+boot_info_t boot_info;
 
 requests_executable_file_t *request_executable_file() {
 	static requests_executable_file_t res;
-	res.address = boot_info->exefile->address;
-	res.size = boot_info->exefile->size;
+	res.address = boot_info.exefile->address;
+	res.size = boot_info.exefile->size;
 	return &res;
 }
 
@@ -20,11 +20,11 @@ acpi_rsdp_t *request_rsdp() {
 
 pmm_memmap_t *request_memmap() {
 	static pmm_memmap_t res;
-	res.count = boot_info->memmap->count;
-	res.entries = (pmm_memmap_entry_t **) boot_info->memmap->entries;
+	res.count = boot_info.memmap->count;
+	res.entries = (pmm_memmap_entry_t **) boot_info.memmap->entries;
 	return &res;
 }
 
 requests_framebuffers_t *request_framebuffers() {
-	return boot_info->framebuffers;
+	return boot_info.framebuffers;
 }

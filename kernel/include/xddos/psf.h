@@ -1,5 +1,5 @@
-#ifndef FONT_H
-#define FONT_H
+#ifndef __XDDOS_PSF_H
+#define __XDDOS_PSF_H
 
 #include <stdint.h>
 
@@ -40,4 +40,4 @@ extern psf_data_t *fallback_font;
 
 psf_data_t *psf_init();
 
-#endif // !FONT_H
+#endif // !__XDDOS_PSF_H

@@ -1,5 +1,5 @@
-#ifndef IDT_H
-#define IDT_H
+#ifndef __XDDOS_IDT_H
+#define __XDDOS_IDT_H
 
 #include <stdint.h>
 
@@ -18,4 +18,4 @@ typedef struct {
 	uint64_t base;
 } __attribute__((packed)) idt_pointer_t;
 
-#endif // !IDT_H
+#endif // !__XDDOS_IDT_H

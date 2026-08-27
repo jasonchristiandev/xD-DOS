@@ -1,5 +1,5 @@
-#ifndef SERIAL_H
-#define SERIAL_H
+#ifndef __XDDOS_SERIAL_H
+#define __XDDOS_SERIAL_H
 
 #include <stdbool.h>
 
@@ -10,4 +10,4 @@ bool serial_is_transmit_empty();
 bool serial_write(char a);
 bool serial_write_text(const char *a);
 
-#endif // !SERIAL_H
+#endif // !__XDDOS_SERIAL_H

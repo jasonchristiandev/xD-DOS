@@ -1,5 +1,5 @@
-#ifndef ASM_H
-#define ASM_H
+#ifndef __XDDOS_ASM_H
+#define __XDDOS_ASM_H
 
 #include <stdint.h>
 
@@ -16,4 +16,4 @@ void invlpg(uint64_t addr);
 uint64_t rdmsr(uint32_t msr);
 void wrmsr(uint32_t msr, uint64_t value);
 
-#endif // !ASM_H
+#endif // !__XDDOS_ASM_H

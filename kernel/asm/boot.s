@@ -1,4 +1,4 @@
-%define MULTIBOOT2_HEADER_MAGIC 0xe85250d6
+%define MULTIBOOT2_HEADER_MAGIC 0xE85250D6
 %define MULTIBOOT_ARCHITECTURE_I386 0
 
 section .multiboot2 alloc align=8
@@ -10,13 +10,19 @@ mbheader_start:
 
 	; framebuffer
 	align 8
-	dw 5 ; type 5
+	dw 5 ; MULTIBOOT_HEADER_TAG_FRAMEBUFFER
 	dw 1 ; optional
-	dd 24 ; 24 bytes
+	dd 20 ; 20 bytes
 	dd 1024 ; width
 	dd 768 ; height
 	dd 32 ; depth/bpp
-	dd 0 ; reserved
+
+	; memmap
+	align 8
+	dw 1 ; MULTIBOOT_HEADER_TAG_INFORMATION_REQUEST
+	dw 0 ; required
+	dd 12 ; 12 bytes
+	dd 6 ; MULTIBOOT_TAG_TYPE_MMAP
 
 	; end
 	align 8
@@ -59,13 +65,15 @@ _start:
 	cli
 	mov esp, stack_top
 
-	; save mulitboot2 header
+	; multiboot2 info
+	mov ebp, eax
 	mov esi, ebx
 
 	; clear page table
 	mov edi, pml4
 	mov ecx, 3072
 	xor eax, eax
+	cld
 	rep stosd
 
 	; pml4 -> pdpt
@@ -112,7 +120,9 @@ _start:
 	lgdt [gdt_ptr]
 
 	; jump to code segment
-	jmp 0x08:longentry
+	push 0x08
+	push longentry
+	retf
 
 [BITS 64]
 longentry:
@@ -127,12 +137,13 @@ longentry:
 	mov rsp, stack_top
 	and rsp, -16
 
-	mov ecx, esi
+	; multiboot2 info
+	mov edi, ebp
+	mov esi, esi
 
-	sub rsp, 32 ; for ms abi
+	cld
 	extern boot_main
-	mov rax, boot_main
-	call rax
+	call boot_main
 
 .hang:
 	cli

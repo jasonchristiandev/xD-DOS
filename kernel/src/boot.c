@@ -1,6 +1,8 @@
+#include "xddos/asm.h"
 #include "xddos/graphics.h"
 #include "xddos/interrupts.h"
 #include "xddos/logging.h"
+#include "xddos/multiboot2.h"
 #include "xddos/pmm.h"
 #include "xddos/requests.h"
 #include "xddos/serial.h"
@@ -11,34 +13,42 @@
 #define COMMIT_HASH "unknown"
 #endif // !COMMIT_HASH
 
-void boot_main(uint64_t header) {
-	(void)header;
-	// for (;;) hlt();
+void boot_main(uint32_t magic, multiboot_tag_t *mb_tags) {
 	// init serial
 	serial_init();
 
+	if (magic != MULTIBOOT2_BOOTLOADER_MAGIC) {
+		LOG_ERROR("KERNEL", "Multiboot2 bootloader magic invalid! (0x%x)", magic);
+		hlt();
+	}
+
+	// multiboot2 header and boot info test
+	LOG_INFO("KERNEL", "header: 0x%llx", mb_tags);
+
+	boot_info.hhdm = 0xFFFFFFFF80000000ULL;
+
 	LOG_INFO("KERNEL", "xD-DOS (%s) Starting...", COMMIT_HASH);
 	LOG_DEBUG("KERNEL", "BOOT INFO:");
-	LOG_DEBUG("KERNEL", "> HHDM: 0x%llx", boot_info->hhdm);
-	LOG_DEBUG("KERNEL", "> Memmap (0x%llx):", boot_info->memmap);
-	LOG_DEBUG("KERNEL", "> > Count: %d", boot_info->memmap->count);
-	LOG_DEBUG("KERNEL", "> > Entries (0x%llx)", boot_info->memmap->entries);
-	LOG_DEBUG("KERNEL", "> Executable File Info (0x%llx):", boot_info->exefile);
-	LOG_DEBUG("KERNEL", "> > Address: 0x%llx", boot_info->exefile->address);
-	LOG_DEBUG("KERNEL", "> > Size: 0x%x", boot_info->exefile->size);
-	LOG_DEBUG("KERNEL", "> Executable Address Info (0x%llx):", boot_info->exeaddr);
-	LOG_DEBUG("KERNEL", "> > Physical: 0x%llx", boot_info->exeaddr->phys);
-	LOG_DEBUG("KERNEL", "> > Virtual: 0x%llx", boot_info->exeaddr->virt);
-	LOG_DEBUG("KERNEL", "> Framebuffers (0x%llx):", boot_info->framebuffers);
-	LOG_DEBUG("KERNEL", "> > Count: %d", boot_info->framebuffers->count);
-	LOG_DEBUG("KERNEL", "> > Entries (0x%llx):", boot_info->framebuffers->entries);
-	for (uint64_t i = 0; i < boot_info->framebuffers->count; i++) {
-		LOG_DEBUG("KERNEL", "> > > Entry %d (0x%llx):", i, boot_info->framebuffers->entries[i]);
-		LOG_DEBUG("KERNEL", "> > > > Address: 0x%llx", boot_info->framebuffers->entries[i]->address);
-		LOG_DEBUG("KERNEL", "> > > > Bit/Pixel: 0x%x", boot_info->framebuffers->entries[i]->bpp);
-		LOG_DEBUG("KERNEL", "> > > > Size: 0x%x", boot_info->framebuffers->entries[i]->size);
-		LOG_DEBUG("KERNEL", "> > > > Pitch: 0x%x", boot_info->framebuffers->entries[i]->pitch);
-		LOG_DEBUG("KERNEL", "> > > > Resolution: %dx%d", boot_info->framebuffers->entries[i]->width, boot_info->framebuffers->entries[i]->height);
+	LOG_DEBUG("KERNEL", "> HHDM: 0x%llx", boot_info.hhdm);
+	LOG_DEBUG("KERNEL", "> Memory Map (0x%llx):", boot_info.memmap);
+	LOG_DEBUG("KERNEL", "> > Count: %d", boot_info.memmap->count);
+	LOG_DEBUG("KERNEL", "> > Entries: 0x%llx", boot_info.memmap->entries);
+	LOG_DEBUG("KERNEL", "> Executable File Info (0x%llx):", boot_info.exefile);
+	LOG_DEBUG("KERNEL", "> > Address: 0x%llx", boot_info.exefile->address);
+	LOG_DEBUG("KERNEL", "> > Size: 0x%x", boot_info.exefile->size);
+	LOG_DEBUG("KERNEL", "> Executable Address Info (0x%llx):", boot_info.exeaddr);
+	LOG_DEBUG("KERNEL", "> > Physical: 0x%llx", boot_info.exeaddr->phys);
+	LOG_DEBUG("KERNEL", "> > Virtual: 0x%llx", boot_info.exeaddr->virt);
+	LOG_DEBUG("KERNEL", "> Framebuffers (0x%llx):", boot_info.framebuffers);
+	LOG_DEBUG("KERNEL", "> > Count: %d", boot_info.framebuffers->count);
+	LOG_DEBUG("KERNEL", "> > Entries (0x%llx):", boot_info.framebuffers->entries);
+	for (uint64_t i = 0; i < boot_info.framebuffers->count; i++) {
+		LOG_DEBUG("KERNEL", "> > > Entry %d (0x%llx):", i, boot_info.framebuffers->entries[i]);
+		LOG_DEBUG("KERNEL", "> > > > Address: 0x%llx", boot_info.framebuffers->entries[i]->address);
+		LOG_DEBUG("KERNEL", "> > > > Bit/Pixel: 0x%x", boot_info.framebuffers->entries[i]->bpp);
+		LOG_DEBUG("KERNEL", "> > > > Size: 0x%x", boot_info.framebuffers->entries[i]->size);
+		LOG_DEBUG("KERNEL", "> > > > Pitch: 0x%x", boot_info.framebuffers->entries[i]->pitch);
+		LOG_DEBUG("KERNEL", "> > > > Resolution: %dx%d", boot_info.framebuffers->entries[i]->width, boot_info.framebuffers->entries[i]->height);
 	}
 
 	// framebuffer

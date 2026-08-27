@@ -1,5 +1,5 @@
-#ifndef ACPI_H
-#define ACPI_H
+#ifndef __XDDOS_ACPI_H
+#define __XDDOS_ACPI_H
 
 #include <stdbool.h>
 
@@ -123,4 +123,4 @@ extern uint32_t irq_to_gsi[16];
 acpi_init_result_t acpi_init();
 acpi_io_apic_entry_t *acpi_search_io_apic_entry();
 
-#endif // !ACPI_H
+#endif // !__XDDOS_ACPI_H

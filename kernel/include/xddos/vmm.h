@@ -1,5 +1,5 @@
-#ifndef VMM_H
-#define VMM_H
+#ifndef __XDDOS_VMM_H
+#define __XDDOS_VMM_H
 
 #include <stdint.h>
 
@@ -36,4 +36,4 @@ void vmm_map_table_huge(uint64_t virt, uint64_t phys, uint64_t flags);
 
 extern vmm_page_table_t *vmm_pml4;
 
-#endif // !VMM_H
+#endif // !__XDDOS_VMM_H

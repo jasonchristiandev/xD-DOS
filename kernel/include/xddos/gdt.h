@@ -1,5 +1,5 @@
-#ifndef GDT_H
-#define GDT_H
+#ifndef __XDDOS_GDT_H
+#define __XDDOS_GDT_H
 
 #include <stdint.h>
 
@@ -23,4 +23,4 @@ extern gdt_pointer_t gdt_ptr;
 void gdt_set_gate(int num, uint8_t access, uint8_t granularity);
 void gdt_init();
 
-#endif // !GDT_H
+#endif // !__XDDOS_GDT_H

@@ -1,8 +1,8 @@
-#ifndef PIT_H
-#define PIT_H
+#ifndef __XDDOS_PIT_H
+#define __XDDOS_PIT_H
 
 #include <stdint.h>
 
 void pit_sleep_ms(uint64_t ms);
 
-#endif // !PIT_H
+#endif // !__XDDOS_PIT_H

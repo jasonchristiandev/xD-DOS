@@ -1,5 +1,5 @@
-#ifndef VMA_H
-#define VMA_H
+#ifndef __XDDOS_VMA_H
+#define __XDDOS_VMA_H
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -19,4 +19,4 @@ void *vma_malloc(size_t size);
 void vma_free(void *ptr);
 void *vma_calloc(size_t count, size_t size);
 
-#endif
+#endif // !__XDDOS_VMA_H

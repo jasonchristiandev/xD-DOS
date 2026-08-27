@@ -1,7 +1,6 @@
-#ifndef INTERRUPTS_H
-#define INTERRUPTS_H
+#ifndef __XDDOS_INTERRUPTS_H
+#define __XDDOS_INTERRUPTS_H
 
-#include "xddos/requests.h"
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -74,4 +73,4 @@ void interrupts_io_apic_irqwrite(uint8_t irq, uint32_t high, uint32_t low);
 void interrupts_panic(char *message);
 void interrupts_fail(char *msg1, uint32_t error, char *msg2);
 
-#endif // !INTERRUPTS_H
+#endif // !__XDDOS_INTERRUPTS_H

@@ -1,5 +1,5 @@
-#ifndef PMM_H
-#define PMM_H
+#ifndef __XDDOS_PMM_H
+#define __XDDOS_PMM_H
 
 #include <stdint.h>
 
@@ -27,4 +27,4 @@ void pmm_lock_region(uint64_t base, uint64_t count);
 uint8_t *pmm_alloc_page();
 void pmm_free_page(uint8_t *page);
 
-#endif // !PMM_H
+#endif // !__XDDOS_PMM_H

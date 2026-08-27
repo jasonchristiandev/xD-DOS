@@ -1,5 +1,5 @@
-#ifndef KSTDIO_H
-#define KSTDIO_H
+#ifndef __XDDOS_KSTDIO_H
+#define __XDDOS_KSTDIO_H
 
 #include <stdarg.h>
 #include <stddef.h>
@@ -12,4 +12,4 @@ void kstdio_printf(const char *format, ...);
 int kstdio_sprintf(char *str, const char *format, ...);
 int kstdio_snprintf(char *str, size_t size, const char *format, ...);
 
-#endif // !KSTDIO_H
+#endif // !__XDDOS_KSTDIO_H

@@ -1,5 +1,5 @@
-#ifndef GRAPHICS_H
-#define GRAPHICS_H
+#ifndef __XDDOS_GRAPHICS_H
+#define __XDDOS_GRAPHICS_H
 
 #include "xddos/psf.h"
 #include "xddos/requests.h"
@@ -11,4 +11,4 @@ void graphics_psf_put_text(psf_data_t *font, const char *str, uint32_t x, uint32
 void graphics_clear(uint32_t col);
 void graphics_rect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t col);
 
-#endif // !GRAPHICS_H
+#endif // !__XDDOS_GRAPHICS_H

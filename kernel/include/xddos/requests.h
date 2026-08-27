@@ -1,12 +1,12 @@
-#ifndef REQUESTS_H
-#define REQUESTS_H
+#ifndef __XDDOS_REQUESTS_H
+#define __XDDOS_REQUESTS_H
 
 #include "xddos/acpi.h"
 #include "xddos/pmm.h"
 #include "xddos_boot/protocol.h"
 #include <stdint.h>
 
-extern boot_info_t *boot_info;
+extern boot_info_t boot_info;
 
 typedef enum : uint8_t {
 	MEMMAP_USABLE = 0,
@@ -31,4 +31,4 @@ acpi_rsdp_t *request_rsdp();
 pmm_memmap_t *request_memmap();
 requests_framebuffers_t *request_framebuffers();
 
-#endif // !REQUESTS_H
+#endif // !__XDDOS_REQUESTS_H
