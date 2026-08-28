@@ -27,7 +27,7 @@ void kernel_main() {
 	if (acpi_result != 0) {
 		char *name = "UNKNOWN";
 		if (acpi_result < 7) name = acpi_result_name[acpi_result];
-		interrupts_fail("ACPI_INIT bad return!", acpi_result, name);
+		// interrupts_fail("ACPI_INIT bad return!", acpi_result, name);
 	}
 
 	// init gdt
@@ -47,11 +47,6 @@ void kernel_main() {
 		interrupts_fail("INTERRUPTS_INIT bad return!", interrupts_result, name);
 	}
 
-	// init syscall
-	// LOG_DEBUG("KERNEL", "Initializing syscalls...");
-	// syscall_init();
-
-	// simple mouse demo
 	const char *msg = "xD-DOS (Extended Drive - Disk Operating System)\r\n> https://github.com/jasonchristiandev/xD-DOS\r\n> Maintained by Jason Christian.";
 	graphics_clear(0);
 	graphics_psf_put_text(fallback_font, msg, 4, 4, 0xFFFFFF, 0x000000);

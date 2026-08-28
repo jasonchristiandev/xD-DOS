@@ -5,7 +5,6 @@
 #include "xddos/idt.h"
 #include "xddos/kstdio.h"
 #include "xddos/logging.h"
-#include "xddos/main.h"
 #include "xddos/pit.h"
 #include <stdbool.h>
 
@@ -80,14 +79,14 @@ interrupts_init_result_t interrupts_init() {
 	outb(PIC1_DATA, 0xFF);
 	outb(PIC2_DATA, 0xFF);
 
-	apic_base = rdmsr(0x1B) + HHDM_OFFSET;
+	apic_base = rdmsr(0x1B);
 	lapic_base = apic_base & 0xFFFFFFFFFFFFF000;
 
 	// enable lapic
 	// set spurious to 0xFF
 	lapic_write(0xF0, lapic_read(0xF0) | 0x100 | 0xFF);
 
-	io_apic_base = acpi_io_apic_entry->io_apic_ptr + HHDM_OFFSET;
+	io_apic_base = acpi_io_apic_entry->io_apic_ptr;
 
 	interrupts_io_apic_irqwrite(1, 0, 33); // unmask keyboard
 
