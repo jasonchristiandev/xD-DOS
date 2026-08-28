@@ -14,6 +14,7 @@ bool pml4_built = false;
 
 void alloc_entry(vmm_page_table_t *table, uint16_t idx) {
 	uint64_t phys = (uint64_t) pmm_alloc_page();
+	if (!phys) return;
 	memset((void *) phys, 0, PAGE_SIZE);
 	pmm_lock_region(phys, PAGE_SIZE);
 
@@ -44,26 +45,12 @@ vmm_init_result_t vmm_init() {
 	memset(vmm_pml4, 0, PAGE_SIZE);
 
 	LOG_DEBUG("VMM", "Mapping reserved regions...");
-	LOG_DEBUG("VMM", "Huge 1");
 	for (uint64_t i = 0; i < 0x100000000ULL; i += 0x200000) {
 		vmm_map_table_huge(i, i, PTE_READWRITE);
 	}
-	LOG_DEBUG("VMM", "Huge 2");
 	for (uint64_t i = 0; i < 0x100000000ULL; i += 0x200000) {
-		vmm_map_table_huge(i + HHDM_OFFSET, i, PTE_READWRITE);
+		vmm_map_table_huge(i + 0xFFFFFFFF80000000, i, PTE_READWRITE);
 	}
-	// // for (uint64_t j = 0; j < exefile->size; j += PAGE_SIZE) {
-	// for (uint64_t j = 0; j < 0x400000; j += PAGE_SIZE) { // 4mb
-	// 	uint64_t addr = (uint64_t) exeaddr->phys + j;
-	// 	vmm_map_table(addr, addr, PTE_READWRITE);
-	// }
-	// // for (uint64_t j = 0; j < exefile->size; j += PAGE_SIZE) {
-	// for (uint64_t j = 0; j < 0x200000; j += PAGE_SIZE) {
-	// 	uint64_t phys = (uint64_t) exeaddr->phys + j;
-	// 	uint64_t virt = (uint64_t) exeaddr->virt + j;
-	// 	vmm_map_table(virt, phys, PTE_READWRITE);
-	// }
-	LOG_DEBUG("VMM", "Normal 1");
 	vmm_map_table((uint64_t) vmm_pml4 - HHDM_OFFSET, (uint64_t) vmm_pml4 - HHDM_OFFSET, PTE_READWRITE);
 
 	// create stack
@@ -74,29 +61,8 @@ vmm_init_result_t vmm_init() {
 		vmm_map_table(STACK_BASE + i * PAGE_SIZE, (uint64_t) spage, PTE_READWRITE);
 	}
 
-	// rip debug
-	uint64_t rip;
-	__asm__("leaq (%%rip), %0" : "=r"(rip));
-	LOG_DEBUG("VMM", "RIP debug: 0x%llx", rip);
-
-	uint16_t pml4_i = (rip >> 39) & 0x1FF;
-	uint16_t pdpt_i = (rip >> 30) & 0x1FF;
-	uint16_t pd_i = (rip >> 21) & 0x1FF;
-	uint16_t pt_i = (rip >> 12) & 0x1FF;
-
-	LOG_DEBUG("VMM", "PML4E[%d]: 0x%llx", pml4_i, vmm_pml4->entries[pml4_i]);
-
-	vmm_page_table_t *pdpt = (vmm_page_table_t *) ((vmm_pml4->entries[pml4_i] & 0x000FFFFFFFFFF000ULL) + HHDM_OFFSET);
-	LOG_DEBUG("VMM", "PDPTE[%d]: 0x%llx", pdpt_i, pdpt->entries[pdpt_i]);
-
-	vmm_page_table_t *pd = (vmm_page_table_t *) ((pdpt->entries[pdpt_i] & 0x000FFFFFFFFFF000ULL) + HHDM_OFFSET);
-	LOG_DEBUG("VMM", "PDE[%d]: 0x%llx", pd_i, pd->entries[pd_i]);
-
-	vmm_page_table_t *pt = (vmm_page_table_t *) ((pd->entries[pd_i] & 0x000FFFFFFFFFF000ULL) + HHDM_OFFSET);
-	LOG_DEBUG("VMM", "PTE[%d]: 0x%llx", pt_i, pt->entries[pt_i]);
-
 	LOG_DEBUG("VMM", "Switching context (0x%llx)...", vmm_pml4);
-	__asm__ __volatile__("mov %0, %%cr3" ::"r"((uint64_t) vmm_pml4 - HHDM_OFFSET) : "memory");
+	__asm__ __volatile__("mov %0, %%cr3" ::"r"((uint64_t) vmm_pml4) : "memory");
 	pml4_built = true;
 
 	LOG_DEBUG("VMM", "Switching stack...");
@@ -122,21 +88,21 @@ void vmm_map_table(uint64_t virt, uint64_t phys, uint64_t flags) {
 		alloc_entry(table, pml4e_i);
 	}
 	entry = table->entries[pml4e_i];
-	table = (vmm_page_table_t *) (((uint64_t) entry & 0x000FFFFFFFFFF000) + HHDM_OFFSET);
+	table = (vmm_page_table_t *) ((uint64_t) entry & 0x000FFFFFFFFFF000);
 
 	// pdpt to pd
 	if (!(table->entries[pdpte_i] & PTE_PRESENT)) {
 		alloc_entry(table, pdpte_i);
 	}
 	entry = table->entries[pdpte_i];
-	table = (vmm_page_table_t *) (((uint64_t) entry & 0x000FFFFFFFFFF000) + HHDM_OFFSET);
+	table = (vmm_page_table_t *) ((uint64_t) entry & 0x000FFFFFFFFFF000);
 
 	// pd to pt
 	if (!(table->entries[pde_i] & PTE_PRESENT)) {
 		alloc_entry(table, pde_i);
 	}
 	entry = table->entries[pde_i];
-	table = (vmm_page_table_t *) (((uint64_t) entry & 0x000FFFFFFFFFF000) + HHDM_OFFSET);
+	table = (vmm_page_table_t *) ((uint64_t) entry & 0x000FFFFFFFFFF000);
 
 	// pt entry
 	table->entries[pte_i] = phys | flags | PTE_PRESENT;
@@ -162,14 +128,14 @@ void vmm_map_table_huge(uint64_t virt, uint64_t phys, uint64_t flags) {
 		alloc_entry(table, pml4e_i);
 	}
 	entry = table->entries[pml4e_i];
-	table = (vmm_page_table_t *) (((uint64_t) entry & 0x000FFFFFFFFFF000) + HHDM_OFFSET);
+	table = (vmm_page_table_t *) ((uint64_t) entry & 0x000FFFFFFFFFF000);
 
 	// pdpt to pd
 	if (!(table->entries[pdpte_i] & PTE_PRESENT)) {
 		alloc_entry(table, pdpte_i);
 	}
 	entry = table->entries[pdpte_i];
-	table = (vmm_page_table_t *) (((uint64_t) entry & 0x000FFFFFFFFFF000) + HHDM_OFFSET);
+	table = (vmm_page_table_t *) ((uint64_t) entry & 0x000FFFFFFFFFF000);
 
 	// pd entry
 	table->entries[pde_i] = (phys & 0x000FFFFFFFFFF000) | flags | PTE_PRESENT | PTE_PAGESIZE;
