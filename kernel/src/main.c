@@ -27,7 +27,7 @@ void kernel_main() {
 	if (acpi_result != 0) {
 		char *name = "UNKNOWN";
 		if (acpi_result < 7) name = acpi_result_name[acpi_result];
-		// interrupts_fail("ACPI_INIT bad return!", acpi_result, name);
+		interrupts_fail("ACPI_INIT bad return!", acpi_result, name);
 	}
 
 	// init gdt

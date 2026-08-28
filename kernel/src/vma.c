@@ -105,7 +105,9 @@ void vma_free(void *ptr) {
 }
 
 void *vma_calloc(size_t count, size_t size) {
+	if (count == 0 || size == 0 || count > SIZE_MAX / size) return NULL;
 	void *ptr = vma_malloc(count * size);
+	if (ptr == NULL) return NULL;
 	memset(ptr, 0, count * size);
 	return ptr;
 }

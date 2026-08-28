@@ -96,7 +96,7 @@ void boot_main(uint32_t magic, uint8_t *mb_tags) {
 
 	// framebuffer
 	requests_framebuffers_t *fbs = request_framebuffers();
-	if (fbs != NULL || fbs->count >= 1) fb = fbs->entries[0];
+	if (fbs != NULL && fbs->count >= 1) fb = fbs->entries[0];
 
 	// init fallback font
 	LOG_DEBUG("KERNEL", "Initializing fallback font...");

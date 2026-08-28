@@ -3,8 +3,8 @@
 
 #include "xddos/vma.h" // IWYU pragma: keep
 
-#define malloc xddos_vma_malloc
-#define free xddos_vma_free
-#define calloc xddos_vma_calloc
+#define malloc vma_malloc
+#define free vma_free
+#define calloc vma_calloc
 
 #endif // !STDLIB_H
