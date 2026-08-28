@@ -15,7 +15,7 @@ mbheader_start:
 	dd 20 ; 20 bytes
 	dd 0 ; width (fit monitor)
 	dd 0 ; height (fit monitor)
-	dd 32 ; depth/bpp
+	dd 0 ; depth/bpp (auto detect)
 
 	; memmap
 	align 8

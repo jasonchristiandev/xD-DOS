@@ -1,7 +1,5 @@
 #include "xddos/psf.h"
 #include "xddos/logging.h"
-#include "xddos/main.h"
-#include "xddos/requests.h"
 #include <limits.h>
 #include <string.h>
 
@@ -107,20 +105,12 @@ psf_data_t *psf_init() {
 	static psf_data_t data;
 	memset(&data, 0, sizeof(psf_data_t));
 
-	// requests_executable_address_t *exeaddr = request_executable_address();
-	// if (!exeaddr) return NULL;
-
-	// uint64_t font_virt = (uint64_t) &_binary_font_psf_start;
-	// uint64_t font_phys_addr = exeaddr->phys + font_virt - exeaddr->virt;
-	// uint8_t *virt_start = (uint8_t *) (font_phys_addr + HHDM_OFFSET);
-	// uint8_t *virt_end = virt_start + ((uint64_t) &_binary_font_psf_end - (uint64_t) &_binary_font_psf_start);
-
-	// uint32_t magic = *(uint32_t *) virt_start;
-	// if ((magic & 0xFFFF) == PSF1_MAGIC) {
-	// 	psf1_init(&data, virt_start, virt_end);
-	// } else if (magic == PSF2_MAGIC) {
-	// 	psf2_init(&data, (psf2_header_t *) virt_start, virt_end);
-	// }
+	uint32_t magic = *(uint32_t *) _binary_font_psf_start;
+	if ((magic & 0xFFFF) == PSF1_MAGIC) {
+		psf1_init(&data, _binary_font_psf_start, _binary_font_psf_end);
+	} else if (magic == PSF2_MAGIC) {
+		psf2_init(&data, (psf2_header_t *) _binary_font_psf_start, _binary_font_psf_end);
+	}
 
 	LOG_DEBUG("PSF", "Done init.");
 
