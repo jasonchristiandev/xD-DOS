@@ -13,8 +13,8 @@ mbheader_start:
 	dw 5 ; MULTIBOOT_HEADER_TAG_FRAMEBUFFER
 	dw 1 ; optional
 	dd 20 ; 20 bytes
-	dd 1024 ; width
-	dd 768 ; height
+	dd 640 ; width
+	dd 480 ; height
 	dd 32 ; depth/bpp
 
 	; memmap

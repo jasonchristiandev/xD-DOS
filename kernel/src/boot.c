@@ -7,7 +7,6 @@
 #include "xddos/requests.h"
 #include "xddos/serial.h"
 #include "xddos/vmm.h"
-#include <stddef.h>
 
 #ifndef COMMIT_HASH
 #define COMMIT_HASH "unknown"
@@ -43,7 +42,7 @@ void boot_main(uint32_t magic, uint8_t *mb_tags) {
 		}
 
 		switch (base_tag->type) {
-			case MULTIBOOT_TAG_TYPE_MMAP:
+			case MULTIBOOT_TAG_TYPE_MMAP: {
 				static boot_memmap_t memmap;
 				boot_info.memmap = &memmap;
 
@@ -74,17 +73,33 @@ void boot_main(uint32_t magic, uint8_t *mb_tags) {
 				if (memmap.count > MAX_MEMMAP_ENTRIES) memmap.count = MAX_MEMMAP_ENTRIES;
 
 				break;
-			case MULTIBOOT_TAG_TYPE_FRAMEBUFFER:
+			}
+			case MULTIBOOT_TAG_TYPE_FRAMEBUFFER: {
+				static requests_framebuffer_t nfb;
+				multiboot_tag_framebuffer_t *tag = (multiboot_tag_framebuffer_t *) base_tag;
+				if (tag->common.framebuffer_type == MULTIBOOT_FRAMEBUFFER_TYPE_RGB) {
+					nfb.address = (void *) tag->common.framebuffer_addr;
+					nfb.pitch = tag->common.framebuffer_pitch;
+					nfb.width = tag->common.framebuffer_width;
+					nfb.height = tag->common.framebuffer_height;
+					nfb.bpp = tag->common.framebuffer_bpp;
+					fb = &nfb;
+				}
 				break;
-			case MULTIBOOT_TAG_TYPE_SMBIOS:
+			}
+			case MULTIBOOT_TAG_TYPE_SMBIOS: {
 				break;
-			case MULTIBOOT_TAG_TYPE_ACPI_NEW:
+			}
+			case MULTIBOOT_TAG_TYPE_ACPI_NEW: {
 				break;
-			case MULTIBOOT_TAG_TYPE_LOAD_BASE_ADDR:
+			}
+			case MULTIBOOT_TAG_TYPE_LOAD_BASE_ADDR: {
 				break;
-			default:
+			}
+			default: {
 				LOG_WARNING("KERNEL", "Unknown/unimplemented Multiboot2 tag %u", base_tag->type);
 				break;
+			}
 		}
 
 		curr += (base_tag->size + 7) & ~7;
@@ -93,10 +108,6 @@ void boot_main(uint32_t magic, uint8_t *mb_tags) {
 		LOG_ERROR("KERNEL", "Multiboot2 boot information corrupt!\r\nBoot information not ended with end tag.");
 		hlt();
 	}
-
-	// framebuffer
-	requests_framebuffers_t *fbs = request_framebuffers();
-	if (fbs != NULL && fbs->count >= 1) fb = fbs->entries[0];
 
 	// init fallback font
 	LOG_DEBUG("KERNEL", "Initializing fallback font...");
