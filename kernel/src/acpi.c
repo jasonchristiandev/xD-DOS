@@ -1,6 +1,5 @@
 #include "xddos/acpi.h"
 #include "xddos/logging.h"
-#include "xddos/main.h"
 #include "xddos/requests.h"
 #include <string.h>
 
@@ -10,15 +9,20 @@ acpi_madt_t *acpi_madt;
 acpi_io_apic_entry_t *acpi_io_apic_entry;
 uint32_t irq_to_gsi[16];
 
+const char *RSDP_SIGNATURE = "RSD PTR ";
+const char *XSDT_SIGNATURE = "XSDT";
+const char *APIC_SIGNATURE = "APIC";
+
 acpi_init_result_t acpi_init() {
-	acpi_rsdp = request_rsdp();
+	acpi_rsdp = boot_info.rsdp;
 	if (acpi_rsdp == NULL) return ACPI_INIT_NULL_RESPONSE;
-	if (memcmp(acpi_rsdp->signature, "RSD PTR ", 8) != 0) return ACPI_INIT_RSDP_CHECKSUM_FAIL;
+	LOG_INFO("ACPI", "0x%x 0x%x 0x%x 0x%x", *(const char *) acpi_rsdp->signature, *(const char *) (acpi_rsdp->signature + 1), *(const char *) (acpi_rsdp->signature + 2), *(const char *) (acpi_rsdp->signature + 3));
+	if (memcmp(acpi_rsdp->signature, RSDP_SIGNATURE, 8) != 0) return ACPI_INIT_RSDP_SIGNATURE_FAIL;
 	if (acpi_rsdp->revision < 2) return ACPI_INIT_VERSION_NOT_SUPPORTED;
 
 	// xsdt
-	acpi_xsdt = (acpi_xsdt_t *) (acpi_rsdp->xsdt_ptr + HHDM_OFFSET);
-	if (acpi_xsdt == NULL || memcmp(acpi_xsdt->header.signature, "XSDT", 4) != 0) {
+	acpi_xsdt = (acpi_xsdt_t *) (acpi_rsdp->xsdt_ptr);
+	if (acpi_xsdt == NULL || memcmp(acpi_xsdt->header.signature, XSDT_SIGNATURE, 4) != 0) {
 		return ACPI_INIT_XSDT_NOT_FOUND;
 	}
 	LOG_DEBUG("ACPI", "Found XSDT: 0x%llx (%u bytes)", acpi_xsdt, acpi_xsdt->header.length);
@@ -27,8 +31,8 @@ acpi_init_result_t acpi_init() {
 	// madt
 	acpi_madt = NULL;
 	for (int i = 0; i < entries; i++) {
-		acpi_descheader_t *h = (acpi_descheader_t *) (acpi_xsdt->entries[i] + HHDM_OFFSET);
-		if (!strncmp(h->signature, "APIC", 4)) acpi_madt = (acpi_madt_t *) h;
+		acpi_descheader_t *h = (acpi_descheader_t *) (acpi_xsdt->entries[i]);
+		if (!strncmp(h->signature, APIC_SIGNATURE, 4)) acpi_madt = (acpi_madt_t *) h;
 	}
 	if (acpi_madt == NULL) return ACPI_INIT_MADT_NOT_FOUND;
 	LOG_DEBUG("ACPI", "Found MADT: 0x%llx (%u bytes)", acpi_madt, acpi_madt->header.length);

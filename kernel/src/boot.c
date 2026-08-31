@@ -43,7 +43,7 @@ void boot_main(uint32_t magic, uint8_t *mb_tags) {
 
 		switch (base_tag->type) {
 			case MULTIBOOT_TAG_TYPE_MMAP: {
-				static boot_memmap_t memmap;
+				static requests_memmap_t memmap;
 				boot_info.memmap = &memmap;
 
 				multiboot_tag_mmap_t *tag = (multiboot_tag_mmap_t *) base_tag;
@@ -57,8 +57,8 @@ void boot_main(uint32_t magic, uint8_t *mb_tags) {
 					multiboot_mmap_entry_t *entry = (multiboot_mmap_entry_t *) entries;
 
 					if (entry->type == MULTIBOOT_MEMORY_AVAILABLE) {
-						boot_memmap_entry_t *mmentry = &memmap.entries[memmap_idx];
-						mmentry->type = BOOT_MEMMAP_USABLE;
+						requests_memmap_entry_t *mmentry = &memmap.entries[memmap_idx];
+						mmentry->type = REQUESTS_MEMMAP_USABLE;
 						mmentry->base = entry->addr;
 						mmentry->length = entry->len;
 						if (entry->addr < 0x1000) { // avoid null (0x0-0x1000)
@@ -91,6 +91,9 @@ void boot_main(uint32_t magic, uint8_t *mb_tags) {
 				break;
 			}
 			case MULTIBOOT_TAG_TYPE_ACPI_NEW: {
+				multiboot_tag_new_acpi_t *tag = (multiboot_tag_new_acpi_t *) base_tag;
+				boot_info.rsdp = (acpi_rsdp_t *) tag->rsdp;
+				LOG_INFO("KERNEL", "0x%llx : 0x%x 0x%x 0x%x 0x%x", boot_info.rsdp, *(const char *) boot_info.rsdp->signature, *(const char *) (boot_info.rsdp->signature + 1), *(const char *) (boot_info.rsdp->signature + 2), *(const char *) (boot_info.rsdp->signature + 3));
 				break;
 			}
 			case MULTIBOOT_TAG_TYPE_LOAD_BASE_ADDR: {

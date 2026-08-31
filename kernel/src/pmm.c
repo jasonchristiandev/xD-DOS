@@ -10,19 +10,19 @@ static size_t bitmap_size = 0;
 static size_t page_count = 0;
 
 pmm_init_result_t pmm_init() {
-	boot_memmap_t *memmap = boot_info.memmap;
+	requests_memmap_t *memmap = boot_info.memmap;
 	if (memmap == NULL) {
 		LOG_ERROR("PMM", "Memory map request responded with NULL!");
 		return PMM_INIT_NULL_RESPONSE;
 	}
 
 	// find best spot for bitmap
-	boot_memmap_entry_t *max = NULL;
+	requests_memmap_entry_t *max = NULL;
 	uint64_t max_addr = 0;
 	LOG_DEBUG("PMM", "Finding spot for bitmap...");
 	for (uint64_t i = 0; i < memmap->count; i++) {
-		boot_memmap_entry_t *entry = &(memmap->entries[i]);
-		if (entry->type != BOOT_MEMMAP_USABLE || entry->length == 0 || entry->base < 0x100000 || entry->base + entry->length > 0x40000000) continue;
+		requests_memmap_entry_t *entry = &(memmap->entries[i]);
+		if (entry->type != REQUESTS_MEMMAP_USABLE || entry->length == 0 || entry->base < 0x100000 || entry->base + entry->length > 0x40000000) continue;
 		LOG_DEBUG("PMM", "Entry %u: 0x%llx - 0x%llx (%llu KB)", i, entry->base, entry->base + entry->length - 1, entry->length / 1024);
 
 		uint64_t top = entry->base + entry->length;
@@ -55,8 +55,8 @@ pmm_init_result_t pmm_init() {
 	// free regions
 	LOG_DEBUG("PMM", "Freeing usable regions...");
 	for (uint64_t i = 0; i < memmap->count; i++) {
-		boot_memmap_entry_t entry = memmap->entries[i];
-		if (entry.type == BOOT_MEMMAP_USABLE && entry.base > 0x100000) {
+		requests_memmap_entry_t entry = memmap->entries[i];
+		if (entry.type == REQUESTS_MEMMAP_USABLE && entry.base > 0x100000) {
 			pmm_free_region(entry.base, entry.length);
 		}
 	}
