@@ -16,17 +16,18 @@ void kernel_main() {
 	// init acpi
 	LOG_DEBUG("KERNEL", "ACPI initializing...");
 	acpi_init_result_t acpi_result = acpi_init();
-	char *acpi_result_name[7] = {
+	char *acpi_result_name[256] = {
 		[ACPI_INIT_OK] = "OK",
 		[ACPI_INIT_NULL_RESPONSE] = "NULL_RESPONSE",
-		[ACPI_INIT_RSDP_SIGNATURE_FAIL] = "CHECKSUM_FAIL",
 		[ACPI_INIT_VERSION_NOT_SUPPORTED] = "VERSION_NOT_SUPPORTED",
 		[ACPI_INIT_XSDT_NOT_FOUND] = "XSDT_NOT_FOUND",
 		[ACPI_INIT_MADT_NOT_FOUND] = "MADT_NOT_FOUND",
-		[ACPI_INIT_IO_APIC_ENTRY_NOT_FOUND] = "IO_APIC_ENTRY_NOT_FOUND"};
+		[ACPI_INIT_IO_APIC_ENTRY_NOT_FOUND] = "IO_APIC_ENTRY_NOT_FOUND",
+		[ACPI_INIT_RSDP_SIGNATURE_FAIL] = "RSDP_SIGNATURE_FAIL",
+		[ACPI_INIT_XSDT_SIGNATURE_FAIL] = "XSDT_SIGNATURE_FAIL"};
 	if (acpi_result != 0) {
 		char *name = "UNKNOWN";
-		if (acpi_result < 7) name = acpi_result_name[acpi_result];
+		if (acpi_result_name[acpi_result] != NULL) name = acpi_result_name[acpi_result];
 		interrupts_fail("ACPI_INIT bad return!", acpi_result, name);
 	}
 

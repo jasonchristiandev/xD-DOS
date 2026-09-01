@@ -126,7 +126,7 @@ void vmm_map_table_huge(uint64_t virt, uint64_t phys, uint64_t flags) {
 	table = (vmm_page_table_t *) ((uint64_t) entry & 0x000FFFFFFFFFF000);
 
 	// pd entry
-	table->entries[pde_i] = (phys & 0x000FFFFFFFFFF000) | flags | PTE_PRESENT | PTE_PAGESIZE;
+	table->entries[pde_i] = (phys & 0x000FFFFFFFE00000) | flags | PTE_PRESENT | PTE_PAGESIZE;
 
 	if (pml4_built) {
 		invlpg((uint64_t) virt);

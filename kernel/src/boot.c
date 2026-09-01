@@ -7,6 +7,7 @@
 #include "xddos/requests.h"
 #include "xddos/serial.h"
 #include "xddos/vmm.h"
+#include <string.h>
 
 #ifndef COMMIT_HASH
 #define COMMIT_HASH "unknown"
@@ -91,9 +92,10 @@ void boot_main(uint32_t magic, uint8_t *mb_tags) {
 				break;
 			}
 			case MULTIBOOT_TAG_TYPE_ACPI_NEW: {
+				static acpi_rsdp_t rsdp;
+				boot_info.rsdp = &rsdp;
 				multiboot_tag_new_acpi_t *tag = (multiboot_tag_new_acpi_t *) base_tag;
-				boot_info.rsdp = (acpi_rsdp_t *) tag->rsdp;
-				LOG_INFO("KERNEL", "0x%llx : 0x%x 0x%x 0x%x 0x%x", boot_info.rsdp, *(const char *) boot_info.rsdp->signature, *(const char *) (boot_info.rsdp->signature + 1), *(const char *) (boot_info.rsdp->signature + 2), *(const char *) (boot_info.rsdp->signature + 3));
+				memcpy(boot_info.rsdp, (acpi_rsdp_t *) tag->rsdp, sizeof(acpi_rsdp_t));
 				break;
 			}
 			case MULTIBOOT_TAG_TYPE_LOAD_BASE_ADDR: {
